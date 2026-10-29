@@ -1,0 +1,8 @@
+{
+  "minimumVersion": "1.0",
+  "notes": [
+    "Manage customer orders through production, quality, packing, warehouse, delivery and signed completion.",
+    "Split work orders into sub-jobs with box or packet quantities.",
+    "Review the independent manufacturing screen prototype with local sample data."
+  ]
+}

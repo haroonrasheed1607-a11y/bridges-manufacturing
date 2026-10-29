@@ -1,0 +1,201 @@
+/* Compact shared header: navigation sits beside the workspace name. */
+#ls-activities-pages .top {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 24px;
+  padding: 10px 22px;
+  min-height: 64px;
+  box-sizing: border-box;
+}
+#ls-activities-pages .workspace-brand {
+  flex: 0 0 auto;
+}
+#ls-activities-pages .top h1 {
+  margin: 0;
+  white-space: nowrap;
+  line-height: 1.3;
+}
+#ls-activities-pages .top .main-navigation {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+#ls-activities-pages .top .main-navigation button {
+  min-height: 38px;
+  padding: 8px 12px;
+  white-space: nowrap;
+}
+#ls-activities-pages .top .brand-logo {
+  margin-left: auto;
+  padding: 0;
+  flex: 0 0 auto;
+}
+#ls-activities-pages .top .brand-logo img {
+  width: 112px;
+}
+@media (max-width: 800px) {
+  #ls-activities-pages .top {
+    gap: 14px;
+    padding: 10px 16px;
+  }
+  #ls-activities-pages .top h1 {
+    font-size: 18px;
+  }
+  #ls-activities-pages .top .main-navigation {
+    gap: 6px;
+  }
+  #ls-activities-pages .top .main-navigation button {
+    font-size: 12px;
+    padding: 8px;
+  }
+  #ls-activities-pages .top .brand-logo img {
+    width: 90px;
+  }
+}
+@media (max-width: 640px) {
+  #ls-activities-pages .top {
+    flex-wrap: wrap;
+    gap: 8px 12px;
+    padding: 8px 16px;
+  }
+  #ls-activities-pages .top .main-navigation {
+    order: 3;
+    flex: 1 0 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+  #ls-activities-pages .top .main-navigation button {
+    min-height: 44px;
+    padding: 8px 4px;
+    white-space: normal;
+  }
+}
+
+/* Navbar links and an accessible native Activities disclosure. */
+#ls-activities-pages .top .main-navigation {
+  gap: 22px;
+  align-self: stretch;
+  align-items: center;
+}
+#ls-activities-pages .top .main-navigation > button,
+#ls-activities-pages .top .main-navigation .nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 0;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  box-sizing: border-box;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+#ls-activities-pages .top .main-navigation > button[aria-pressed="true"],
+#ls-activities-pages .top .main-navigation .nav-link.nav-active {
+  background: transparent;
+  color: #fff;
+  border-color: #fff;
+}
+#ls-activities-pages .top .main-navigation > button:hover,
+#ls-activities-pages .top .main-navigation .nav-link:hover {
+  background: transparent;
+  color: #fff;
+  border-bottom-color: rgba(255, 255, 255, 0.65);
+}
+#ls-activities-pages .main-navigation :is(button, summary):focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 4px;
+}
+#ls-activities-pages .nav-dropdown {
+  position: relative;
+  flex-shrink: 0;
+}
+#ls-activities-pages .nav-dropdown summary {
+  list-style: none;
+}
+#ls-activities-pages .nav-dropdown summary::-webkit-details-marker {
+  display: none;
+}
+#ls-activities-pages .nav-chevron {
+  width: 6px;
+  height: 6px;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: translateY(-2px) rotate(45deg);
+}
+#ls-activities-pages .nav-dropdown[open] .nav-chevron {
+  transform: translateY(2px) rotate(225deg);
+}
+#ls-activities-pages .nav-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 9px);
+  left: -12px;
+  z-index: 50;
+  min-width: 196px;
+  padding: 6px;
+  background: #fff;
+  border: 1px solid #dce2ed;
+  border-radius: 8px;
+  box-shadow: 0 10px 28px rgba(11, 36, 103, 0.18);
+}
+#ls-activities-pages .top .main-navigation .nav-dropdown-panel button {
+  display: block;
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  text-align: left;
+  border: 0;
+  border-radius: 4px;
+  background: #fff;
+  color: #1f1f1f;
+  font-size: 13px;
+  white-space: nowrap;
+}
+#ls-activities-pages .top .main-navigation .nav-dropdown-panel button:hover,
+#ls-activities-pages
+  .top
+  .main-navigation
+  .nav-dropdown-panel
+  button:focus-visible {
+  background: #eef2fa;
+  color: #0b2467;
+  outline-color: #0b2467;
+  outline-offset: -2px;
+}
+@media (max-width: 800px) {
+  #ls-activities-pages .top .main-navigation {
+    gap: 16px;
+  }
+}
+@media (max-width: 640px) {
+  #ls-activities-pages .top .main-navigation {
+    gap: 12px;
+  }
+  #ls-activities-pages .top .main-navigation > button,
+  #ls-activities-pages .top .main-navigation .nav-link {
+    min-height: 44px;
+    font-size: 12px;
+    padding: 8px 0;
+    white-space: normal;
+  }
+  #ls-activities-pages .nav-dropdown-panel {
+    left: 0;
+    top: calc(100% + 4px);
+  }
+}

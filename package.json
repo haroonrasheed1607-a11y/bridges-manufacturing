@@ -1,0 +1,19 @@
+{
+  "name": "bridges-manufacturing",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "node scripts/build-version.mjs && vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test scripts/*.test.mjs src/features/work-orders/*.test.js"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "vite": "8.3.5"
+  },
+  "type": "module"
+}

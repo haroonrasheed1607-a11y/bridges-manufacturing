@@ -1,0 +1,8 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {seedOrders} from '../../data/demoData.js';
+import {gate,packsFor,validateWork,auditError} from './workflow.js';
+test('packs preserve the full quantity including partial final packs',()=>{const p=packsFor({id:'SJ-A',quantity:53,packType:'Packet'},25);assert.deepEqual(p.map(x=>x.pieces),[25,25,3]);assert.equal(new Set(p.map(x=>x.id)).size,3);});
+test('unbalanced sub-jobs and incomplete production cannot advance',()=>{const o=seedOrders()[0],w=o.workOrders[0];assert.match(validateWork({...w,jobs:[{...w.jobs[0],quantity:199}]}),/add up/);assert.match(gate(o),/Complete every/);w.jobs[0].completed=200;assert.equal(gate(o),'');});
+test('100 percent checks cannot use a partial sample and failures hold the order',()=>{const o=seedOrders()[1],w=o.workOrders[0],a={mode:'100% Check',inspected:20,failed:0,inspector:'Test'};assert.match(auditError(a,w),/every piece/);w.audits.push({...a,mode:'Random Audit',failed:1});assert.match(gate(o),/passing/);w.audits.push({...a,mode:'Random Audit'});assert.equal(gate(o),'');assert.equal(w.audits.length,2);});
+test('packing, warehouse and signature each have independent gates',()=>{const o=seedOrders()[2];o.stage=3;o.workOrders[0].packing.push({correct:false});assert.match(gate(o),/correct packing/);o.workOrders[0].packing.push({correct:true});assert.equal(gate(o),'');o.stage=4;o.warehouse={sentAt:'test'};assert.match(gate(o),/receipt/);o.warehouse.receivedAt='test';assert.equal(gate(o),'');o.stage=5;o.delivery={approved:true};assert.match(gate(o),/dispatch/);o.delivery.dispatchedAt='test';assert.match(gate(o),/sign/);o.delivery.signature='data:image/png;base64,test';assert.equal(gate(o),'');});

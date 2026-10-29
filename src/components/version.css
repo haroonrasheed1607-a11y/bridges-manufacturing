@@ -1,0 +1,37 @@
+#ls-activities-pages button.version-link {
+  display: inline;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #333;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+#ls-activities-pages button.version-link:hover {
+  color: #0b2467;
+}
+#ls-activities-pages button.version-link:focus-visible {
+  outline: 2px solid #0b2467;
+  outline-offset: 4px;
+}
+#ls-activities-pages dialog.release-notes {
+  width: min(520px, calc(100% - 32px));
+  text-align: left;
+}
+#ls-activities-pages .release-notes p {
+  line-height: 1.7;
+  margin: 18px 0 24px;
+}
+/* Keep the version link clear of the hosting badge. */
+#ls-activities-pages .app-footer {
+  justify-content: flex-start;
+  gap: 16px;
+}
+@media (max-width: 480px) {
+  #ls-activities-pages .app-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+}
