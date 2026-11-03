@@ -146,3 +146,17 @@ only the current staff session. `list` returns paginated account metadata;
 Existing passwords and hashes are never returned or stored in application data.
 Passwords must contain at least 8 characters and fit in 72 UTF-8 bytes. Existing
 sessions are not revoked by this screen. No roles or approvals can be changed here.
+
+## Shared Shop Floor buttons
+
+The public `shop-floor-login` Edge Function deliberately provides password-free
+access to the two fixed shop-floor accounts. Anyone with the app link can use
+scanner or boxer access. Admin and other staff retain password sign-in. The
+handler accepts only a mode, checks the fixed account has its expected active
+restricted profile, and creates a session through Auth; it never accepts an
+arbitrary user, email or role. Disabling either staff profile disables its button
+server-side and denies existing sessions' RPC access. Shared actions are recorded
+under boxscan or boxsetup; they do not identify the individual holding the phone.
+Deploy this function with gateway JWT verification off because it is a login
+endpoint, while leaving admin-users JWT verification on. Server credentials never
+enter frontend files. Existing box creation/completion permissions still apply.
