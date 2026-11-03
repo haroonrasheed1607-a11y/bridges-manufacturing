@@ -134,3 +134,15 @@ a local browser engine could not be downloaded in this environment.
 Apply `database/shop-floor-roles.sql` after the existing schema and hardening scripts. The `box_setup` role creates, assigns and prints boxes; `box_scanner` records completed pieces and completes boxes. Both see only production orders, without customer contact or delivery records, and cannot edit orders or staff. Existing admin, manager, coach and legacy station access is preserved. Login aliases `boxsetup` and `boxscan` resolve to separate Supabase identities at `@bridges-manufacturing.local`; provision credentials separately and never commit passwords.
 
 Cloudflare Pages deployment settings and verification: see [docs/CLOUDFLARE_PAGES.md](docs/CLOUDFLARE_PAGES.md).
+
+## Admin users
+
+Deploy `supabase/functions/admin-users/index.ts` as Edge Function `admin-users`
+with JWT verification enabled. The handler also validates the bearer token through
+Auth and checks the caller's active admin profile on every request. It uses the
+server-provided service role key only inside the Edge Function. The browser sends
+only the current staff session. `list` returns paginated account metadata;
+`reset` sets a new password through Auth's admin API and returns only success.
+Existing passwords and hashes are never returned or stored in application data.
+Passwords must contain at least 8 characters and fit in 72 UTF-8 bytes. Existing
+sessions are not revoked by this screen. No roles or approvals can be changed here.

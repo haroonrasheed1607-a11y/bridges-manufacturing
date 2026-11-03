@@ -1,6 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Fix the blank screen after login when a hosting build omits the application version constant."
+    "Add an administrator-only Users screen to view accounts and reset passwords securely.",
+    "Existing passwords remain protected and cannot be displayed."
   ]
 }
