@@ -1,7 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Add an administrator-only Users screen to view accounts and reset passwords securely.",
-    "Existing passwords remain protected and cannot be displayed."
+    "Move administrator user management into the Directory navigation menu."
   ]
 }

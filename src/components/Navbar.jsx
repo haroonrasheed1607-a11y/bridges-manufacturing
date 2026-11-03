@@ -80,7 +80,7 @@ function Navbar() {
         button?.focus();
       }
     }
-  }, ...(manager ? [...(profile?.role==='admin'?[link('Users','users')]:[]), link('Dashboard', 'dashboard'), dropdown('orders', 'Orders', [['All orders', 'orders', 'View and manage customer orders'], ['New order', 'new', 'Create a customer request']]), link('Job Board', 'board'), link('Production Line', 'productionline'), dropdown('directory', 'Directory', [['Customers', 'customers', 'Customer records and orders'], ['Individuals', 'individuals', 'Work bookings and future availability']])] : isShopFloorRole(profile?.role) ? [link(profile.role==='box_setup'?'Box Setup':'Scan & Complete','productionline')] : [link('Production Line','productionline'),link('Job Board','board')]) );
+  }, ...(manager ? [link('Dashboard', 'dashboard'), dropdown('orders', 'Orders', [['All orders', 'orders', 'View and manage customer orders'], ['New order', 'new', 'Create a customer request']]), link('Job Board', 'board'), link('Production Line', 'productionline'), dropdown('directory', 'Directory', [['Customers', 'customers', 'Customer records and orders'], ['Individuals', 'individuals', 'Work bookings and future availability'], ...(profile?.role==='admin' ? [['Users', 'users', 'Staff accounts and password management']] : [])])] : isShopFloorRole(profile?.role) ? [link(profile.role==='box_setup'?'Box Setup':'Scan & Complete','productionline')] : [link('Production Line','productionline'),link('Job Board','board')]) );
 }
 
 export { Navbar };
