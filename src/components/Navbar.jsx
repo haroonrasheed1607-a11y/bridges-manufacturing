@@ -1,3 +1,4 @@
+import { isShopFloorRole } from '../features/auth/permissions.js';
 // components/layout/Navigation.js
 import { useManufacturing } from "../state/ManufacturingContext.jsx";
 import { React } from "../vendor/react-runtime.js";
@@ -5,7 +6,7 @@ import { React } from "../vendor/react-runtime.js";
 function Navbar() {
   const {
       setView,
-      view, manager
+      view, manager, profile
     } = useManufacturing(),
     h = React.createElement,
     [expanded, setExpanded] = React.useState(''),
@@ -79,7 +80,7 @@ function Navbar() {
         button?.focus();
       }
     }
-  }, ...(manager ? [link('Dashboard', 'dashboard'), dropdown('orders', 'Orders', [['All orders', 'orders', 'View and manage customer orders'], ['New order', 'new', 'Create a customer request']]), link('Job Board', 'board'), link('Production Line', 'productionline'), dropdown('directory', 'Directory', [['Customers', 'customers', 'Customer records and orders'], ['Individuals', 'individuals', 'Work bookings and future availability']])] : [link('Production Line','productionline'),link('Job Board','board')]) );
+  }, ...(manager ? [link('Dashboard', 'dashboard'), dropdown('orders', 'Orders', [['All orders', 'orders', 'View and manage customer orders'], ['New order', 'new', 'Create a customer request']]), link('Job Board', 'board'), link('Production Line', 'productionline'), dropdown('directory', 'Directory', [['Customers', 'customers', 'Customer records and orders'], ['Individuals', 'individuals', 'Work bookings and future availability']])] : isShopFloorRole(profile?.role) ? [link(profile.role==='box_setup'?'Box Setup':'Scan & Complete','productionline')] : [link('Production Line','productionline'),link('Job Board','board')]) );
 }
 
 export { Navbar };

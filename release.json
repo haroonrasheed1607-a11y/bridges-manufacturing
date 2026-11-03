@@ -1,7 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Sign in using an administrator username or staff email with the existing Supabase account permissions.",
-    "Keep shared orders, production scans, private uploads and delivery records connected across devices."
+    "Separate shop-floor logins for box setup and scanning open directly to their assigned tasks.",
+    "Database permissions restrict box creation and completion to the appropriate staff role."
   ]
 }

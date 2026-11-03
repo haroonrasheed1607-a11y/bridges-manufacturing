@@ -129,3 +129,6 @@ The configured administrator's real password sign-in, active staff role and
 read-only shared workspace retrieval have been verified over HTTP. The test
 session was signed out afterward. Full browser/printing checks remain pending;
 a local browser engine could not be downloaded in this environment.
+
+## Shop-floor access
+Apply `database/shop-floor-roles.sql` after the existing schema and hardening scripts. The `box_setup` role creates, assigns and prints boxes; `box_scanner` records completed pieces and completes boxes. Both see only production orders, without customer contact or delivery records, and cannot edit orders or staff. Existing admin, manager, coach and legacy station access is preserved. Login aliases `boxsetup` and `boxscan` resolve to separate Supabase identities at `@bridges-manufacturing.local`; provision credentials separately and never commit passwords.

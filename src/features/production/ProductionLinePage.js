@@ -1,3 +1,4 @@
+import { productionTabs } from '../auth/permissions.js';
 // features/production/ProductionLinePage.js
 import { FormField } from "../../components/common/FormField.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
@@ -7,15 +8,17 @@ import { ManufacturingScanComplete } from "./ScanComplete.js";
 
 function ManufacturingProductionLine() {
   const {
-      orders,
+      orders, profile,
       change
     } = useManufacturing(),
     h = React.createElement,
-    [tab, setTab] = React.useState('scan'),
+    [selectedTab, setTab] = React.useState(() => productionTabs(profile?.role)[0]?.[0] || 'scan'),
     [orderId, setOrderId] = React.useState('');
   const activeOrders = orders.filter(order => order.stage === 1 && order.workOrders.length),
     order = activeOrders.find(item => item.id === orderId) || activeOrders[0];
-  const tabs = [['scan', 'Scan & Complete Work'], ['print', 'Generate Box Printouts']];
+  const tabs = productionTabs(profile?.role);
+  if (!tabs.length) return h('p', {role:'alert'}, 'Production access required.');
+  const tab = tabs.some(([value]) => value === selectedTab) ? selectedTab : tabs[0][0];
   function selectTab(value) {
     setTab(value);
   }
@@ -25,9 +28,9 @@ function ManufacturingProductionLine() {
     className: 'page-heading'
   }, h('div', null, h('div', {
     className: 'eyebrow'
-  }, 'PRODUCTION LINE'), h('h2', null, 'Production line'), h('p', {
+  }, 'PRODUCTION LINE'), h('h2', null, profile?.role === 'box_setup' ? 'Box setup' : profile?.role === 'box_scanner' ? 'Scan & complete work' : 'Production line'), h('p', {
     className: 'quiet'
-  }, 'Complete finished work or prepare and print box labels.'))), h('div', {
+  }, profile?.role === 'box_setup' ? 'Assign individuals and print labels for new boxes.' : profile?.role === 'box_scanner' ? 'Scan a box, confirm the completed pieces and mark it complete.' : 'Complete finished work or prepare and print box labels.'))), h('div', {
     className: 'production-mode-tabs',
     role: 'tablist',
     'aria-label': 'Production line tasks'
@@ -45,7 +48,7 @@ function ManufacturingProductionLine() {
       const key = event.key;
       if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(key)) return;
       event.preventDefault();
-      const next = key === 'Home' ? 0 : key === 'End' ? 1 : key === 'ArrowRight' ? (index + 1) % 2 : (index + 1) % 2;
+      const next = key === 'Home' ? 0 : key === 'End' ? tabs.length - 1 : key === 'ArrowRight' ? (index + 1) % tabs.length : (index - 1 + tabs.length) % tabs.length;
       selectTab(tabs[next][0]);
       event.currentTarget.parentElement.querySelector('#production-tab-' + tabs[next][0])?.focus();
     }

@@ -1,6 +1,6 @@
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../config/supabase.js';
 
-function normalizeLogin(value){const login=String(value||'').trim();if(login.toLowerCase()==='admin')return 'admin@bridges-manufacturing.local';if(!login.includes('@'))throw new Error('Enter admin or your staff email address.');return login;}
+function normalizeLogin(value){const login=String(value||'').trim();if(['admin','boxsetup','boxscan'].includes(login.toLowerCase()))return login.toLowerCase()+'@bridges-manufacturing.local';if(!login.includes('@'))throw new Error('Enter your staff username or staff email address.');return login;}
 
 function createApiClient({ url=SUPABASE_URL, key=SUPABASE_PUBLISHABLE_KEY, transport=(...args)=>fetch(...args), storage }={}) {
   if(storage===undefined){try{storage=globalThis.localStorage;}catch{storage=null;}}

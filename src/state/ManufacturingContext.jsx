@@ -1,3 +1,4 @@
+import { isShopFloorRole } from '../features/auth/permissions.js';
 import { React } from '../vendor/react-runtime.js';
 import { manufacturingApi } from '../api/supabaseClient.js';
 import { ManufacturingSession } from '../features/auth/AuthGate.js';
@@ -9,7 +10,7 @@ import { createId } from '../utils/ids.js';
 
 const ManufacturingContext=React.createContext(null);
 function ManufacturingProvider({children}){
- const h=React.createElement,profile=React.useContext(ManufacturingSession),[data,setData]=React.useState({orders:[],customers:[],workforce:{people:[],bookings:[]}}),[loading,setLoading]=React.useState(true),[pending,setPending]=React.useState(0),[storageError,setStorageError]=React.useState(''),[notice,setNotice]=React.useState(''),[view,setView]=React.useState(profile?.role==='station'?'productionline':'dashboard'),[selectedOrderId,setSelectedOrderId]=React.useState(null);
+ const h=React.createElement,profile=React.useContext(ManufacturingSession),[data,setData]=React.useState({orders:[],customers:[],workforce:{people:[],bookings:[]}}),[loading,setLoading]=React.useState(true),[pending,setPending]=React.useState(0),[storageError,setStorageError]=React.useState(''),[notice,setNotice]=React.useState(''),[view,setView]=React.useState((profile?.role==='station'||isShopFloorRole(profile?.role))?'productionline':'dashboard'),[selectedOrderId,setSelectedOrderId]=React.useState(null);
  const current=React.useRef(data),queue=React.useRef(Promise.resolve()),busy=React.useRef(0),generation=React.useRef(0),mounted=React.useRef(true);
  const manager=['admin','manager'].includes(profile?.role);
  async function accept(result){const hydrated=await manufacturingApi.resolveFiles(result);current.current=hydrated;if(mounted.current)setData(hydrated);return hydrated;}
