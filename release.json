@@ -1,7 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Separate shop-floor logins for box setup and scanning open directly to their assigned tasks.",
-    "Database permissions restrict box creation and completion to the appropriate staff role."
+    "Support Cloudflare Pages hosting with security headers and automatic build versioning.",
+    "Keep existing Supabase accounts and separate box setup and scanning access."
   ]
 }

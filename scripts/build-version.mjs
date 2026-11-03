@@ -1,5 +1,6 @@
 import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
+import os from "node:os";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 export function versionUnits(version) {
@@ -55,17 +56,22 @@ export async function build({ root, env = process.env } = {}) {
   root ??= path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
   const html = await readFile(path.join(root, "index.html"), "utf8");
   const sourceVersion = htmlVersion(html);
-  // Build-time state is restored by the local Netlify cache plugin.
+  // Netlify restores its plugin cache; Cloudflare Pages restores npm's cache.
   // Never call the public site: deployment access controls can return HTTP 401.
-  const context = env.CONTEXT || "production";
+  const cloudflare = env.CF_PAGES === "1";
+  const branch = env.CF_PAGES_BRANCH || env.BRANCH || "preview";
+  const context = cloudflare
+    ? branch === (env.CF_PRODUCTION_BRANCH || "main") ? "production" : "branch-deploy"
+    : env.CONTEXT || "production";
   const scope =
     context === "production"
       ? "production"
-      : `${context}-${env.BRANCH || "preview"}`;
+      : `${context}-${branch}`;
+  const stateDirectory = cloudflare
+    ? path.join(env.npm_config_cache || env.NPM_CONFIG_CACHE || path.join(os.homedir(), ".npm"), "bridges-manufacturing", "version-state")
+    : path.join(root, ".netlify", "version-state");
   const statePath = path.join(
-    root,
-    ".netlify",
-    "version-state",
+    stateDirectory,
     `${encodeURIComponent(scope)}.json`,
   );
   let previous = null;
@@ -75,10 +81,14 @@ export async function build({ root, env = process.env } = {}) {
   } catch (error) {
     if (error.code !== "ENOENT") throw error;
   }
-  const baseline =
+  let baseline =
     previous && versionUnits(previous) > versionUnits(sourceVersion)
       ? previous
       : sourceVersion;
+  // Seed a new host from the last published version without changing source labels.
+  if (cloudflare && env.BRIDGES_VERSION_SEED) {
+    if (versionUnits(env.BRIDGES_VERSION_SEED) > versionUnits(baseline)) baseline = env.BRIDGES_VERSION_SEED;
+  }
   let minimumVersion = sourceVersion;
   try {
     const config = JSON.parse(
@@ -124,7 +134,7 @@ export async function build({ root, env = process.env } = {}) {
   const release = {
     version,
     previousVersion: baseline,
-    commit: env.COMMIT_REF || null,
+    commit: env.COMMIT_REF || env.CF_PAGES_COMMIT_SHA || null,
     builtAt: new Date().toISOString(),
   };
   await writeFile(

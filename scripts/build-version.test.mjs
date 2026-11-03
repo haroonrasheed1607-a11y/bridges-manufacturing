@@ -66,3 +66,26 @@ test('release notes cannot exceed three sentences', () => fixture(async root => 
   await writeFile(path.join(root, 'release.json'), JSON.stringify({ minimumVersion: '1.0', notes: ['First sentence. Second sentence. Third sentence. Fourth sentence.'] }));
   await assert.rejects(build({ root, env: {} }), /three sentences/);
 }));
+
+test('Cloudflare restores its npm-cached counter across clean builds and isolates previews', () => fixture(async root => {
+  const cache = path.join(root, 'cloudflare-npm-cache');
+  const env = {CF_PAGES:'1', CF_PAGES_BRANCH:'main', CF_PAGES_COMMIT_SHA:'cloudflare-commit', npm_config_cache:cache, BRIDGES_VERSION_SEED:'1.2'};
+  const before = globalThis.fetch;
+  globalThis.fetch = () => { throw Error('No public website fetch during builds'); };
+  try {
+    assert.equal((await build({root, env})).version, '1.3');
+    await rm(path.join(root,'.netlify'), {recursive:true,force:true});
+    await rm(path.join(root,'dist'), {recursive:true,force:true});
+    assert.equal((await build({root, env})).version, '1.4');
+    const release = JSON.parse(await readFile(path.join(root,'dist/version.json'),'utf8'));
+    assert.equal(release.commit, 'cloudflare-commit');
+    assert.equal(release.previousVersion, '1.3');
+    assert.equal((await build({root, env:{...env,CF_PAGES_BRANCH:'feature',BRIDGES_VERSION_SEED:''}})).version, '0.2');
+    assert.equal((await build({root, env})).version, '1.5');
+    assert.equal(await readFile(path.join(root,'index.html'),'utf8'), page);
+  } finally { globalThis.fetch = before; }
+}));
+
+test('Cloudflare rejects an invalid migration seed', () => fixture(async root => {
+  await assert.rejects(build({root,env:{CF_PAGES:'1',CF_PAGES_BRANCH:'main',npm_config_cache:path.join(root,'cache'),BRIDGES_VERSION_SEED:'invalid'}}), /Invalid version/);
+}));
