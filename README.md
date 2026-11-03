@@ -31,8 +31,8 @@ plugin and automatic build versioning remain enabled. Source baseline and
 - `docs/DATABASE_DESIGN.md`: target database design and current implementation limits.
 
 Core data is shared through Supabase; there is no automatic local-data fallback.
-The frontend refreshes visible data every 15 seconds and on window focus. The
-first approved staff account is required before signing in. Only a public
+The frontend refreshes visible data every 15 seconds and on window focus. The initial administrator is provisioned; sign in using `admin` or an approved
+staff email. Only a public
 publishable API key is shipped to the browser.
 
 Some existing JSX entry paths are retained as compatibility exports; all use the
@@ -45,5 +45,5 @@ Client/session/state tests and workflow tests run with `npm test`; versioning
 regressions remain in the same suite. `npm run build` generates the deployable Vite
 site. Database integration tests have run in a rollback transaction against the
 separate Manufacturing project. Security checks found no Supabase security-advisor
-issues. Live authenticated HTTP/browser testing still needs an approved staff
-account; no temporary privileged account was created.
+issues. Real administrator sign-in, active-role lookup and workspace reads have been
+verified over HTTP; full browser/printing checks remain pending.

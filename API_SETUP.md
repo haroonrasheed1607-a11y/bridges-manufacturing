@@ -7,7 +7,7 @@ Project URL: https://xftcsuqexzdpgoqeneem.supabase.co
 
 The database now has 15 application tables with row-level security, protected
 write functions, private picture/signature storage, and sample data across all
-ten board stages. No production staff login has been provisioned yet.
+ten board stages. The initial administrator account is provisioned. The username `admin` is mapped to an internal Supabase email identity; its password is not included in source code.
 
 The React provider now loads from Supabase instead of browser-only business data.
 It refreshes every 15 seconds while visible and when the window regains focus.
@@ -34,15 +34,15 @@ For local development, run `npm run build` followed by `npm start`.
 The standalone preview also connects to the shared backend and requires staff
 sign-in. It no longer silently falls back to local data on a network error.
 
-## First administrator
+## Administrator and staff accounts
 
-1. In this separate project's Supabase Authentication → Users, create the first
-   staff user with the intended administrator email and a password chosen by them.
-   Complete email confirmation or use the dashboard's confirmed-user creation.
-2. In `database/bootstrap-admin.sql`, replace the email placeholder with that
-   exact account email. Run it as the project administrator in the SQL editor.
-3. Sign in on the Netlify site. An existing authentication account without an
-   active staff profile cannot access business records.
+The first administrator account has been created and approved at the user's request.
+Use `admin` in the **Username or email** field. The authentication password is stored
+only as a hash in Supabase; it is not embedded in the frontend or this repository.
+
+For additional staff, create the user in this project's Supabase Authentication
+section and grant the appropriate protected `staff_profiles` role. The included
+bootstrap script is for explicit administrator setup, not a public signup path.
 
 Do not expose SQL-editor/database credentials to the frontend. Do not assign
 roles through user-editable authentication metadata. Add other staff profiles
@@ -125,8 +125,7 @@ not deleted. Export and review it separately before a controlled import.
   references, stage calculations, demo quantities, scan rules and challan quantities.
 - Source syntax and ES-module imports verified; standalone and Netlify builds generated.
 
-Live authenticated browser end-to-end testing is pending a real approved staff
-account. Automatic approval review blocked creating a temporary privileged account
-for an HTTP test. No temporary administrator was created. A local browser engine
-could not be downloaded in this environment, so no physical/browser visual check
-is claimed.
+The configured administrator's real password sign-in, active staff role and
+read-only shared workspace retrieval have been verified over HTTP. The test
+session was signed out afterward. Full browser/printing checks remain pending;
+a local browser engine could not be downloaded in this environment.

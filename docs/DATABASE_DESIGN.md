@@ -1,6 +1,6 @@
 # Bridges Manufacturing — Database Design
 
-Status: phase-one APIs and core database deployed in project xftcsuqexzdpgoqeneem; first staff administrator and Netlify deployment pending.
+Status: phase-one APIs and core database deployed in project xftcsuqexzdpgoqeneem; administrator provisioned; Netlify deployment status not verified.
 
 Implementation note: the full layout below remains the target design. The current integration uses 15 application tables and compatibility JSON for work-plan metadata, warehouse and whole-order delivery documents. Internal display IDs remain text. Partial-delivery transactions, recurrence generation, calendar-exception editing, immutable challan revisions and handwritten acceptance verification are not yet implemented.
 Confirmed defaults: November 2, 2026.
@@ -180,4 +180,4 @@ Index foreign keys, box code lookups, current stage/deadline searches, active co
 
 ## Current setup status
 
-The separate Bridges Manufacturing project is active in US East 2 under haroonrasheed1607 Org. Core read/write APIs, protected production operations and private file storage are deployed. Sample data spans all ten stages. The existing Learning Studio project remains separate. The first approved staff account and actual Netlify deployment remain to be configured. See API_SETUP.md in the source package for exact contracts and tested limits.
+The separate Bridges Manufacturing project is active in US East 2 under haroonrasheed1607 Org. Core read/write APIs, protected production operations and private file storage are deployed. Sample data spans all ten stages. The existing Learning Studio project remains separate. The initial administrator is provisioned and password sign-in/workspace reads have been verified. Netlify deployment status has not been verified. See API_SETUP.md in the source package for exact contracts and tested limits.

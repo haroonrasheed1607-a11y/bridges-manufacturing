@@ -12,4 +12,4 @@
 
 - Update `release.json` release notes for each feature release, using at most three sentences. Leave `minimumVersion` unchanged for routine deploys.
 
-- Keep Manufacturing independent from Learning Studio. Its separate Supabase project is `xftcsuqexzdpgoqeneem`; never point it at the Learning Studio project. Staff authentication, private storage and shared database APIs are provisioned; the first administrator account still requires setup.
+- Keep Manufacturing independent from Learning Studio. Its separate Supabase project is `xftcsuqexzdpgoqeneem`; never point it at the Learning Studio project. Staff authentication, private storage and shared database APIs are provisioned; the first administrator account is provisioned. Never embed account passwords in source code.

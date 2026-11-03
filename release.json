@@ -1,8 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Use shared Supabase records with staff sign-in, protected production APIs and private picture uploads.",
-    "Manage customers, work plans, coach assignments, individual capacity and compact job-board stages.",
-    "Scan completed boxes, generate QR labels and print delivery challans."
+    "Sign in using an administrator username or staff email with the existing Supabase account permissions.",
+    "Keep shared orders, production scans, private uploads and delivery records connected across devices."
   ]
 }

@@ -24,6 +24,9 @@ function nodes(node){if(!node||typeof node!=='object')return[];const children=no
 test('sign-in gate hides workspace until the server approves staff access',async()=>{
  const app=await harness();let tree=app.render(app.auth.AuthGate,{children:'WORKSPACE'});await app.runEffects();tree=app.render(app.auth.AuthGate,{children:'WORKSPACE'});
  assert(nodes(tree).some(n=>n.type==='form'));assert(!nodes(tree).some(n=>n.props.children==='WORKSPACE'));
+ nodes(tree).find(n=>n.type==='input'&&n.props.autoComplete==='username').props.onChange({target:{value:'admin'}});
+ nodes(tree).find(n=>n.type==='input'&&n.props.type==='password').props.onChange({target:{value:'test-secret'}});
+ tree=app.render(app.auth.AuthGate,{children:'WORKSPACE'});
  await nodes(tree).find(n=>n.type==='form').props.onSubmit({preventDefault(){}});tree=app.render(app.auth.AuthGate,{children:'WORKSPACE'});assert(nodes(tree).some(n=>n.type===app.auth.ManufacturingSession.Provider));assert(app.requests.some(r=>r.url.endsWith('app_my_profile')));
 });
 

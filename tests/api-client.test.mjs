@@ -30,3 +30,10 @@ test('restricted browser storage still allows a memory-only sign-in session',asy
  Object.defineProperty(globalThis,'localStorage',{configurable:true,get(){throw new Error('Storage blocked');}});
  try{const client=createApiClient({url:'https://example.invalid',key:'key',transport:async()=>response({access_token:'token',expires_in:3600})});await client.login('staff@example.invalid','password');assert.equal(client.hasSession(),true);}finally{if(descriptor)Object.defineProperty(globalThis,'localStorage',descriptor);else delete globalThis.localStorage;}
 });
+
+
+test('administrator username resolves to its auth identity without embedding a password',async()=>{
+ let payload;const client=createApiClient({url:'https://example.invalid',key:'key',storage:memory(),transport:async(url,options)=>{payload=JSON.parse(options.body);return response({access_token:'test-token',expires_in:3600});}});
+ await client.login(' ADMIN ','test-secret');assert.equal(payload.email,'admin@bridges-manufacturing.local');assert.equal(payload.password,'test-secret');
+ await assert.rejects(client.login('unknown-user','test-secret'),/staff email/);
+});
