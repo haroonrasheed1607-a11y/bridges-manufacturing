@@ -12,4 +12,4 @@
 
 - Update `release.json` release notes for each feature release, using at most three sentences. Leave `minimumVersion` unchanged for routine deploys.
 
-- Keep the screen draft disconnected from Learning Studio and all production backends. Independent authentication, database and storage are pending provisioning.
+- Keep Manufacturing independent from Learning Studio. Its separate Supabase project is `xftcsuqexzdpgoqeneem`; never point it at the Learning Studio project. Staff authentication, private storage and shared database APIs are provisioned; the first administrator account still requires setup.

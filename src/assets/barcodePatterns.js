@@ -1,0 +1,6 @@
+// assets/barcodePatterns.js
+
+
+var manufacturingBarcodePatterns = ["BaBbBb", "BbBaBb", "BbBbBa", "AbAbBc", "AbAcBb", "AcAbBb", "AbBbAc", "AbBcAb", "AcBbAb", "BbAbAc", "BbAcAb", "BcAbAb", "AaBbCb", "AbBaCb", "AbBbCa", "AaCbBb", "AbCaBb", "AbCbBa", "BbCbAa", "BbAaCb", "BbAbCa", "BaCbAb", "BbCaAb", "CaBaCa", "CaAbBb", "CbAaBb", "CbAbBa", "CaBbAb", "CbBaAb", "CbBbAa", "BaBaBc", "BaBcBa", "BcBaBa", "AaAcBc", "AcAaBc", "AcAcBa", "AaBcAc", "AcBaAc", "AcBcAa", "BaAcAc", "BcAaAc", "BcAcAa", "AaBaCc", "AaBcCa", "AcBaCa", "AaCaBc", "AaCcBa", "AcCaBa", "CaCaBa", "BaAcCa", "BcAaCa", "BaCaAc", "BaCcAa", "BaCaCa", "CaAaBc", "CaAcBa", "CcAaBa", "CaBaAc", "CaBcAa", "CcBaAa", "CaDaAa", "BbAdAa", "DcAaAa", "AaAbBd", "AaAdBb", "AbAaBd", "AbAdBa", "AdAaBb", "AdAbBa", "AaBbAd", "AaBdAb", "AbBaAd", "AbBdAa", "AdBaAb", "AdBbAa", "BdAbAa", "BbAaAd", "DaCaAa", "BdAaAb", "AcDaAa", "AaAbDb", "AbAaDb", "AbAbDa", "AaDbAb", "AbDaAb", "AbDbAa", "DaAbAb", "DbAaAb", "DbAbAa", "BaBaDa", "BaDaBa", "DaBaBa", "AaAaDc", "AaAcDa", "AcAaDa", "AaDaAc", "AaDcAa", "DaAaAc", "DaAcAa", "AaCaDa", "AaDaCa", "CaAaDa", "DaAaCa", "BaAdAb", "BaAbAd", "BaAbCb", "BcCaAaB"];
+
+export { manufacturingBarcodePatterns };

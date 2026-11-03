@@ -1,14 +1,10 @@
 # Bridges Manufacturing
 
-First screen prototype for Bridges' **Perform a Job** workflow:
+Independent manufacturing workspace for Bridges, with a Netlify frontend and a
+separate Supabase database (`xftcsuqexzdpgoqeneem`). See [API_SETUP.md](API_SETUP.md)
+for API contracts, access rules, administrator setup and remaining schema work.
 
-New Order → Work Order → Quality Check → Packing → Warehouse → Delivery → Order Completion.
-
-Start with `docs/WORKFLOWS.md` for agreed requirements, proposed draft rules and outstanding decisions.
-
-## Run
-
-Node 22.12+ and npm are required.
+## Development
 
 ```sh
 npm ci
@@ -17,27 +13,37 @@ npm test
 npm run build
 ```
 
-The prototype uses fictional records and browser-local persistence under `bridges-manufacturing-screen-draft-v1`. Export data from the header before clearing browser storage. No shared backend or authentication is implemented in this screen draft. Customer signatures are local demonstration records.
+Netlify uses `npm run build` and publishes `dist`. The existing version-cache
+plugin and automatic build versioning remain enabled. Source baseline and
+`release.json` minimumVersion are unchanged. Do not commit generated `dist`,
+`.netlify`, node_modules or credentials.
 
-## Architecture and provenance
+## Source layout
 
-Adapted from `haroonrasheed1607-a11y/bridges-learning-studio` at commit `0c76a99d7961891b6817b6ff15fb261aa021c2f7`. Preserves React/Vite, `App.jsx` screen selection, shared Navbar/MainLayout/Footer components, feature folders, central provider, Bridges logo, navy header, responsive layout and automatic version pipeline. Education-specific features and all original backend configuration, clients, migrations and credentials were removed. The checkout has no Learning Studio push remote.
+- `src/App.jsx`: screen selection and role-aware routing.
+- `src/components/MainLayout.jsx`, `Navbar.jsx`, `Footer.jsx`: shared layout.
+- `src/state/ManufacturingContext.jsx`: one shared provider for API data and writes.
+- `src/features/`: orders, customers, work plans, production, job board, people,
+  quality, packing, warehouse and delivery screens.
+- `src/api/`: session handling, authenticated RPC requests and private file URLs.
+- `src/domain/`: workflow, quantity, timing and capacity calculations.
+- `database/`: deployed schema/API definitions, demo seed and rollback tests.
+- `docs/DATABASE_DESIGN.md`: target database design and current implementation limits.
 
-| Folder | Responsibility |
-| --- | --- |
-| `src/components` | Shared layout, navigation and reusable UI |
-| `src/features/orders` | Register, creation, stage workspace and workflow map |
-| `src/features/work-orders` | Work definition, sub-jobs, pack calculation and lifecycle rules |
-| `src/features/quality` | Random Audit and 100% Check |
-| `src/features/packing` | Correct/incorrect packing checks |
-| `src/features/warehouse` | Transfer, receipt and pack stock |
-| `src/features/delivery` | Authorization, dispatch and customer signature |
-| `src/state` | Shared manufacturing state and browser persistence |
+Core data is shared through Supabase; there is no automatic local-data fallback.
+The frontend refreshes visible data every 15 seconds and on window focus. The
+first approved staff account is required before signing in. Only a public
+publishable API key is shipped to the browser.
 
-## Repository and future production infrastructure
+Some existing JSX entry paths are retained as compatibility exports; all use the
+same current feature implementations and shared context. Legacy demo and pure
+workflow fixtures remain for tests and controlled migration of the prototype.
 
-Source repository: https://github.com/haroonrasheed1607-a11y/bridges-manufacturing
+## Verification and limits
 
-Netlify linking is deferred. The included `netlify.toml` runs `npm run build` and publishes `dist`, using Node 22. It has no site identity and does not create a deployment. A new, independent Supabase project, production authentication and cloud storage are still pending. Never connect to Learning Studio or restore its database configuration.
-
-Before production use, implement independent authentication, role permissions, database/storage policies, server-enforced stage rules, durable records, signature evidence and stock transactions. Agree on rework, partial deliveries and physical pack identity across successive work orders.
+Client/session/state tests and workflow tests run with `npm test`; versioning
+regressions remain in the same suite. `npm run build` generates the deployable Vite
+site. Database integration tests have run in a rollback transaction against the
+separate Manufacturing project. Security checks found no Supabase security-advisor
+issues. Live authenticated HTTP/browser testing still needs an approved staff
+account; no temporary privileged account was created.

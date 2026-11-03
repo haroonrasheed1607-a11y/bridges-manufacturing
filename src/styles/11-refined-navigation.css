@@ -1,0 +1,1 @@
+@media(max-width:760px){.refined-navigation{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px!important}.refined-navigation>a,.refined-navigation .nav-menu-trigger{font-size:clamp(11px,3.2vw,13px)!important;gap:4px}.nav-dropdown{width:100%}.nav-menu-trigger{width:auto}.nav-dropdown:last-child .nav-menu-panel{right:0;left:auto}}

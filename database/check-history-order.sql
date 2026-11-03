@@ -1,0 +1,12 @@
+create or replace function manufacturing_private.read_order(p_id text) returns jsonb language plpgsql stable security definer set search_path='' as $$declare result jsonb;r text:=manufacturing_private.actor_role();begin
+ if not manufacturing_private.can_read_order(p_id) then raise exception 'Order access denied' using errcode='42501';end if;
+ select o.data||jsonb_build_object('id',o.id,'stage',o.stage,'_revision',o.revision,'customer',case when r='station' then 'Production' else c.name end,
+ 'workOrders',coalesce((select jsonb_agg(w.data||jsonb_build_object('id',w.id,'coachId',w.coach_id,'quantity',w.quantity,'perPack',w.pieces_per_pack,
+ 'jobs',coalesce((select jsonb_agg(j.data||jsonb_build_object('id',j.id,'quantity',j.quantity,'completed',j.completed) order by j.id) from public.sub_jobs j where j.work_order_id=w.id),'[]'),
+ 'boxes',coalesce((select jsonb_agg(b.data||jsonb_build_object('id',b.id,'jobId',b.sub_job_id,'personId',b.person_id,'quantity',b.quantity)||case when b.completed_at is not null then jsonb_build_object('completedAt',b.completed_at,'completedPieces',b.completed_pieces,'status','completed') else '{}'::jsonb end order by b.id) from public.boxes b join public.sub_jobs j on j.id=b.sub_job_id where j.work_order_id=w.id),'[]'),
+ 'audits',case when r in ('admin','manager') then coalesce((select jsonb_agg(q.data order by (q.data->>'at')::timestamptz,q.id) from public.quality_checks q where q.work_order_id=w.id),'[]') else '[]'::jsonb end,
+ 'packing',case when r in ('admin','manager') then coalesce((select jsonb_agg(q.data order by (q.data->>'at')::timestamptz,q.id) from public.packing_checks q where q.work_order_id=w.id),'[]') else '[]'::jsonb end) order by w.id) from public.work_orders w where w.order_id=o.id and (r<>'coach' or w.coach_id=(select person_id from public.staff_profiles where id=auth.uid()))),'[]'),
+ 'history',case when r in ('admin','manager') then coalesce((select jsonb_agg(jsonb_build_object('id',e.id,'message',e.message,'at',e.occurred_at) order by e.occurred_at,e.id) from public.order_events e where e.order_id=o.id),'[]') else '[]'::jsonb end) into result from public.orders o join public.customers c on c.id=o.customer_id where o.id=p_id;
+ if r not in ('admin','manager') then result:=result-'delivery'-'warehouse'-'pictures'-'customer_snapshot';end if;
+ return result;
+end$$;
