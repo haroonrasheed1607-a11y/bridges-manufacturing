@@ -1,3 +1,4 @@
+import { QrCamera } from './QrCamera.jsx';
 // features/production/ScanComplete.js
 import { FormField } from "../../components/common/FormField.js";
 import { manufacturingFindBox } from "../../domain/production.js";
@@ -13,6 +14,7 @@ function ManufacturingScanComplete() {
       completeProductionBox
     } = useManufacturing(),
     h = React.createElement,
+    [cameraOpen, setCameraOpen] = React.useState(false),
     [code, setCode] = React.useState(''),
     [selectedCode, setSelectedCode] = React.useState(''),
     [pieces, setPieces] = React.useState(''),
@@ -21,6 +23,7 @@ function ManufacturingScanComplete() {
     [last, setLast] = React.useState(null),
     scanner = React.useRef(null),
     saving = React.useRef(false);
+  React.useEffect(() => { if (selectedCode) document.querySelector('.scanned-box-panel')?.scrollIntoView({behavior:'smooth',block:'start'}); }, [selectedCode]);
   const selected = manufacturingFindBox(orders, selectedCode),
     completed = selected && (selected.box.completedAt || selected.box.status === 'completed'),
     individual = selected && workforce.people.find(person => person.id === selected.box.personId),
@@ -80,7 +83,7 @@ function ManufacturingScanComplete() {
     className: 'eyebrow'
   }, 'SCAN & COMPLETE WORK'), h('h2', null, 'Scan & complete work'), h('p', {
     className: 'quiet'
-  }, 'Scan the box barcode or QR label using the connected scanner, then confirm completed pieces.')), h('button', {
+  }, 'Scan a box QR label with your phone camera, use a connected scanner, or enter the code. Then confirm completed pieces.')), h('button', {
     type: 'button',
     onClick: focusScanner
   }, 'Focus scanner')), h('section', {
@@ -96,7 +99,7 @@ function ManufacturingScanComplete() {
   }, h('span', null, 'Scan box code'), h('input', {
     id: 'production-box-scan',
     ref: scanner,
-    autoFocus: true,
+    autoFocus: false,
     autoComplete: 'off',
     autoCapitalize: 'characters',
     spellCheck: false,
@@ -198,7 +201,7 @@ function ManufacturingScanComplete() {
     onClick: () => scan(box.id)
   }, 'View box')))) : h('p', {
     className: 'empty'
-  }, 'Completed boxes will appear here.')));
+  }, 'Completed boxes will appear here.')), h('div', {className:'shop-floor-scan-dock'}, h('button', {type:'button',className:'primary',onClick:()=>setCameraOpen(true),'aria-haspopup':'dialog'}, '▣  Scan QR code')), cameraOpen && h(QrCamera,{onClose:()=>setCameraOpen(false),onScan:value=>{setCameraOpen(false);scan(value);}}));
 }
 
 export { ManufacturingScanComplete };

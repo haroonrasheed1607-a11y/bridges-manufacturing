@@ -28,12 +28,12 @@ function ManufacturingProductionLine() {
     className: 'page-heading'
   }, h('div', null, h('div', {
     className: 'eyebrow'
-  }, 'PRODUCTION LINE'), h('h2', null, profile?.role === 'box_setup' ? 'Box setup' : profile?.role === 'box_scanner' ? 'Scan & complete work' : 'Production line'), h('p', {
+  }, 'SHOP FLOOR'), h('h2', null, profile?.role === 'box_setup' ? 'Box setup' : profile?.role === 'box_scanner' ? 'Scan & complete work' : 'Shop Floor'), h('p', {
     className: 'quiet'
   }, profile?.role === 'box_setup' ? 'Assign individuals and print labels for new boxes.' : profile?.role === 'box_scanner' ? 'Scan a box, confirm the completed pieces and mark it complete.' : 'Complete finished work or prepare and print box labels.'))), h('div', {
     className: 'production-mode-tabs',
     role: 'tablist',
-    'aria-label': 'Production line tasks'
+    'aria-label': 'Shop Floor tasks'
   }, tabs.map(([value, label], index) => h('button', {
     key: value,
     id: 'production-tab-' + value,

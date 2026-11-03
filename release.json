@@ -1,6 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Move administrator user management into the Directory navigation menu."
+    "Rename Production Line to Shop Floor and add phone camera QR scanning with a bottom scan button.",
+    "Review completed pieces before confirming a scanned box."
   ]
 }

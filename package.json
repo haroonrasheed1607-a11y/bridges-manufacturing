@@ -9,6 +9,7 @@
     "test": "node --experimental-vm-modules --test scripts/*.test.mjs tests/*.test.mjs src/features/work-orders/*.test.js"
   },
   "dependencies": {
+    "jsqr": "1.4.0",
     "react": "19.3.1",
     "react-dom": "19.3.1"
   },
