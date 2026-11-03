@@ -1,3 +1,4 @@
+import { appVersion } from '../utils/appVersion.js';
 import { useState } from "react";
 import ReleaseNotesDialog from "./ReleaseNotesDialog.jsx";
 import "./version.css";
@@ -12,7 +13,7 @@ export default function VersionButton() {
         aria-haspopup="dialog"
         onClick={() => setOpen(true)}
       >
-        Version {__APP_VERSION__}
+        Version {appVersion}
       </button>
       {open && <ReleaseNotesDialog onClose={() => setOpen(false)} />}
     </>
