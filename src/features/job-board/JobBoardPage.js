@@ -1,3 +1,4 @@
+import {JobCompletion} from "../../components/common/JobCompletion.js";
 // features/job-board/JobBoardPage.js
 import { manufacturingColumnProgress } from "../../domain/boardProgress.js";
 import { manufacturingOrderPlan, manufacturingRepeatDays } from "../../domain/orders.js";
@@ -71,7 +72,7 @@ function ManufacturingJobBoard() {
     }, order.title), h('p', {
       className: 'job-customer',
       title: order.customer
-    }, order.customer), h('div', {
+    }, order.customer), h(JobCompletion,{order}), h('div', {
       className: 'compact-job-quantities'
     }, h('strong', null, plan.quantity.toLocaleString() + ' pcs'), h('span', null, plan.packCount.toLocaleString() + ' packs × ' + plan.perPack)), h('div', {
       className: 'compact-job-dates'

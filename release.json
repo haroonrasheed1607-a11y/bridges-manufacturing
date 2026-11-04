@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Moved Sign out beside the Bridges logo and removed the separate account bar."
+    "Job Board cards and opened jobs now show production completion percentages based on completed pieces."
   ]
 }

@@ -1,3 +1,4 @@
+import {JobCompletion} from "../../components/common/JobCompletion.js";
 // features/job-board/JobActionsDialog.js
 import { manufacturingTransitionLabel, manufacturingWorkflowBlock } from "../../domain/workflow.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
@@ -45,7 +46,7 @@ function ManufacturingBoardActions({
     type: 'button',
     onClick: onClose,
     'aria-label': 'Close order actions'
-  }, '×')), h('p', {
+  }, '×')), h(JobCompletion,{order}), h('p', {
     className: 'callout'
   }, blocked || 'Ready for ' + manufacturingTransitionLabel(order) + '.'), h('div', {
     className: 'job-action-choices'

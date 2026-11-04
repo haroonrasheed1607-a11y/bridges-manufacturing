@@ -1,3 +1,4 @@
+import {JobCompletion} from "../../components/common/JobCompletion.js";
 // features/orders/OrderDetailsPage.js
 import { Badge } from "../../components/common/Badge.js";
 import { manufacturingFrequencyLabel, manufacturingOrderPlan } from "../../domain/orders.js";
@@ -52,7 +53,7 @@ function OrderDetailsPage() {
         tone: order.stage === 6 ? `green` : ``,
         children: manufacturingBoardStages[boardStage]
       })]
-    }), (0, jsxRuntime.jsx)(`ol`, {
+    }), (0, jsxRuntime.jsx)(JobCompletion, {order}), (0, jsxRuntime.jsx)(`ol`, {
       className: `stage-strip`,
       "aria-label": `Order progress`,
       children: manufacturingBoardStages.map((t, n) => (0, jsxRuntime.jsxs)(`li`, {
