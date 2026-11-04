@@ -1,7 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Simplified Shop Floor scanner and box setup screens for mobile.",
-    "Automatically choose the ongoing sub-job when preparing box labels."
+    "Moved Sign out beside the Bridges logo and removed the separate account bar."
   ]
 }

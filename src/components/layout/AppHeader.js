@@ -1,9 +1,12 @@
+import {React} from '../../vendor/react-runtime.js';
+import {SessionActions} from '../../features/auth/AuthGate.js';
 // components/layout/AppHeader.js
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { jsxRuntime } from "../../vendor/jsx-runtime.js";
 import { ManufacturingNavigation } from "../Navbar.jsx";
 
 function AppHeader() {
+  const session=React.useContext(SessionActions);
   let {
     setView: e,
     view: t,
@@ -35,7 +38,7 @@ function AppHeader() {
         alt: `Bridges`,
         width: `130`,
         height: `39`
-      })]
+      }), (0, jsxRuntime.jsx)(`button`, {type:`button`,className:`header-sign-out`,onClick:session?.signOut,children:`Sign out`})]
     })]
   });
 }
