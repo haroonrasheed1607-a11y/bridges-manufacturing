@@ -1,6 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Job Board cards and opened jobs now show production completion percentages based on completed pieces."
+    "Compact 62 \u00d7 20.32 mm box labels with QR left and job details right.",
+    "Box setup now opens printing immediately after saving, with a reprint option."
   ]
 }

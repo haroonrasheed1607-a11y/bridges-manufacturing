@@ -71,7 +71,7 @@ function manufacturingQrMatrix(text) {
 function manufacturingQrPath(value) {
   return manufacturingQrMatrix(value).flatMap((row, y) => row.flatMap((dark, x) => dark ? ['M' + (x + 4) + ' ' + (y + 4) + 'h1v1h-1z'] : [])).join('');
 }
-function manufacturingPrintBox(order, work, job, box, person) {
+function manufacturingPrintBox(order, work, job, box, person, printWindow) {
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({
       '&': '&amp;',
       '<': '&lt;',
@@ -79,10 +79,10 @@ function manufacturingPrintBox(order, work, job, box, person) {
       '"': '&quot;',
       "'": '&#39;'
     })[char]),
-    popup = window.open('', '_blank');
+    popup = printWindow || window.open('', '_blank');
   if (!popup) return 'Allow the label print window to open and use Print QR label again.';
   popup.document.open();
-  popup.document.write('<!doctype html><html><head><title>Box ' + escape(box.id) + '</title><style>@page{size:100mm 150mm;margin:8mm}body{font:14px Arial;color:#000}h1{font-size:20px}svg{width:65mm;height:65mm;display:block;margin:10mm auto}p{line-height:1.6}small{font-family:monospace;overflow-wrap:anywhere}</style></head><body><h1>BRIDGES · BOX LABEL</h1><svg viewBox="0 0 33 33" shape-rendering="crispEdges"><rect width="33" height="33" fill="white"/><path d="' + manufacturingQrPath(box.id) + '" fill="black"/></svg><small>' + escape(box.id) + '</small><p><b>' + escape(order.title) + '</b><br>' + escape(work.description) + '<br>' + escape(job.name) + '</p><p>Individual: <b>' + escape(person?.name || 'Unassigned') + '</b><br>Pieces: ' + escape(box.quantity) + '<br>Job Coach: ' + escape(work.coachName || '—') + '</p></body></html>');
+  popup.document.write('<!doctype html><html><head><title>Box ' + escape(box.id) + '</title><style>@page{size:62mm 20.32mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#000;background:white}body{font:7pt Arial}.label{width:62mm;height:20.32mm;padding:1mm 2mm;display:flex;align-items:center;gap:1mm;overflow:hidden}svg{width:18mm;height:18mm;flex:none}.text{flex:1;min-width:0;line-height:1.15}.line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}strong{font-size:8pt}.code{font:5.5pt monospace;margin-top:.5mm}</style></head><body><section class="label"><svg viewBox="0 0 33 33" shape-rendering="crispEdges"><rect width="33" height="33" fill="white"/><path d="' + manufacturingQrPath(box.id) + '" fill="black"/></svg><div class="text"><div class="line"><strong>' + escape(person?.name || 'Unassigned') + '</strong></div><div class="line">' + escape(order.title) + '</div><div class="line">' + escape(order.id) + ' / ' + escape(work.id) + '</div><div class="line">' + escape(job.name) + ' · ' + escape(box.quantity) + ' pcs</div><div class="line code">' + escape(box.id) + '</div></div></section></body></html>');
   popup.document.close();
   popup.focus();
   popup.print();
