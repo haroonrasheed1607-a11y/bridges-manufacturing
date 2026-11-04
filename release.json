@@ -1,7 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Simplify individual timesheets to read-only reports with eight daily rows and compact print layouts.",
-    "Group extra job codes into Other while preserving complete piece totals."
+    "Fix timesheet printing by keeping report tables out of mobile card conversion.",
+    "Preserve table columns, headings and compact rows on printed sheets."
   ]
 }

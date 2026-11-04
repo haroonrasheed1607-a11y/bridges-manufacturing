@@ -1,10 +1,10 @@
 
 /* Phone and tablet layouts */
 #manufacturing-app .field>label{display:block;margin-bottom:7px;font-size:12px;font-weight:600}
-@media(max-width:900px){
+@media screen and (max-width:900px){
  .detail-layout{display:flex;flex-direction:column}.order-sidebar{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}.order-sidebar .panel{margin-bottom:0}.sidebar-note{grid-column:1/-1}
 }
-@media(max-width:760px){
+@media screen and (max-width:760px){
  html{-webkit-text-size-adjust:100%;scroll-padding-top:16px}body{overflow-wrap:break-word}
  #manufacturing-app{min-width:0}#manufacturing-app button,#manufacturing-app summary{min-height:44px;touch-action:manipulation}
  #manufacturing-app input,#manufacturing-app select,#manufacturing-app textarea{font-size:16px;min-height:48px;max-width:100%}
@@ -23,5 +23,5 @@
  .order-production-summary{grid-template-columns:minmax(0,1fr);gap:0;padding:0 16px}.order-production-summary>div{padding:16px 0;border-bottom:1px solid #dde3ec}.order-production-summary>div:last-child{border:0}.order-production-summary span,.order-production-summary small{font-size:12px}.customer-options{max-height:min(240px,40dvh)}.customer-options [role=option]{min-height:48px;padding:13px 14px;font-size:16px}.customer-no-results{font-size:13px}
  .order-sidebar{grid-template-columns:minmax(0,1fr)}.order-sidebar dt{font-size:12px}.order-sidebar dd{font-size:14px}.next-step p,.sidebar-note{font-size:12px;line-height:1.7}.history-item{flex-wrap:wrap}.instructions{font-size:13px;overflow-wrap:anywhere}.check-label{line-height:1.6}.signature-canvas{height:180px}.app-footer{flex-wrap:wrap;gap:10px;padding-bottom:calc(14px + env(safe-area-inset-bottom))}.notice{left:14px;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));max-width:none;font-size:13px}.empty{padding:26px 16px;font-size:13px}dialog{max-width:calc(100vw - 24px);max-height:85dvh;padding:18px}
 }
-@media(max-width:360px){.brand-mark{display:none}.brand-logo{width:74px}.workspace-brand h1{font-size:17px}.main-navigation button{font-size:12px}.mobile-cards tr{grid-template-columns:minmax(0,1fr)}.mobile-cards td{grid-column:1!important}.work-stats{grid-template-columns:minmax(0,1fr)}}
+@media screen and (max-width:360px){.brand-mark{display:none}.brand-logo{width:74px}.workspace-brand h1{font-size:17px}.main-navigation button{font-size:12px}.mobile-cards tr{grid-template-columns:minmax(0,1fr)}.mobile-cards td{grid-column:1!important}.work-stats{grid-template-columns:minmax(0,1fr)}}
 

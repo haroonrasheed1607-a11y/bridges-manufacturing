@@ -3,3 +3,22 @@
 
 .timesheet-paper th,.timesheet-paper td{overflow-wrap:anywhere}
 .timesheet-readonly .timesheet-log tbody tr{height:32px}.timesheet-readonly .timesheet-log td>span,.timesheet-readonly .timesheet-log td>strong{display:block;line-height:1.25}.timesheet-log-time{font-size:9px;color:#444}.timesheet-readonly .timesheet-notes{height:64px;min-height:0;overflow:hidden}.timesheet-readonly .timesheet-notes p{font-size:10px;margin:3px 0;white-space:pre-wrap;line-height:1.3}.timesheet-log-caption{font-size:9px;line-height:1.3;margin:5px 0}.timesheet-readonly .timesheet-header p{margin:5px 0}.timesheet-readonly .timesheet-signatures{margin-top:18px}@media print{body.printing-timesheet .timesheet-readonly .timesheet-log tbody tr{height:29px}body.printing-timesheet .timesheet-readonly .timesheet-log td{padding:2px}body.printing-timesheet .timesheet-readonly .timesheet-log-time{font-size:7px}body.printing-timesheet .timesheet-readonly .timesheet-notes{height:46px}body.printing-timesheet .timesheet-readonly .timesheet-notes p{font-size:8px}body.printing-timesheet .timesheet-log-caption{font-size:7px}body.printing-timesheet .timesheet-readonly .timesheet-header{margin-bottom:10px}body.printing-timesheet .timesheet-readonly .timesheet-header p{margin:4px 0}body.printing-timesheet .timesheet-readonly .timesheet-bottom{margin-top:8px}}
+
+/* Printed sheets must remain real tables even when the viewport is phone-sized. */
+@media print{
+ body.printing-timesheet .timesheet-paper table{display:table!important;table-layout:fixed!important;border-collapse:collapse!important;width:100%!important;min-width:0!important}
+ body.printing-timesheet .timesheet-paper thead{display:table-header-group!important;position:static!important;width:auto!important;height:auto!important;clip-path:none!important;overflow:visible!important;white-space:normal!important}
+ body.printing-timesheet .timesheet-paper tbody{display:table-row-group!important}
+ body.printing-timesheet .timesheet-paper tr{display:table-row!important;border-radius:0!important;background:white!important;padding:0!important}
+ body.printing-timesheet .timesheet-paper th,body.printing-timesheet .timesheet-paper td{display:table-cell!important;position:static!important;float:none!important;width:auto!important;border:1px solid #111!important;vertical-align:top!important;grid-column:auto!important;letter-spacing:normal!important}
+ body.printing-timesheet .timesheet-paper td::before,body.printing-timesheet .timesheet-paper th::before{content:none!important;display:none!important}
+ body.printing-timesheet .timesheet-paper .timesheet-log tbody tr{height:30px!important}
+ body.printing-timesheet .timesheet-paper .timesheet-log td{height:30px!important;font-size:8px!important;line-height:1.2!important}
+ body.printing-timesheet .timesheet-paper{max-width:none!important;font-size:9px!important}
+ body.printing-timesheet .timesheet-header{margin-bottom:8px!important}
+ body.printing-timesheet .timesheet-paper p{line-height:1.25!important}
+ body.printing-timesheet .timesheet-paper h3{padding:4px!important;margin:0!important;font-size:9px!important}
+ body.printing-timesheet .timesheet-paper .timesheet-legend{font-size:7px!important;padding:5px!important}
+ body.printing-timesheet .timesheet-paper .timesheet-bottom{display:grid!important;grid-template-columns:minmax(0,4fr) minmax(100px,1fr)!important;gap:8px!important;margin-top:8px!important}
+ body.printing-timesheet .timesheet-paper .timesheet-signatures{margin-top:16px!important;font-size:8px!important}
+}
