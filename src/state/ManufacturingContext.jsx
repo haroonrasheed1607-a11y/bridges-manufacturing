@@ -1,3 +1,4 @@
+import {readNavigation,writeNavigation,validView} from './navigationMemory.js';
 import { isShopFloorRole } from '../features/auth/permissions.js';
 import { React } from '../vendor/react-runtime.js';
 import { manufacturingApi } from '../api/supabaseClient.js';
@@ -10,9 +11,11 @@ import { createId } from '../utils/ids.js';
 
 const ManufacturingContext=React.createContext(null);
 function ManufacturingProvider({children}){
- const h=React.createElement,profile=React.useContext(ManufacturingSession),[data,setData]=React.useState({orders:[],customers:[],workforce:{people:[],bookings:[]}}),[loading,setLoading]=React.useState(true),[pending,setPending]=React.useState(0),[storageError,setStorageError]=React.useState(''),[notice,setNotice]=React.useState(''),[view,setView]=React.useState((profile?.role==='station'||isShopFloorRole(profile?.role))?'productionline':'dashboard'),[selectedOrderId,setSelectedOrderId]=React.useState(null);
+ const h=React.createElement,profile=React.useContext(ManufacturingSession),[savedNavigation]=React.useState(()=>readNavigation(profile)),[data,setData]=React.useState({orders:[],customers:[],workforce:{people:[],bookings:[]}}),[loading,setLoading]=React.useState(true),[pending,setPending]=React.useState(0),[storageError,setStorageError]=React.useState(''),[notice,setNotice]=React.useState(''),[view,setView]=React.useState(()=>validView(profile?.role,savedNavigation.view)),[selectedOrderId,setSelectedOrderId]=React.useState(()=>typeof savedNavigation.orderId==='string'?savedNavigation.orderId:null);
  const current=React.useRef(data),queue=React.useRef(Promise.resolve()),busy=React.useRef(0),generation=React.useRef(0),mounted=React.useRef(true);
  const manager=['admin','manager'].includes(profile?.role);
+ React.useEffect(()=>{writeNavigation(profile,{view:validView(profile?.role,view),orderId:selectedOrderId});},[profile?.id,profile?.role,view,selectedOrderId]);
+ React.useEffect(()=>{if(!loading&&view==='detail'&&!data.orders.some(o=>o.id===selectedOrderId)){setSelectedOrderId(null);setView(manager?'orders':'productionline');}},[loading,data.orders,view,selectedOrderId]);
  async function accept(result){const hydrated=await manufacturingApi.resolveFiles(result);current.current=hydrated;if(mounted.current)setData(hydrated);return hydrated;}
  async function refresh(){if(busy.current)return;const ticket=++generation.current;try{const result=await manufacturingApi.rpc('app_get_workspace');const hydrated=await manufacturingApi.resolveFiles(result);if(ticket===generation.current&&busy.current===0){current.current=hydrated;if(mounted.current)setData(hydrated);setStorageError('');}}catch(e){setStorageError(e.message);}finally{setLoading(false);}}
  React.useEffect(()=>{mounted.current=true;refresh();const timer=setInterval(()=>{if(document.visibilityState==='visible')refresh();},15000);const focus=()=>refresh();window.addEventListener('focus',focus);return()=>{mounted.current=false;clearInterval(timer);window.removeEventListener('focus',focus);};},[]);

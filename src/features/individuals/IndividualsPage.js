@@ -1,3 +1,4 @@
+import {useScreenMemory} from '../../state/useScreenMemory.js';
 import { TimesheetsPage } from '../timesheets/TimesheetsPage.jsx';
 // features/individuals/IndividualsPage.js
 import { FormField } from "../../components/common/FormField.js";
@@ -17,8 +18,8 @@ function ManufacturingIndividuals() {
       open
     } = useManufacturing(),
     h = React.createElement;
-  const [timesheetPerson,setTimesheetPerson]=React.useState(null);
-  const [week, setWeek] = React.useState(manufacturingToday),
+  const [timesheetPerson,setTimesheetPerson]=useScreenMemory('individuals-timesheet',null);
+  const [week, setWeek] = useScreenMemory('individuals-week',manufacturingToday),
     [search, setSearch] = React.useState(''),
     [availability, setAvailability] = React.useState('all'),
     [personForm, setPersonForm] = React.useState(null),

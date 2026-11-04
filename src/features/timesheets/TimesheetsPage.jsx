@@ -1,3 +1,4 @@
+import {useScreenMemory} from '../../state/useScreenMemory.js';
 import {useEffect,useRef,useState} from 'react';
 import {manufacturingApi} from '../../api/supabaseClient.js';
 import {useManufacturing} from '../../state/ManufacturingContext.jsx';
@@ -19,7 +20,7 @@ export function TimesheetDocument({person,week,data={},entries=[]}){
 }
 export function TimesheetsPage({initialPerson='',onBack}){
  const {workforce}=useManufacturing(),people=workforce.people.filter(p=>p.kind==='individual');
- const [person,setPerson]=useState(initialPerson||people[0]?.id||''),[week,setWeek]=useState(monday(manufacturingToday())),[report,setReport]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');const generation=useRef(0);
+ const [person,setPerson]=useScreenMemory('timesheet-person',initialPerson||people[0]?.id||''),[week,setWeek]=useScreenMemory('timesheet-week',()=>monday(manufacturingToday())),[report,setReport]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');const generation=useRef(0);
  async function load(){if(!person)return;const ticket=++generation.current;setBusy(true);setReport(null);setError('');try{const result=await manufacturingApi.rpc('app_individual_timesheet',{p_person:person,p_week:week});if(ticket===generation.current)setReport(result);}catch(e){if(ticket===generation.current)setError(e.message);}finally{if(ticket===generation.current)setBusy(false);}}
  useEffect(()=>{load();return()=>{generation.current++;};},[person,week]);
  function print(){document.body.classList.add('printing-timesheet');const done=()=>{document.body.classList.remove('printing-timesheet');window.removeEventListener('afterprint',done);};window.addEventListener('afterprint',done);window.print();}

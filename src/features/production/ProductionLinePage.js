@@ -1,3 +1,4 @@
+import {useScreenMemory} from '../../state/useScreenMemory.js';
 import { productionTabs } from '../auth/permissions.js';
 // features/production/ProductionLinePage.js
 import { FormField } from "../../components/common/FormField.js";
@@ -12,8 +13,8 @@ function ManufacturingProductionLine() {
       change
     } = useManufacturing(),
     h = React.createElement,
-    [selectedTab, setTab] = React.useState(() => productionTabs(profile?.role)[0]?.[0] || 'scan'),
-    [orderId, setOrderId] = React.useState('');
+    [selectedTab, setTab] = useScreenMemory('shop-floor-tab',() => productionTabs(profile?.role)[0]?.[0] || 'scan'),
+    [orderId, setOrderId] = useScreenMemory('shop-floor-order','');
   const activeOrders = orders.filter(order => order.stage === 1 && order.workOrders.length),
     order = activeOrders.find(item => item.id === orderId) || activeOrders[0];
   const tabs = productionTabs(profile?.role);
