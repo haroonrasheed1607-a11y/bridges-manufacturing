@@ -9,3 +9,11 @@ test('piece summary groups actual completed counts by job and date, including ad
  const result=pieceSummary([{code:'5001',date:'2026-11-02',pieces:20},{code:'5001',date:'2026-11-02',pieces:5},{code:'4015',date:'2026-11-03',pieces:30}],[{code:'5001',date:'2026-11-02',pieces:'3'},{code:'B',date:'2026-11-02',pieces:''}]);
  assert.equal(result['5001']['2026-11-02'],28);assert.equal(result['4015']['2026-11-03'],30);assert.equal(result.B['2026-11-02'],0);
 });
+
+test('fixed report rows preserve all piece totals through overflow groups',async()=>{
+ const {limitedLog,limitedCodes}=await import('../src/features/timesheets/model.js');
+ const entries=Array.from({length:20},(_,i)=>({date:'2026-11-02',code:'PART-'+i,time:'09:00',pieces:i+1}));
+ const rows=limitedLog(entries,[],'2026-11-02');assert.equal(rows.length,8);assert.equal(rows.reduce((s,r)=>s+Number(r.pieces||0),0),210);assert.match(rows[7].code,/Other/);
+ const cols=limitedCodes(pieceSummary(entries,[]),['2026-11-02']);assert.equal(cols.length,6);assert.equal(cols.reduce((s,c)=>s+Number(c.values['2026-11-02']||0),0),210);
+ assert.equal(limitedLog([],[],'2026-11-02').length,8);
+});

@@ -195,3 +195,9 @@ The script is transactional and safe to rerun. `DW1102-*` box IDs are ready for
 label printing, scans and completion testing. Future weekdays are fictional
 samples. Timesheets for 2–6 November show these completed demo boxes as well as
 previously entered manual sample work. No rates or wage amounts are included.
+
+Timesheets are now read-only reports: individual/week selection, refresh and
+print only. The report has eight action-log rows per day and up to six job-code
+columns. Codes are grouped; overflow is summed into Other and included in all
+piece totals. Notes are displayed up to 240 characters. Existing stored records
+remain intact; this screen no longer adds, edits or saves timesheet data.
