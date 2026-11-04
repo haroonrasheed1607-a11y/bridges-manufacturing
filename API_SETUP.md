@@ -181,3 +181,17 @@ hours. This interpretation needs confirmation against Bridges' billing practice.
 No rates, wages or payment totals are stored or calculated. Signature lines are
 for handwritten approval. Saved sheets are editable records, not locked payroll
 exports; box totals update when the form is reloaded.
+
+## Full sample week
+
+`database/full-week-demo.sql` adds 30 clearly marked orders for 2–6 November
+2026, three in each board column, using existing demo customers and staff.
+It adds complete work/sub-job/box records, bookings, actual completed-piece
+records, QC (including a held inspection), packing, warehouse, sample delivery
+acceptance and recurring schedule fixtures. No real dispatch or customer
+acceptance is represented. Six weekly attendance sheets are inserted only when
+missing; existing notes, manual pieces, orders and sheets are never overwritten.
+The script is transactional and safe to rerun. `DW1102-*` box IDs are ready for
+label printing, scans and completion testing. Future weekdays are fictional
+samples. Timesheets for 2–6 November show these completed demo boxes as well as
+previously entered manual sample work. No rates or wage amounts are included.

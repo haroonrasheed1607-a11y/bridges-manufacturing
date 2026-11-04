@@ -4,7 +4,7 @@ insert into public.staff_profiles(id,display_name,role) values('00000000-0000-40
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000001',true);
 set local role authenticated;
 do $$declare data jsonb;o jsonb;rev bigint;begin
- data:=public.app_get_workspace();if jsonb_array_length(data->'orders')<>10 then raise exception 'Expected ten demo orders';end if;
+ data:=public.app_get_workspace();if jsonb_array_length(data->'orders')<10 then raise exception 'Expected at least ten demo orders';end if;
  perform public.app_save_customer('API Test Customer');
  perform public.app_save_person('{"id":"API-TEST-PERSON","name":"API Test Person","kind":"individual","role":"Assembly","hoursPerDay":6}');
  perform public.app_save_order('{"id":"API-TEST-ORDER","title":"API roundtrip","customer":"API Test Customer","quantity":100,"perPack":25,"stage":0,"workOrders":[],"required":"2026-12-01"}',0,'Order created by test');
@@ -24,7 +24,7 @@ reset role;
 update public.staff_profiles set role='station' where id='00000000-0000-4000-8000-000000000001';
 set local role authenticated;
 do $$declare data jsonb;begin
- data:=public.app_get_workspace();if jsonb_array_length(data->'orders')<>1 then raise exception 'Station can see non-production orders';end if;
+ data:=public.app_get_workspace();if exists(select 1 from jsonb_array_elements(data->'orders') o where o->>'stage'<>'1') then raise exception 'Station can see non-production orders';end if;
  if data#>>'{orders,0,customer}'<>'Production' or data#>'{orders,0,delivery}' is not null then raise exception 'Station customer/delivery fields exposed';end if;
  begin perform public.app_save_customer('Forbidden');raise exception 'Station mutation accepted';exception when insufficient_privilege then null;end;
 end$$;
