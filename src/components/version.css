@@ -35,3 +35,5 @@
     gap: 6px;
   }
 }
+
+button.version-link{position:fixed;right:12px;bottom:8px;z-index:65;display:inline-flex;align-items:center;min-height:32px;padding:5px 12px;border:1px solid #d4dce8;border-radius:6px;background:#fff;color:#172a48;font:600 12px Arial,sans-serif;box-shadow:0 1px 6px #172a4814;cursor:pointer}button.version-link:hover{background:#edf3fa}button.version-link:focus-visible{outline:3px solid #426db4;outline-offset:2px}.app-footer{padding-bottom:52px}.shop-floor-scan-dock{padding-bottom:calc(48px + env(safe-area-inset-bottom,0px))}.production-line-page{padding-bottom:150px}@media print{button.version-link{display:none!important}}

@@ -89,3 +89,11 @@ test('Cloudflare restores its npm-cached counter across clean builds and isolate
 test('Cloudflare rejects an invalid migration seed', () => fixture(async root => {
   await assert.rejects(build({root,env:{CF_PAGES:'1',CF_PAGES_BRANCH:'main',npm_config_cache:path.join(root,'cache'),BRIDGES_VERSION_SEED:'invalid'}}), /Invalid version/);
 }));
+
+test('Workers deployments advance on the same commit and record the Workers commit', () => fixture(async root => {
+ const env={WORKERS_CI:'1',WORKERS_CI_BRANCH:'main',WORKERS_CI_COMMIT_SHA:'worker-sha',npm_config_cache:path.join(root,'npm-cache')};
+ assert.equal((await build({root,env})).version,'0.2');
+ await rm(path.join(root,'.netlify'),{recursive:true,force:true});
+ assert.equal((await build({root,env})).version,'0.3');
+ assert.equal(JSON.parse(await readFile(path.join(root,'dist/version.json'),'utf8')).commit,'worker-sha');
+}));

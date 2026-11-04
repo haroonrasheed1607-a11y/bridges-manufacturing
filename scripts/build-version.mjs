@@ -58,8 +58,8 @@ export async function build({ root, env = process.env } = {}) {
   const sourceVersion = htmlVersion(html);
   // Netlify restores its plugin cache; Cloudflare Pages restores npm's cache.
   // Never call the public site: deployment access controls can return HTTP 401.
-  const cloudflare = env.CF_PAGES === "1";
-  const branch = env.CF_PAGES_BRANCH || env.BRANCH || "preview";
+  const cloudflare = env.CF_PAGES === "1" || env.WORKERS_CI === "1";
+  const branch = env.CF_PAGES_BRANCH || env.WORKERS_CI_BRANCH || env.BRANCH || "preview";
   const context = cloudflare
     ? branch === (env.CF_PRODUCTION_BRANCH || "main") ? "production" : "branch-deploy"
     : env.CONTEXT || "production";
@@ -134,7 +134,7 @@ export async function build({ root, env = process.env } = {}) {
   const release = {
     version,
     previousVersion: baseline,
-    commit: env.COMMIT_REF || env.CF_PAGES_COMMIT_SHA || null,
+    commit: env.COMMIT_REF || env.CF_PAGES_COMMIT_SHA || env.WORKERS_CI_COMMIT_SHA || null,
     builtAt: new Date().toISOString(),
   };
   await writeFile(

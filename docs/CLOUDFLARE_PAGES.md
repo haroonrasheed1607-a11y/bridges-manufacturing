@@ -64,3 +64,15 @@ shop-floor login sees only its permitted task, that refresh preserves the page,
 and that the build's `version.json` reports the deployed GitHub commit. Inspect
 response headers on `/`, `/version.json` and an asset. Keep Netlify until this
 verification is complete; its `netlify.app` address cannot move to Cloudflare.
+
+## Workers deployment
+
+The repository also supports the deployed Cloudflare Worker through
+`wrangler.jsonc`. Its custom build runs the versioned production build if the
+current checkout has not already built that commit. Workers Builds variables
+`WORKERS_CI`, `WORKERS_CI_BRANCH` and `WORKERS_CI_COMMIT_SHA` are recognized.
+Enable Workers Build cache to persist the version counter in npm's cache between
+checkouts. As with Pages, cache expiry/clearing requires setting
+`BRIDGES_VERSION_SEED` to the last published version to retain continuity.
+The visible version button appears on login and application screens and opens
+release notes. No version number needs to be edited for routine deployments.

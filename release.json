@@ -1,7 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Add printable individual weekly timesheets with completed box pieces, part-code totals, attendance and work hours.",
-    "Save weekly notes and manual entries with conflict protection."
+    "Display the version at the bottom of every screen, including login and Shop Floor.",
+    "Automatically advance the cached version on Cloudflare Workers deployments."
   ]
 }
