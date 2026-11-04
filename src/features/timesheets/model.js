@@ -1,0 +1,4 @@
+export function monday(date){const d=new Date(date+'T12:00:00Z');d.setUTCDate(d.getUTCDate()-(d.getUTCDay()+6)%7);return d.toISOString().slice(0,10);}
+export function datesForWeek(week){return Array.from({length:7},(_,i)=>{const d=new Date(week+'T12:00:00Z');d.setUTCDate(d.getUTCDate()+i);return d.toISOString().slice(0,10);});}
+export function elapsed(start,end){if(!start||!end)return '';const minutes=t=>Number(t.slice(0,2))*60+Number(t.slice(3));const n=minutes(end)-minutes(start);return n>=0?+(n/60).toFixed(2):'';}
+export function pieceSummary(entries,manual){const result={};for(const row of [...entries,...manual]){if(!row.code||!row.date)continue;const n=Number(row.pieces||0);if(!Number.isSafeInteger(n)||n<0)continue;result[row.code]??={};result[row.code][row.date]=(result[row.code][row.date]||0)+n;}return result;}

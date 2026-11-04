@@ -160,3 +160,24 @@ under boxscan or boxsetup; they do not identify the individual holding the phone
 Deploy this function with gateway JWT verification off because it is a login
 endpoint, while leaving admin-users JWT verification on. Server credentials never
 enter frontend files. Existing box creation/completion permissions still apply.
+
+## Individual weekly timesheets
+
+Apply `database/timesheets.sql` after existing database setup. Managers and admins
+use `app_individual_timesheet` to read/save weekly metadata, attendance and manual
+work entries; shop-floor accounts cannot read or edit timesheets. Saved forms use
+revision checks to reject conflicting edits. Completed pieces are read from
+completed boxes assigned to the individual, grouped by the completion date in
+America/Chicago, including seeded completed boxes without a production-record
+row. They are not estimated from assigned quantities or booked hours.
+
+Directory > Individuals > Weekly timesheets opens the printable Monday–Friday
+form. Weekend columns appear when records exist. Work-order IDs are default job
+codes; the manager can enter a part-code alias on that week's sheet. Manual
+pieces are additional work, not corrections to scanned boxes. Actual work and
+community work hours are entered separately from arrival/departure. The right
+W total is elapsed attendance (including breaks); C is entered community service
+hours. This interpretation needs confirmation against Bridges' billing practice.
+No rates, wages or payment totals are stored or calculated. Signature lines are
+for handwritten approval. Saved sheets are editable records, not locked payroll
+exports; box totals update when the form is reloaded.

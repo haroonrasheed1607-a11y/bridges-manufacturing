@@ -1,3 +1,4 @@
+import { TimesheetsPage } from '../timesheets/TimesheetsPage.jsx';
 // features/individuals/IndividualsPage.js
 import { FormField } from "../../components/common/FormField.js";
 import { manufacturingBookedDay, manufacturingBookingActive, manufacturingIndividualCapacity, manufacturingIsCoach, manufacturingNextAvailability } from "../../domain/workforce.js";
@@ -16,6 +17,7 @@ function ManufacturingIndividuals() {
       open
     } = useManufacturing(),
     h = React.createElement;
+  const [timesheetPerson,setTimesheetPerson]=React.useState(null);
   const [week, setWeek] = React.useState(manufacturingToday),
     [search, setSearch] = React.useState(''),
     [availability, setAvailability] = React.useState('all'),
@@ -84,6 +86,7 @@ function ManufacturingIndividuals() {
   const bookingWarning = bookingForm && bookingPerson && bookingDays > 0 && Number(bookingForm.hours) > 0 ? Array.from({
     length: Math.min(3660, Math.max(0, Math.round((manufacturingDate(bookingForm.end) - manufacturingDate(bookingForm.start)) / 86400000) + 1))
   }, (_, index) => manufacturingDayOffset(bookingForm.start, index)).some(date => manufacturingWeekdays(date, date) && manufacturingBookedDay(bookingPerson, date, workforce.bookings.filter(item => item.id !== bookingForm.id), orders) + Number(bookingForm.hours) / bookingDays > bookingPerson.hoursPerDay + .001) : false;
+  if(timesheetPerson!==null)return h(TimesheetsPage,{initialPerson:timesheetPerson,onBack:()=>setTimesheetPerson(null)});
   return h('div', {
     className: 'individuals-page'
   }, h('div', {
@@ -94,7 +97,7 @@ function ManufacturingIndividuals() {
     className: 'quiet'
   }, 'See booked work and remaining capacity before making future bookings.')), h('div', {
     className: 'people-heading-actions'
-  }, formButton('＋ Add individual', () => {
+  }, formButton('Weekly timesheets',()=>setTimesheetPerson(selected||'')), formButton('＋ Add individual', () => {
     setPersonForm({
       name: '',
       role: '',

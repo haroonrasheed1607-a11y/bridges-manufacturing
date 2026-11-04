@@ -1,7 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Add password-free Log in as scanner and Log in as boxer buttons for shared Shop Floor access.",
-    "Keep administrator sign-in and role permissions separate."
+    "Add printable individual weekly timesheets with completed box pieces, part-code totals, attendance and work hours.",
+    "Save weekly notes and manual entries with conflict protection."
   ]
 }
