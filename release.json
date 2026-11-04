@@ -1,7 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Compact 62 \u00d7 20.32 mm box labels with QR left and job details right.",
-    "Box setup now opens printing immediately after saving, with a reprint option."
+    "Box labels now print from the current page without opening a new tab."
   ]
 }

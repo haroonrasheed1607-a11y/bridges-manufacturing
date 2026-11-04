@@ -71,7 +71,7 @@ function manufacturingQrMatrix(text) {
 function manufacturingQrPath(value) {
   return manufacturingQrMatrix(value).flatMap((row, y) => row.flatMap((dark, x) => dark ? ['M' + (x + 4) + ' ' + (y + 4) + 'h1v1h-1z'] : [])).join('');
 }
-function manufacturingPrintBox(order, work, job, box, person, printWindow) {
+function manufacturingPrintBox(order, work, job, box, person) {
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({
       '&': '&amp;',
       '<': '&lt;',
@@ -79,13 +79,23 @@ function manufacturingPrintBox(order, work, job, box, person, printWindow) {
       '"': '&quot;',
       "'": '&#39;'
     })[char]),
-    popup = printWindow || window.open('', '_blank');
-  if (!popup) return 'Allow the label print window to open and use Print QR label again.';
+    frame = document.createElement('iframe');
+  frame.title = 'Box label print';
+  frame.setAttribute('aria-hidden','true');
+  frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:62mm;height:20.32mm;border:0;pointer-events:none';
+  document.body.appendChild(frame);
+  const popup = frame.contentWindow;
+  if (!popup) {frame.remove();return 'Unable to prepare printing. Use Reprint label to try again.';}
+  const cleanup = () => frame.remove();
+  popup.addEventListener('afterprint',cleanup,{once:true});
+  const timeout = setTimeout(cleanup,300000);
+  frame.addEventListener('load',()=>{
+    try {popup.focus();popup.print();}
+    catch {clearTimeout(timeout);cleanup();window.alert('Printing could not open. Use Reprint label to try again.');}
+  },{once:true});
   popup.document.open();
   popup.document.write('<!doctype html><html><head><title>Box ' + escape(box.id) + '</title><style>@page{size:62mm 20.32mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#000;background:white}body{font:7pt Arial}.label{width:62mm;height:20.32mm;padding:1mm 2mm;display:flex;align-items:center;gap:1mm;overflow:hidden}svg{width:18mm;height:18mm;flex:none}.text{flex:1;min-width:0;line-height:1.15}.line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}strong{font-size:8pt}.code{font:5.5pt monospace;margin-top:.5mm}</style></head><body><section class="label"><svg viewBox="0 0 33 33" shape-rendering="crispEdges"><rect width="33" height="33" fill="white"/><path d="' + manufacturingQrPath(box.id) + '" fill="black"/></svg><div class="text"><div class="line"><strong>' + escape(person?.name || 'Unassigned') + '</strong></div><div class="line">' + escape(order.title) + '</div><div class="line">' + escape(order.id) + ' / ' + escape(work.id) + '</div><div class="line">' + escape(job.name) + ' · ' + escape(box.quantity) + ' pcs</div><div class="line code">' + escape(box.id) + '</div></div></section></body></html>');
   popup.document.close();
-  popup.focus();
-  popup.print();
   return '';
 }
 

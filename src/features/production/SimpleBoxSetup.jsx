@@ -21,17 +21,14 @@ export function SimpleBoxSetup(){
  const quantity=job?Math.min(Number(selected.work.perPack),remainingBoxPieces(selected.work,job)):0;
  async function create(event){
   event.preventDefault();if(lock.current||!selected||!job||!personId||quantity<1)return;
-  const printWindow=window.open('', '_blank');
-  if(!printWindow){setError('Allow pop-ups to create and print a box label.');return;}
-  printWindow.document.body.textContent='Preparing box label…';
   lock.current=true;setBusy(true);setError('');setLabel(null);
   try{
    const box={id:createId('BOX'),jobId:job.id,personId,quantity,date:manufacturingToday(),coachId:selected.work.coachId||null};
    const problem=await createProductionBox(selected.order.id,selected.work.id,box);
-   if(problem){printWindow.close();setError(problem);return;}
+   if(problem){setError(problem);return;}
    setLabel({...selected,job,box,person:people.find(p=>p.id===personId)});
-   setError(manufacturingPrintBox(selected.order,selected.work,job,box,people.find(p=>p.id===personId),printWindow));
-  }catch{printWindow.close();setError('Unable to prepare the label. If the box was saved, reprint its label instead of creating another.');}
+   setError(manufacturingPrintBox(selected.order,selected.work,job,box,people.find(p=>p.id===personId)));
+  }catch{setError('Unable to prepare the label. If the box was saved, reprint its label instead of creating another.');}
   finally{lock.current=false;setBusy(false);}
  }
  return <section className="panel simple-box-setup"><h2>Box setup</h2><form onSubmit={create}>
