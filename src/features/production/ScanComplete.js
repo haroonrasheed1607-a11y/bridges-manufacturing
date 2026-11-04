@@ -7,7 +7,7 @@ import { formatTimestamp } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
 import { ManufacturingBoxQr } from "../work-orders/BoxQr.js";
 
-function ManufacturingScanComplete() {
+function ManufacturingScanComplete({minimal=false} = {}) {
   const {
       orders,
       workforce,
@@ -77,7 +77,7 @@ function ManufacturingScanComplete() {
   }
   return h('div', {
     className: 'production-line-page'
-  }, h('div', {
+  }, !minimal && h('div', {
     className: 'page-heading'
   }, h('div', null, h('div', {
     className: 'eyebrow'
@@ -96,7 +96,7 @@ function ManufacturingScanComplete() {
   }, h('label', {
     className: 'field scanner-field',
     htmlFor: 'production-box-scan'
-  }, h('span', null, 'Scan box code'), h('input', {
+  }, h('span', null, minimal ? 'Box ID' : 'Scan box code'), h('input', {
     id: 'production-box-scan',
     ref: scanner,
     autoFocus: false,
@@ -104,9 +104,9 @@ function ManufacturingScanComplete() {
     autoCapitalize: 'characters',
     spellCheck: false,
     value: code,
-    placeholder: 'Scan a box label…',
+    placeholder: minimal ? 'Enter box ID and press Enter' : 'Scan a box label…',
     onChange: event => setCode(event.target.value)
-  })), h('div', {
+  })), !minimal && h('div', {
     className: 'scanner-actions'
   }, h('button', {
     className: 'primary',
@@ -118,7 +118,7 @@ function ManufacturingScanComplete() {
       const sample = orders.flatMap(order => order.stage === 1 ? order.workOrders.flatMap(work => (work.boxes || []).filter(box => !box.completedAt && box.status !== 'completed')) : [])[0];
       if (sample) scan(sample.id);else setError('Create and assign a box in production first, then use this button to load it.');
     }
-  }, 'Load a test box'))), h('p', {
+  }, 'Load a test box'))), !minimal && h('p', {
     className: 'scanner-help'
   }, 'Scanners that type the code and send Enter work here. You can also type or paste a box ID and choose Find box.')), error && h('div', {
     className: 'alert',
@@ -138,7 +138,7 @@ function ManufacturingScanComplete() {
     className: 'badge ' + (completed ? 'green' : '')
   }, completed ? 'Completed' : 'In production')), h('div', {
     className: 'scanned-box-layout'
-  }, h(ManufacturingBoxQr, {
+  }, !minimal && h(ManufacturingBoxQr, {
     value: selected.box.id
   }), h('dl', {
     className: 'scanned-box-facts'
@@ -178,13 +178,13 @@ function ManufacturingScanComplete() {
   }, 'Scan another box'), h('button', {
     className: 'primary scanner-complete',
     disabled: !!completed || selected.order.stage !== 1
-  }, 'Mark box as completed')))), last && h('section', {
+  }, 'Mark box as completed')))), !minimal && last && h('section', {
     className: 'panel scanner-last'
   }, h('h3', null, 'Last completed box'), h('p', null, last.box.id + ' · ' + last.individualName), h('p', {
     className: 'quiet'
   }, last.box.completedPieces + ' pieces · ' + last.job.completed + ' / ' + last.job.quantity + ' pieces completed in ' + last.job.name), last.box.completedPieces < last.box.quantity && h('p', {
     className: 'callout'
-  }, last.box.quantity - last.box.completedPieces + ' pieces were not completed. They remain outstanding and can be allocated to a new box.')), h('section', {
+  }, last.box.quantity - last.box.completedPieces + ' pieces were not completed. They remain outstanding and can be allocated to a new box.')), !minimal && h('section', {
     className: 'panel'
   }, h('h3', null, 'Recently completed boxes'), recent.length ? h('div', {
     className: 'scanner-recent-list'

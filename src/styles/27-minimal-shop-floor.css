@@ -1,0 +1,11 @@
+.minimal-shop-floor .draft-banner,.minimal-shop-floor .app-footer>span,.minimal-shop-floor .workspace-brand,.minimal-shop-floor .brand-logo{display:none}
+.minimal-shop-floor .shell{max-width:540px;margin:auto;padding:20px 16px 110px}
+.minimal-shop-floor .top{min-height:48px;padding:8px 16px}
+.minimal-shop-floor .panel{padding:18px}
+.minimal-shop-floor .scanner-field input{font-size:18px;min-height:52px}
+.minimal-shop-floor .scanned-box-facts{grid-template-columns:1fr 1fr}
+.simple-box-setup .field{margin-bottom:20px}
+.simple-box-setup select{width:100%;min-height:52px;font-size:16px}
+.simple-box-setup button{width:100%;min-height:52px}
+.box-label-ready{margin-top:20px}
+.minimal-shop-floor .shop-floor-scan-dock{padding-bottom:calc(16px + env(safe-area-inset-bottom))}

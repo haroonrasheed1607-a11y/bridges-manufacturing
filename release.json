@@ -1,7 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Restore your last screen and selected order after refreshing.",
-    "Remember the Shop Floor tab and individual timesheet selection for each signed-in account."
+    "Simplified Shop Floor scanner and box setup screens for mobile.",
+    "Automatically choose the ongoing sub-job when preparing box labels."
   ]
 }

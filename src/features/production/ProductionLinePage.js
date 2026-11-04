@@ -1,3 +1,4 @@
+import {SimpleBoxSetup} from './SimpleBoxSetup.jsx';
 import {useScreenMemory} from '../../state/useScreenMemory.js';
 import { productionTabs } from '../auth/permissions.js';
 // features/production/ProductionLinePage.js
@@ -23,6 +24,8 @@ function ManufacturingProductionLine() {
   function selectTab(value) {
     setTab(value);
   }
+  if(profile?.role === 'box_scanner') return h(ManufacturingScanComplete,{minimal:true});
+  if(profile?.role === 'box_setup') return h(SimpleBoxSetup);
   return h('div', {
     className: 'production-line-workspace'
   }, h('div', {
