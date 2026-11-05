@@ -65,3 +65,9 @@ Production stickers use approximately 62 × 20.32 mm (2.4 × 0.8 inches), with a
 
 ## Version 1.9: smaller type and single-line names
 All printed font sizes are 75% of v1.8. Individual names stay on one line and clip at the label edge without an ellipsis. The order/work-order number row remains omitted; order title, sub-job/quantity and scannable ID remain. Sticker length and QR dimensions are unchanged from the compact v1.8 layout.
+
+
+## Version 1.10: files-in-use update recovery
+The updater now checks all package files for exclusive access before copying, waits for other app instances using the same installation to close, retries transient locks, and backs up only files being replaced. Failed copies attempt rollback and report whether recovery succeeded. The app prevents a second instance for the same Windows user and explicitly disposes its embedded browser on close. It never kills other apps or all WebView2 processes.
+
+If your currently installed older updater is already failing, close all BridgesShopFloor.exe processes, download the latest ZIP and extract the entire package into a **new folder** once. Do not overwrite files while the old app is running. Run the new copy and retire the old shortcut. Keep Update.ps1 with the app; future updates use the fixed updater. Antivirus or organization policies may still block writes; do not disable them to update.

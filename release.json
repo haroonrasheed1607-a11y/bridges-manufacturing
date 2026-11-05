@@ -1,6 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Sticker text is reduced to 75%, individual names clip on one line, and the order-number row remains removed."
+    "Windows v1.10 prevents duplicate app instances and waits/retries locked files before updating.",
+    "Update failures now report accurate rollback status and recovery steps."
   ]
 }

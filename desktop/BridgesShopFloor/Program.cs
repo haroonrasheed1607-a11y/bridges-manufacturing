@@ -6,7 +6,11 @@ using Microsoft.Web.WebView2.WinForms;
 
 namespace BridgesShopFloor;
 static class Program {
- [STAThread] static void Main(){ApplicationConfiguration.Initialize();Application.Run(new ShopFloor());}
+ [STAThread] static void Main(){
+  using var instance=new Mutex(true,"Local\\BridgesShopFloor-"+System.Security.Principal.WindowsIdentity.GetCurrent().User?.Value,out bool first);
+  if(!first){MessageBox.Show("Bridges Shop Floor is already open. Close the existing window before starting another copy.","Bridges Shop Floor");return;}
+  try{ApplicationConfiguration.Initialize();Application.Run(new ShopFloor());}finally{instance.ReleaseMutex();}
+ }
 }
 sealed class ShopFloor : Form {
  const string Origin="https://bridges-manufacturing.haroonrasheed1607.workers.dev";
@@ -19,7 +23,7 @@ sealed class ShopFloor : Form {
  List<LabelData>? lastLabels;
  record LabelData(string[] Lines,bool[][]? Matrix);
  public ShopFloor(){
-  Text="Bridges Shop Floor v1.9 · QL-800";
+  Text="Bridges Shop Floor v1.10 · QL-800";
   var area=Screen.PrimaryScreen?.WorkingArea??new Rectangle(0,0,1280,900);
   Width=Math.Max(480,Math.Min(1280,area.Width-40));Height=Math.Max(600,Math.Min(900,area.Height-60));MinimumSize=new(480,600);StartPosition=FormStartPosition.CenterScreen;
   var tools=new FlowLayoutPanel{Dock=DockStyle.Top,Height=85,Padding=new(6)};
@@ -39,6 +43,7 @@ sealed class ShopFloor : Form {
    await Start();
   };
  }
+ protected override void OnFormClosed(FormClosedEventArgs e){web.Dispose();base.OnFormClosed(e);}
  static bool Trusted(string source)=>Uri.TryCreate(source,UriKind.Absolute,out var uri)&&uri.GetLeftPart(UriPartial.Authority)==Origin;
  async Task Start(){try{
   var env=await CoreWebView2Environment.CreateAsync(null,Path.Combine(directory,"Browser"));
@@ -58,7 +63,7 @@ sealed class ShopFloor : Form {
    await web.CoreWebView2.Profile.SetPermissionStateAsync(CoreWebView2PermissionKind.Microphone,Origin,CoreWebView2PermissionState.Deny);
   } catch { status.Text="Camera permission setup unavailable · update WebView2 Runtime"; }
   web.CoreWebView2.WebMessageReceived+=Receive;
-  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.9\",cameraSettings:true})});}");
+  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.10\",cameraSettings:true})});}");
   web.CoreWebView2.NavigationCompleted+=(_,e)=>status.Text=e.IsSuccess?"Ready · select boxer or scanner to begin":"Connection failed · check internet and Reload";
   web.Source=new Uri(Origin);
  }catch(Exception ex){MessageBox.Show("Install Microsoft Edge WebView2 Runtime, then restart.\n\n"+ex.Message,"Unable to start");}}
