@@ -1,0 +1,27 @@
+begin;
+do $$declare uid uuid;oid text:='TEST-APPROVAL-ORDER';wid text:='TEST-APPROVAL-WORK';jid text:='TEST-APPROVAL-JOB';pid text:='TEST-APPROVAL-PERSON';r jsonb;request uuid:=gen_random_uuid();begin
+ select id into uid from public.staff_profiles where role='admin' and active limit 1;
+ perform set_config('request.jwt.claim.sub',uid::text,true);
+ insert into public.people(id,name,kind,hours_per_day,data) values(pid,'Rollback approval individual','individual',6,'{}');
+ insert into public.orders(id,customer_id,stage,data) values(oid,(select id from public.customers limit 1),2,'{"title":"Previous QR approval test"}');
+ insert into public.work_orders(id,order_id,quantity,pieces_per_pack,data) values(wid,oid,100,25,'{"description":"Approval work"}');
+ insert into public.sub_jobs(id,work_order_id,quantity,data) values(jid,wid,100,'{"name":"Approval sub-job"}');
+ insert into public.boxes(id,sub_job_id,person_id,quantity,data) values('TEST-APPROVAL-B1',jid,pid,25,'{"date":"2026-01-05"}'),('TEST-APPROVAL-B2',jid,pid,25,'{"date":"2026-01-05"}');
+ r:=public.app_barcode_queue('box','2026-01-01','2026-01-31','TEST-APPROVAL',0);if (r->>'total')::int<>2 then raise exception 'Queue filter failed';end if;
+ r:=public.app_approve_barcodes('box',array['TEST-APPROVAL-B1','TEST-APPROVAL-B2'],request,'Verified prior production');
+ if (r->>'changed')::int<>2 or (r->>'pieces')::int<>50 then raise exception 'Bulk approval totals failed';end if;
+ r:=public.app_approve_barcodes('box',array['TEST-APPROVAL-B2','TEST-APPROVAL-B1'],request,'Verified prior production');if not (r->>'duplicate')::boolean then raise exception 'Retry was not recognized';end if;
+ r:=public.app_approve_barcodes('box',array['TEST-APPROVAL-B1'],gen_random_uuid(),'Already verified');if (r->>'skipped')::int<>1 then raise exception 'Repeat completion not skipped';end if;
+ if (select completed from public.sub_jobs where id=jid)<>50 or (select stage from public.orders where id=oid)<>2 then raise exception 'Counts doubled or stage changed';end if;
+ insert into public.boxes(id,sub_job_id,person_id,quantity,data) values('TEST-APPROVAL-B3',jid,pid,25,'{}'),('TEST-APPROVAL-B4',jid,pid,100,'{}');
+ begin perform public.app_approve_barcodes('box',array['TEST-APPROVAL-B3','TEST-APPROVAL-B4'],gen_random_uuid(),'Capacity test');raise exception 'Over-count accepted';exception when raise_exception then if sqlerrm not like 'Box % exceeds%' then raise;end if;end;
+ if (select completed_at from public.boxes where id='TEST-APPROVAL-B3') is not null or (select completed from public.sub_jobs where id=jid)<>50 then raise exception 'Failed batch partially committed';end if;
+ insert into public.dumping_assignments(id,sub_job_id,person_id,batch_quantity,created_by) values('DUMP-ABCDEFABCDEFABCD',jid,pid,100,uid);
+ r:=public.app_approve_barcodes('dumping',array['DUMP-ABCDEFABCDEFABCD'],gen_random_uuid(),'Close old reusable label');if (r->>'pieces')::int<>0 or (select active from public.dumping_assignments where id='DUMP-ABCDEFABCDEFABCD') then raise exception 'Reusable closure failed';end if;
+ if (select count(*) from public.production_records where box_id in ('TEST-APPROVAL-B1','TEST-APPROVAL-B2'))<>2 then raise exception 'Production audit missing';end if;
+ perform set_config('request.jwt.claim.sub',(select id::text from public.staff_profiles where role='box_setup' limit 1),true);
+ begin perform public.app_barcode_queue();raise exception 'Non-admin read approvals';exception when insufficient_privilege then null;end;
+ begin perform public.app_approve_barcodes('box',array['TEST-APPROVAL-B3'],gen_random_uuid(),'Unauthorized');raise exception 'Non-admin approved';exception when insufficient_privilege then null;end;
+ if has_function_privilege('anon','public.app_approve_barcodes(text,text[],uuid,text)','execute') or has_table_privilege('authenticated','public.barcode_approval_batches','select') then raise exception 'Approval API exposed';end if;
+end$$;
+rollback;

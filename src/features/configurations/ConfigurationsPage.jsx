@@ -1,9 +1,10 @@
 import {React} from '../../vendor/react-runtime.js';
 import {useManufacturing} from '../../state/ManufacturingContext.jsx';
 export function ConfigurationsPage(){
- const {profile}=useManufacturing();
+ const {profile,setView}=useManufacturing();
  if(profile?.role!=='admin')return null;
  return <><div className="page-heading"><div><div className="eyebrow">ADMINISTRATION</div><h2>Configurations</h2></div></div>
+ <section className="panel"><h3>QR code approvals</h3><p>Mark previous box codes complete or close reusable QR assignments, individually or in bulk.</p><button className="primary" onClick={()=>setView('barcodeapprovals')}>Open QR approvals</button></section>
  <section className="panel"><h3>Windows Shop Floor app</h3><p>Box setup, reusable dumping QR scans, bulk labels, previews and direct Brother QL-800 label printing, connected to your existing manufacturing data.</p>
  <p><a className="primary" href="https://github.com/haroonrasheed1607-a11y/bridges-manufacturing/releases/download/shop-floor-v1/Bridges-Shop-Floor-Windows-x64.zip" target="_blank" rel="noopener noreferrer">Download for Windows (64-bit)</a></p>
  <p className="quiet">Version 1.5 · About 73 MB · Direct download · No GitHub login required.</p>

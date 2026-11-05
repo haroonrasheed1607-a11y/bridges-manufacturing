@@ -213,3 +213,7 @@ Availability is recorded for explicit date ranges/selected weekdays; it is not a
 
 ### One active barcode per individual
 Apply `database/one-active-assignment.sql` after dumping setup. Box creation and reusable QR creation lock the same person row and reject an unfinished box or active, unfinished dumping assignment across any work order. Completion/closing releases the individual. Existing overlapping assignments are preserved and must be completed/closed before another is created. `app_person_current_work` returns readable assignments for reprinting; a coach cannot see another coach's order details, though a busy flag still blocks reassignment. Run `database/one-active-assignment-tests.sql`.
+
+
+### Administrator QR approvals
+Apply `database/admin-barcode-approvals.sql` and run `database/admin-barcode-approvals-tests.sql` (rollback-only). Configurations → QR code approvals is admin-only in both UI and RPCs. The queue lists 50 outstanding codes per page with date/search filters. A batch completes selected boxes at their assigned full quantity or closes reusable dumping assignments without adding pieces. It can reconcile old codes outside the current production stage, but never advances an order and never exceeds sub-job quantities. A required reason and actor are recorded in order events and the batch audit table. All selected operations run in one transaction; errors roll back the batch. UUID request references support safe retries, and already completed/closed codes are skipped. Completion timestamps are current approval time, not backdated.

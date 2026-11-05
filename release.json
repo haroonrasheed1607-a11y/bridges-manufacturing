@@ -1,8 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Single box setup displays current barcodes and prevents new assignments while an individual has unfinished work.",
-    "Bulk printing now selects one work date, individuals and a shared job for each batch.",
-    "Windows v1.5 enables webcam QR scanning with camera selection."
+    "Added admin-only QR approvals under Configurations for completing old box codes or closing reusable assignments in bulk.",
+    "Approvals include date/search filters, an audit reason and safe retry protection."
   ]
 }
