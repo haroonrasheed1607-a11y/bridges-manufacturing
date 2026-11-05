@@ -21,7 +21,7 @@ export function printBrowser(labels, { preview = false } = {}) {
   };
   const style = node(
     "style",
-    `@page{size:62mm 40mm;margin:0}*{box-sizing:border-box}html,body{margin:0;background:white;color:black}body{font:9pt Arial}.label{width:62mm;min-height:31mm;padding:6mm 2mm 3mm;display:flex;align-items:center;gap:1mm;break-after:page}.label:last-child{break-after:auto}svg{width:22mm;height:22mm;flex:none}.text{flex:1;min-width:0;line-height:1.15}.line{overflow:hidden;overflow-wrap:anywhere;max-height:2.4em}strong{font-size:10pt}.code{font:7pt monospace}.toolbar{padding:12px;position:sticky;top:0;background:#eee}.toolbar button{padding:12px;margin-right:12px}@media screen{body.preview .label{margin:16px;border:1px dashed #999}}@media print{.toolbar{display:none}}`,
+    `@page{size:62mm 20.32mm;margin:0}*{box-sizing:border-box}html,body{margin:0;background:white;color:black}body{font:9pt Arial}.label{width:62mm;min-height:20.32mm;padding:2mm 2mm 1.5mm;display:flex;align-items:center;gap:1mm;break-after:page}.label:last-child{break-after:auto}svg{width:16.5mm;height:16.5mm;flex:none}.text{flex:1;min-width:0;line-height:1.15}.line{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}strong{font-size:10pt}.code{font:7pt monospace}.toolbar{padding:12px;position:sticky;top:0;background:#eee}.toolbar button{padding:12px;margin-right:12px}@media screen{body.preview .label{margin:16px;border:1px dashed #999}}@media print{.toolbar{display:none}}`,
     doc.head,
   );
   doc.title = "Bridges box labels";
@@ -66,12 +66,11 @@ export function printBrowser(labels, { preview = false } = {}) {
     [
       label.person,
       label.orderTitle,
-      label.orderId + " / " + label.workId,
       label.job + " · " + label.quantity + " pcs",
       label.boxId,
     ].forEach((value, i) => {
       const line = node("div", undefined, text);
-      line.className = i === 4 ? "line code" : "line";
+      line.className = i === 3 ? "line code" : "line";
       node(i === 0 ? "strong" : "span", value, line);
     });
   }

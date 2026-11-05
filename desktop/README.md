@@ -57,3 +57,7 @@ Bulk setup follows work date → individuals → job/sub-job. All created boxes 
 
 ## Version 1.7: recover saved camera denials
 On startup the desktop app explicitly grants video camera permission to its fixed app origin in the WebView2 profile, replacing denials saved by older releases. Microphone permission stays denied. The scanner shows Windows-specific instructions and an **Open Windows camera settings** button when camera access fails. Windows privacy controls, administrator/device policies, disconnected hardware and cameras busy in other applications still apply. No Chrome login or Chrome site permission is needed inside this desktop app. Verify the title says v1.7 after updating.
+
+
+## Version 1.8: compact stickers
+Production stickers use approximately 62 × 20.32 mm (2.4 × 0.8 inches), with a QR reduced to 75% of the prior width/height. Order/work-order number lines are omitted; the label keeps the individual, order title, sub-job/pieces and scannable box or reusable ID. Text stays on single lines and long values are shortened to fit. Web and Windows printing use the compact layout; driver custom/automatic length must remain enabled. Verify scanning and margins with one label before a bulk run.
