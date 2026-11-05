@@ -18,3 +18,14 @@ export function limitedLog(entries,manual,date,limit=8){
  return Array.from({length:limit},(_,i)=>rows[i]||{code:'',pieces:'',first:'',last:'',count:0});
 }
 export function limitedCodes(summary,dates,limit=6){const codes=Object.keys(summary).filter(c=>dates.some(d=>Number(summary[c][d]||0)>0));if(codes.length<=limit)return codes.map(code=>({code,values:summary[code]}));return [...codes.slice(0,limit-1).map(code=>({code,values:summary[code]})),{code:'Other',values:Object.fromEntries(dates.map(d=>[d,codes.slice(limit-1).reduce((n,c)=>n+Number(summary[c][d]||0),0)]))}];}
+
+export function attendanceActionLog(data){
+ const days=data.days||{};
+ const manual=(data.manual||[]).filter(row=>!days[row.date]?.attendanceStatus||!['AT','DT'].includes(row.code));
+ for(const [date,day] of Object.entries(days)){
+  if(!day.attendanceStatus)continue;
+  if(day.arrival)manual.push({date,code:'AT',time:day.arrival,pieces:0});
+  if(day.departure)manual.push({date,code:'DT',time:day.departure,pieces:0});
+ }
+ return manual;
+}

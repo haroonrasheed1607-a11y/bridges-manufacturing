@@ -18,7 +18,7 @@ sealed class ShopFloor : Form {
  List<LabelData>? lastLabels;
  record LabelData(string[] Lines,bool[][]? Matrix);
  public ShopFloor(){
-  Text="Bridges Shop Floor v1.3 · QL-800";Width=680;Height=850;MinimumSize=new(480,600);
+  Text="Bridges Shop Floor v1.4 · QL-800";Width=680;Height=850;MinimumSize=new(480,600);
   var tools=new FlowLayoutPanel{Dock=DockStyle.Top,Height=85,Padding=new(6)};
   var refresh=new Button{Text="Reload",AutoSize=true};refresh.Click+=(_,_)=>web.Reload();
   var test=new Button{Text="Test printer",AutoSize=true};test.Click+=(_,_)=>TestPrinter();
@@ -60,7 +60,7 @@ sealed class ShopFloor : Form {
    if(entries.Length==0)return;
    if(entries.Length>100)throw new Exception("Print at most 100 labels per batch.");
    var labels=entries.Select(ParseLabel).ToList();lastLabels=labels;
-   PrintBatch(labels,preview.Checked);
+   PrintBatch(labels,preview.Checked||(m.TryGetProperty("preview",out var requestedPreview)&&requestedPreview.ValueKind==JsonValueKind.True));
   }catch(Exception ex){status.Text="Print failed · box remains saved";MessageBox.Show(ex.Message+"\nUse Reprint label after correcting the printer. Do not create a second box.","Printing failed");}
  }
  static LabelData ParseLabel(JsonElement m){

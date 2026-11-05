@@ -1,6 +1,8 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Reformatted shared workspace state and documented its sections for easier source review."
+    "Added weekly/monthly availability and daily attendance linked to individual timesheets.",
+    "Added reusable dumping QR assignments with automatic batch scans, named success screens and duplicate protection.",
+    "Web and Windows Shop Floor now share bulk labels and preview."
   ]
 }

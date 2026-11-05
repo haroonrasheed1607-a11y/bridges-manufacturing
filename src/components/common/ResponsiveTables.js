@@ -8,7 +8,7 @@ function ResponsiveTables() {
     function labelTables() {
       root.querySelectorAll('table').forEach(table => {
         const headings = Array.from(table.querySelectorAll('thead th')).map(th => th.textContent.trim());
-        if (table.closest('.timesheet-paper, .challan-paper, .manufacturing-paper, .work-order-sheet')) {
+        if (table.closest('.timesheet-paper, .challan-paper, .manufacturing-paper, .work-order-sheet,.availability-chart')) {
           table.classList.remove('mobile-cards');
           table.querySelectorAll('[data-label]').forEach(cell => cell.removeAttribute('data-label'));
           return;

@@ -3,7 +3,7 @@ import {React} from '../../vendor/react-runtime.js';
 import {useManufacturing} from '../../state/ManufacturingContext.jsx';
 import {useScreenMemory} from '../../state/useScreenMemory.js';
 import {manufacturingIsCoach} from '../../domain/workforce.js';
-import {manufacturingPrintBox} from '../../domain/boxLabels.js';
+import {manufacturingPrintBox,manufacturingPreviewLabels} from '../../domain/boxLabels.js';
 import {manufacturingToday} from '../../utils/dates.js';
 import {createId} from '../../utils/ids.js';
 import {nextBoxJob,remainingBoxPieces} from './boxSetupModel.js';
@@ -40,6 +40,6 @@ export function SimpleBoxSetup(){
  {job&&<p className="quiet" aria-live="polite">{job.name} · {quantity} pieces per box</p>}
  <button className="primary" disabled={busy||!job||!personId||quantity<1}>{busy?'Creating…':'Create & print box'}</button>
  </form>{error&&<p className="alert" role="alert">{error}</p>}
- {label&&<div className="box-label-ready" role="status"><p>Box ready · {label.box.id}</p><button className="primary" onClick={()=>setError(manufacturingPrintBox(label.order,label.work,label.job,label.box,label.person))}>Reprint label</button></div>}
- </section>{window.bridgesDesktop?.bulkPrinting&&<BulkBoxSetup/>}</>;
+ {label&&<div className="box-label-ready" role="status"><p>Box ready · {label.box.id}</p><button onClick={()=>setError(manufacturingPreviewLabels([label]))}>Preview label</button><button className="primary" onClick={()=>setError(manufacturingPrintBox(label.order,label.work,label.job,label.box,label.person))}>Reprint label</button></div>}
+ </section><BulkBoxSetup/></>;
 }

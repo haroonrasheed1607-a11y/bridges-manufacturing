@@ -1,3 +1,5 @@
+import {DumpingScanner} from '../dumping/DumpingScanner.jsx';
+import {isDumpingCode} from '../dumping/model.js';
 import { QrCamera } from './QrCamera.jsx';
 // features/production/ScanComplete.js
 import { FormField } from "../../components/common/FormField.js";
@@ -15,6 +17,8 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     } = useManufacturing(),
     h = React.createElement,
     [cameraOpen, setCameraOpen] = React.useState(false),
+    [dumpCode,setDumpCode] = React.useState(''),
+    dumpLock = React.useRef(false),
     [code, setCode] = React.useState(''),
     [selectedCode, setSelectedCode] = React.useState(''),
     [pieces, setPieces] = React.useState(''),
@@ -37,6 +41,10 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     scanner.current?.select();
   }
   function scan(value) {
+    if(dumpLock.current)return;
+    if(isDumpingCode(value)){
+      dumpLock.current=true;setDumpCode(String(value).trim().toUpperCase());setCode('');setSelectedCode('');setError('');return;
+    }
     saving.current = false;
     setMessage('');
     setLast(null);
@@ -75,6 +83,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     setError('');
     focusScanner();
   }
+  if(dumpCode)return h(DumpingScanner,{key:dumpCode,code:dumpCode,onDone:()=>{setDumpCode('');dumpLock.current=false;setTimeout(focusScanner,0);}});
   return h('div', {
     className: 'production-line-page'
   }, !minimal && h('div', {

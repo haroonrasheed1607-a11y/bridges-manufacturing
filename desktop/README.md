@@ -38,3 +38,11 @@ Top clearance is approximately 6 mm. Test actual cutting and clipping with the B
 
 ## Security status
 Public download/source code does not itself grant admin access. However, the currently enabled passwordless scanner/boxer login endpoint intentionally grants those restricted roles to anyone who can reach it. This is a testing/shared-device configuration, not production-ready access control. Before going live, replace it with staff authentication or enrolled devices and remove the weak test admin password. The executable and updater are not code-signed: HTTPS and checksums protect transfer integrity but do not protect against compromise of the publishing GitHub account. Protect that account and add signing before a wider rollout. Sessions remain scoped to each Windows user; sign out on shared PCs. The app only accepts native print messages from its fixed website origin, validates label structure and restricts printer selection to QL-800 drivers. This is a targeted review, not a complete security audit.
+
+
+## Version 1.4: availability, attendance and dumping
+The shared Shop Floor supports box tracking and reusable dumping assignments in both web and desktop. Boxer setup can create a reusable QR for an individual/sub-job and configurable pieces per scan. In scanner mode, presenting that QR records a fresh completion automatically and displays a green named success screen for five seconds. Repeated presentations within five seconds are rejected on the server; retries reuse an event reference. This prevents common duplicate reads but is not proof a physical batch was actually produced. Remove the QR between batches. A smaller final batch can be entered after a capacity error. Closed assignments cannot record further pieces.
+
+Availability and Attendance are under Directory for managers/admins and available to Job Coaches. Managers/coaches enter availability on an individual's behalf; there is no new student login. Unknown days remain unknown. Attendance and dumping totals feed weekly timesheets, with recorded attendance overriding that date's legacy attendance fields. Work hours must be explicitly recorded and are not inferred from production scans.
+
+Bulk box labels and preview are also available in the web app. The web app uses its normal browser print dialog; silent printing remains a Windows driver feature.

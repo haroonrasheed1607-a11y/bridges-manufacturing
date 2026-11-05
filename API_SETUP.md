@@ -201,3 +201,11 @@ print only. The report has eight action-log rows per day and up to six job-code
 columns. Codes are grouped; overflow is summed into Other and included in all
 piece totals. Notes are displayed up to 240 characters. Existing stored records
 remain intact; this screen no longer adds, edits or saves timesheet data.
+
+
+### Availability, attendance and reusable dumping
+After the existing schema, API hardening, shop-floor roles and original timesheet setup, apply `database/availability-attendance.sql`, then `database/dumping.sql`, then `database/timesheets-dumping-upgrade.sql`. For a fresh installation, use the updated `timesheets.sql` after the availability and dumping migrations instead of the upgrade file. Do not reapply baseline hardening after dumping: the dumping migration adds protection for its completion totals.
+
+Run `database/rosters-dumping-tests.sql` (rollback-only) and the existing API/timesheet tests. All new tables have RLS and no client table grants; only checked RPCs expose them. Managers/admins/coaches can read and update rosters; setup roles create/close dumping assignments; scanner roles record completions. Coach access to dumping is limited to assigned work. The pre-existing public quick-login security limitation remains unchanged.
+
+Availability is recorded for explicit date ranges/selected weekdays; it is not a recurring calendar or student self-service login. Attendance is explicit per date with revision checks. A dumping scan uses a unique UUID request reference, locks the order/assignment/sub-job, honors outstanding box allocations, and records an immutable completion. Assignments do not reserve a future total. The five-second assignment-level guard reduces duplicate scanner presentations across devices; it cannot verify physical work. Every accepted event is included once in the person's weekly piece totals.

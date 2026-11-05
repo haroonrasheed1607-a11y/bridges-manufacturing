@@ -1,3 +1,6 @@
+import {ShopFloorSetup} from './ShopFloorSetup.jsx';
+import {DumpingSetup} from '../dumping/DumpingSetup.jsx';
+import {BulkBoxSetup} from './BulkBoxSetup.jsx';
 import {SimpleBoxSetup} from './SimpleBoxSetup.jsx';
 import {useScreenMemory} from '../../state/useScreenMemory.js';
 import { productionTabs } from '../auth/permissions.js';
@@ -19,13 +22,14 @@ function ManufacturingProductionLine() {
   const activeOrders = orders.filter(order => order.stage === 1 && order.workOrders.length),
     order = activeOrders.find(item => item.id === orderId) || activeOrders[0];
   const tabs = productionTabs(profile?.role);
+  if(tabs.some(([value])=>value==='print')) tabs.push(['dumping','Dumping · reusable QR']);
   if (!tabs.length) return h('p', {role:'alert'}, 'Production access required.');
   const tab = tabs.some(([value]) => value === selectedTab) ? selectedTab : tabs[0][0];
   function selectTab(value) {
     setTab(value);
   }
   if(profile?.role === 'box_scanner') return h(ManufacturingScanComplete,{minimal:true});
-  if(profile?.role === 'box_setup') return h(SimpleBoxSetup);
+  if(profile?.role === 'box_setup') return h(ShopFloorSetup);
   return h('div', {
     className: 'production-line-workspace'
   }, h('div', {
@@ -61,7 +65,7 @@ function ManufacturingProductionLine() {
     role: 'tabpanel',
     'aria-labelledby': 'production-tab-' + tab,
     key: tab
-  }, tab === 'scan' ? h(ManufacturingScanComplete) : h(React.Fragment, null, h('section', {
+  }, tab === 'scan' ? h(ManufacturingScanComplete) : tab === 'dumping' ? h(DumpingSetup) : h(React.Fragment, null, h('section', {
     className: 'panel'
   }, h('h3', null, 'Generate printouts for boxes'), h('p', {
     className: 'quiet'
@@ -82,7 +86,7 @@ function ManufacturingProductionLine() {
       ...current,
       workOrders: current.workOrders.map(work => work.id === workId ? updater(work) : work)
     }), message)
-  }))));
+  }),h(BulkBoxSetup))));
 }
 
 export { ManufacturingProductionLine };

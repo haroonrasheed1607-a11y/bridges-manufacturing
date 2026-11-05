@@ -1,3 +1,5 @@
+import {AvailabilityPage} from './features/availability/AvailabilityPage.jsx';
+import {AttendancePage} from './features/attendance/AttendancePage.jsx';
 import {ConfigurationsPage} from './features/configurations/ConfigurationsPage.jsx';
 import { UsersPage } from './features/users/UsersPage.jsx';
 import { isShopFloorRole } from './features/auth/permissions.js';
@@ -23,6 +25,7 @@ function App() {
     order: t
   } = useManufacturing();
   if(isShopFloorRole(profile?.role))return React.createElement(AppLayout,null,React.createElement(ManufacturingProductionLine));
+  if(['admin','manager','coach'].includes(profile?.role)&&['availability','attendance'].includes(e))return React.createElement(AppLayout,null,React.createElement(e==='availability'?AvailabilityPage:AttendancePage));
   if(!manager)return React.createElement(AppLayout,null,e==='detail'&&t?React.createElement(React.Fragment,null,React.createElement('button',{onClick:()=>setView('board')},'← Job board'),React.createElement('h2',null,t.title),React.createElement(WorkOrdersPage)):e==='board'?React.createElement(ManufacturingJobBoard):React.createElement(ManufacturingProductionLine));
   return (0, jsxRuntime.jsx)(AppLayout, {
     children: e === 'configurations' && profile?.role === 'admin' ? React.createElement(ConfigurationsPage) : e === 'users' && profile?.role === 'admin' ? React.createElement(UsersPage) : e === `productionline` ? (0, jsxRuntime.jsx)(ManufacturingProductionLine, {}) : e === `individuals` ? (0, jsxRuntime.jsx)(ManufacturingIndividuals, {}) : e === `board` ? (0, jsxRuntime.jsx)(ManufacturingJobBoard, {}) : e === `customers` ? (0, jsxRuntime.jsx)(ManufacturingCustomers, {}) : e === `dashboard` ? (0, jsxRuntime.jsx)(ManufacturingDashboard, {}) : e === `new` ? (0, jsxRuntime.jsx)(CreateOrderPage, {}) : e === `workflow` ? (0, jsxRuntime.jsx)(WorkflowPage, {}) : e === `detail` && t ? (0, jsxRuntime.jsx)(OrderDetailsPage, {}, t.id) : (0, jsxRuntime.jsx)(OrdersPage, {})

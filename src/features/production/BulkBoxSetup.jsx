@@ -1,7 +1,7 @@
 import {React} from '../../vendor/react-runtime.js';
 import {useManufacturing} from '../../state/ManufacturingContext.jsx';
 import {manufacturingIsCoach} from '../../domain/workforce.js';
-import {manufacturingPrintBoxBatch} from '../../domain/boxLabels.js';
+import {manufacturingPrintBoxBatch,manufacturingPreviewLabels} from '../../domain/boxLabels.js';
 import {manufacturingToday} from '../../utils/dates.js';
 import {createId} from '../../utils/ids.js';
 import {remainingBoxPieces} from './boxSetupModel.js';
@@ -38,6 +38,6 @@ export function BulkBoxSetup(){
  <fieldset><legend>Available individuals · {selected.length} selected</legend>{people.map(p=><label key={p.id} style={{display:'block',padding:'8px'}}><input type="checkbox" checked={selected.includes(p.id)} onChange={e=>setSelected(ids=>e.target.checked?[...ids,p.id]:ids.filter(id=>id!==p.id))}/>{' '+p.name}{assigned.has(p.id)?' · Has open box':''}</label>)}{!people.length&&<p>No available individuals.</p>}</fieldset>
  <button className="primary" disabled={busy||!job||!selected.length}>{busy?'Preparing batch…':'Create & print '+selected.length+' labels'}</button>
  </form>{error&&<p className="alert" role="alert">{error}</p>}
- {saved.length>0&&<div role="status"><p>{saved.length} boxes saved. Reprinting will reuse their IDs.</p><button onClick={()=>setError(manufacturingPrintBoxBatch(saved))}>Print saved batch</button><ul>{saved.map(x=><li key={x.box.id}>{x.person?.name} · {x.box.id} · {x.box.quantity} pcs</li>)}</ul></div>}
+ {saved.length>0&&<div role="status"><p>{saved.length} boxes saved. Reprinting will reuse their IDs.</p><button onClick={()=>setError(manufacturingPreviewLabels(saved))}>Preview saved batch</button><button onClick={()=>setError(manufacturingPrintBoxBatch(saved))}>Print saved batch</button><ul>{saved.map(x=><li key={x.box.id}>{x.person?.name} · {x.box.id} · {x.box.quantity} pcs</li>)}</ul></div>}
  </details>;
 }

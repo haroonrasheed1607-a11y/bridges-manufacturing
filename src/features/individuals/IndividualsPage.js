@@ -10,7 +10,7 @@ import { React } from "../../vendor/react-runtime.js";
 
 function ManufacturingIndividuals() {
   const {
-      orders,
+      setView, orders,
       workforce,
       saveIndividual,
       saveBooking,
@@ -98,7 +98,7 @@ function ManufacturingIndividuals() {
     className: 'quiet'
   }, 'See booked work and remaining capacity before making future bookings.')), h('div', {
     className: 'people-heading-actions'
-  }, formButton('Weekly timesheets',()=>setTimesheetPerson(selected||'')), formButton('＋ Add individual', () => {
+  }, formButton('Weekly timesheets',()=>setTimesheetPerson(selected||'')), formButton('Availability chart',()=>setView('availability')), formButton('Attendance roster',()=>setView('attendance')), formButton('＋ Add individual', () => {
     setPersonForm({
       name: '',
       role: '',

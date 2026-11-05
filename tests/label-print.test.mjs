@@ -1,29 +1,24 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {manufacturingPrintBox} from '../src/domain/boxLabels.js';
-test('labels print in an embedded frame after load and remove it after printing',()=>{
- const oldWindow=globalThis.window,oldDocument=globalThis.document,oldTimeout=globalThis.setTimeout;globalThis.window={};
- let load,after,html='',printed=0,removed=0;
- const frame={style:{},setAttribute(){},remove(){removed++;},addEventListener(name,fn){if(name==='load')load=fn;},contentWindow:{document:{querySelector(){return null;},open(){},write(v){html=v;},close(){}},addEventListener(name,fn){if(name==='afterprint')after=fn;},focus(){},print(){printed++;}}};
- globalThis.document={createElement(tag){assert.equal(tag,'iframe');return frame;},body:{appendChild(){}}};globalThis.setTimeout=()=>0;
+import {manufacturingPrintBox,manufacturingPrintBoxBatch,manufacturingPreviewLabels} from '../src/domain/boxLabels.js';
+const label={order:{title:'A & B',id:'O1'},work:{id:'W1'},job:{name:'Sub 1'},box:{id:'BOX-1',quantity:25},person:{name:'Alex'}};
+test('browser labels print in a same-page frame; preview does not print automatically',()=>{
+ const originals={window:globalThis.window,document:globalThis.document,setTimeout:globalThis.setTimeout};let scheduled,after,printed=0,removed=0;const values=[];
+ const element=()=>({style:{},setAttribute(){},appendChild(){},getBoundingClientRect(){return {height:130};},remove(){removed++;},set textContent(v){values.push(v);},get textContent(){return '';}});
+ const doc={head:element(),body:element(),createElement:()=>element(),createElementNS:()=>element()};
+ const popup={document:doc,requestAnimationFrame:f=>scheduled=f,addEventListener:(n,f)=>{if(n==='afterprint')after=f;},focus(){},print(){printed++;}};
+ globalThis.window={};globalThis.document={body:element(),createElement:tag=>{assert.equal(tag,'iframe');return {...element(),contentWindow:popup};}};globalThis.setTimeout=()=>0;
  try{
- assert.equal(manufacturingPrintBox({title:'A & B',id:'O1'},{id:'W1'},{name:'Sub 1'},{id:'BOX-1',quantity:25},{name:'Alex'}),'');
- assert.equal(printed,0);assert.match(html,/62mm 40.64mm/);assert.match(html,/A &amp; B/);
- load();assert.equal(printed,1);after();assert.equal(removed,1);
- }finally{globalThis.window=oldWindow;globalThis.document=oldDocument;globalThis.setTimeout=oldTimeout;}
+ assert.equal(manufacturingPrintBox(label.order,label.work,label.job,label.box,label.person),'');assert.equal(printed,0);scheduled();assert.equal(printed,1);assert.ok(values.includes('A & B'));after();assert.equal(removed,1);
+ assert.equal(manufacturingPreviewLabels([label]),'');scheduled();assert.equal(printed,1);
+ }finally{Object.assign(globalThis,originals);}
 });
-test('desktop labels go to the native printer bridge without creating a print frame',()=>{
+test('native bridge preserves label IDs and supports batches and preview',()=>{
  const old=globalThis.window;let sent;
- globalThis.window={bridgesDesktop:{version:1},chrome:{webview:{postMessage:m=>sent=m}}};
+ globalThis.window={bridgesDesktop:{version:1,bulkPrinting:true},chrome:{webview:{postMessage:m=>sent=m}}};
  try{
- assert.equal(manufacturingPrintBox({title:'Assembly',id:'O1'},{id:'W1'},{name:'Sub 1'},{id:'BOX-2',quantity:25},{name:'Alex'}),'');
- assert.equal(sent.type,'bridges.print-box');assert.equal(sent.boxId,'BOX-2');assert.equal(sent.person,'Alex');assert.equal(sent.matrix.length,25);
- }finally{globalThis.window=old;}
-});
-test('native bulk printing sends a single batch with reusable saved box IDs',async()=>{
- const {manufacturingPrintBoxBatch}=await import('../src/domain/boxLabels.js');const old=globalThis.window;let sent;
- globalThis.window={bridgesDesktop:{version:1},chrome:{webview:{postMessage:m=>sent=m}}};
- try{const label={order:{id:'O1',title:'Assembly'},work:{id:'W1'},job:{name:'Sub1'},box:{id:'BOX-3',quantity:10},person:{name:'Sam'}};
- assert.equal(manufacturingPrintBoxBatch([label]),'');assert.equal(sent.type,'bridges.print-boxes');assert.equal(sent.labels[0].boxId,'BOX-3');assert.match(manufacturingPrintBoxBatch([]),/1 and 100/);
+ assert.equal(manufacturingPrintBox(label.order,label.work,label.job,label.box,label.person),'');assert.equal(sent.type,'bridges.print-box');assert.equal(sent.boxId,'BOX-1');assert.equal(sent.matrix.length,25);
+ assert.equal(manufacturingPrintBoxBatch([label,label]),'');assert.equal(sent.type,'bridges.print-boxes');assert.equal(sent.labels.length,2);
+ manufacturingPreviewLabels([label]);assert.equal(sent.preview,true);assert.match(manufacturingPrintBoxBatch([]),/1 and 100/);
  }finally{globalThis.window=old;}
 });

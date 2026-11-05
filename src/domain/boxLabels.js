@@ -1,3 +1,6 @@
+import {labelData} from '../services/printing/labelData.js';
+import {printBrowser} from '../services/printing/browserPrinter.js';
+import {hasDesktopPrinter,printDesktop} from '../services/printing/desktopPrinter.js';
 // domain/boxLabels.js
 import { manufacturingQrTemplate } from "../assets/qrTemplate.js";
 
@@ -71,51 +74,12 @@ function manufacturingQrMatrix(text) {
 function manufacturingQrPath(value) {
   return manufacturingQrMatrix(value).flatMap((row, y) => row.flatMap((dark, x) => dark ? ['M' + (x + 4) + ' ' + (y + 4) + 'h1v1h-1z'] : [])).join('');
 }
-function manufacturingPrintBox(order, work, job, box, person) {
-  if (window.bridgesDesktop?.version === 1 && window.chrome?.webview) {
-    window.chrome.webview.postMessage({type:'bridges.print-box',matrix:manufacturingQrMatrix(box.id),
-      person:String(person?.name || 'Unassigned'),orderTitle:String(order.title || ''),orderId:String(order.id || ''),
-      workId:String(work.id || ''),job:String(job.name || ''),quantity:String(box.quantity),boxId:String(box.id)});
-    return '';
-  }
-  const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '"': '&quot;',
-      "'": '&#39;'
-    })[char]),
-    frame = document.createElement('iframe');
-  frame.title = 'Box label print';
-  frame.setAttribute('aria-hidden','true');
-  frame.style.cssText = 'position:fixed;left:-10000px;top:0;width:62mm;height:40.64mm;border:0;pointer-events:none';
-  document.body.appendChild(frame);
-  const popup = frame.contentWindow;
-  if (!popup) {frame.remove();return 'Unable to prepare printing. Use Reprint label to try again.';}
-  const cleanup = () => frame.remove();
-  popup.addEventListener('afterprint',cleanup,{once:true});
-  const timeout = setTimeout(cleanup,300000);
-  frame.addEventListener('load',()=>{
-    try {
-      const label=popup.document.querySelector('.label');
-      if(label){const mm=Math.ceil(label.getBoundingClientRect().height*25.4/96*10)/10;
-        const page=popup.document.createElement('style');page.textContent='@page{size:62mm '+mm+'mm;margin:0}';popup.document.head.appendChild(page);}
-      popup.focus();popup.print();
-    }
-    catch {clearTimeout(timeout);cleanup();window.alert('Printing could not open. Use Reprint label to try again.');}
-  },{once:true});
-  popup.document.open();
-  popup.document.write('<!doctype html><html><head><title>Box ' + escape(box.id) + '</title><style>@page{size:62mm 40.64mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#000;background:white}body{font:9pt Arial}.label{width:62mm;min-height:26mm;height:auto;padding:6mm 2mm 3mm;display:flex;align-items:center;gap:1mm;overflow:hidden}svg{width:22mm;height:22mm;flex:none}.text{flex:1;min-width:0;line-height:1.15}.line{overflow:hidden;overflow-wrap:anywhere;max-height:2.4em}strong{font-size:10pt}.code{font:7pt monospace;margin-top:.5mm}</style></head><body><section class="label"><svg viewBox="0 0 33 33" shape-rendering="crispEdges"><rect width="33" height="33" fill="white"/><path d="' + manufacturingQrPath(box.id) + '" fill="black"/></svg><div class="text"><div class="line"><strong>' + escape(person?.name || 'Unassigned') + '</strong></div><div class="line">' + escape(order.title) + '</div><div class="line">' + escape(order.id) + ' / ' + escape(work.id) + '</div><div class="line">' + escape(job.name) + ' · ' + escape(box.quantity) + ' pcs</div><div class="line code">' + escape(box.id) + '</div></div></section></body></html>');
-  popup.document.close();
-  return '';
+function printLabels(labels,options={}) {
+ if(!labels.length||labels.length>100)return 'Choose between 1 and 100 labels.';
+ const data=labels.map(label=>labelData(label,manufacturingQrMatrix(label.box.id)));
+ return hasDesktopPrinter()?printDesktop(data,options):printBrowser(data,options);
 }
-
-export { manufacturingQrMatrix, manufacturingQrPath, manufacturingPrintBox };
-
-export function manufacturingPrintBoxBatch(labels){
- if(window.bridgesDesktop?.version!==1||!window.chrome?.webview)return 'Bulk printing requires the Windows Shop Floor app.';
- if(!labels.length||labels.length>100)return 'Choose between 1 and 100 individuals.';
- window.chrome.webview.postMessage({type:'bridges.print-boxes',labels:labels.map(({order,work,job,box,person})=>({
- matrix:manufacturingQrMatrix(box.id),person:String(person?.name||'Unassigned'),orderTitle:String(order.title||''),orderId:String(order.id||''),workId:String(work.id||''),job:String(job.name||''),quantity:String(box.quantity),boxId:String(box.id)}))});
- return '';
-}
+function manufacturingPrintBox(order,work,job,box,person){return printLabels([{order,work,job,box,person}]);}
+function manufacturingPrintBoxBatch(labels){return printLabels(labels);}
+function manufacturingPreviewLabels(labels){return printLabels(labels,{preview:true});}
+export {manufacturingQrMatrix,manufacturingQrPath,manufacturingPrintBox,manufacturingPrintBoxBatch,manufacturingPreviewLabels};
