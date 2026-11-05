@@ -105,9 +105,17 @@ function manufacturingPrintBox(order, work, job, box, person) {
     catch {clearTimeout(timeout);cleanup();window.alert('Printing could not open. Use Reprint label to try again.');}
   },{once:true});
   popup.document.open();
-  popup.document.write('<!doctype html><html><head><title>Box ' + escape(box.id) + '</title><style>@page{size:62mm 40.64mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#000;background:white}body{font:9pt Arial}.label{width:62mm;min-height:26mm;height:auto;padding:2mm 2mm;display:flex;align-items:center;gap:1mm;overflow:hidden}svg{width:22mm;height:22mm;flex:none}.text{flex:1;min-width:0;line-height:1.15}.line{overflow:hidden;overflow-wrap:anywhere;max-height:2.4em}strong{font-size:10pt}.code{font:7pt monospace;margin-top:.5mm}</style></head><body><section class="label"><svg viewBox="0 0 33 33" shape-rendering="crispEdges"><rect width="33" height="33" fill="white"/><path d="' + manufacturingQrPath(box.id) + '" fill="black"/></svg><div class="text"><div class="line"><strong>' + escape(person?.name || 'Unassigned') + '</strong></div><div class="line">' + escape(order.title) + '</div><div class="line">' + escape(order.id) + ' / ' + escape(work.id) + '</div><div class="line">' + escape(job.name) + ' · ' + escape(box.quantity) + ' pcs</div><div class="line code">' + escape(box.id) + '</div></div></section></body></html>');
+  popup.document.write('<!doctype html><html><head><title>Box ' + escape(box.id) + '</title><style>@page{size:62mm 40.64mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#000;background:white}body{font:9pt Arial}.label{width:62mm;min-height:26mm;height:auto;padding:6mm 2mm 3mm;display:flex;align-items:center;gap:1mm;overflow:hidden}svg{width:22mm;height:22mm;flex:none}.text{flex:1;min-width:0;line-height:1.15}.line{overflow:hidden;overflow-wrap:anywhere;max-height:2.4em}strong{font-size:10pt}.code{font:7pt monospace;margin-top:.5mm}</style></head><body><section class="label"><svg viewBox="0 0 33 33" shape-rendering="crispEdges"><rect width="33" height="33" fill="white"/><path d="' + manufacturingQrPath(box.id) + '" fill="black"/></svg><div class="text"><div class="line"><strong>' + escape(person?.name || 'Unassigned') + '</strong></div><div class="line">' + escape(order.title) + '</div><div class="line">' + escape(order.id) + ' / ' + escape(work.id) + '</div><div class="line">' + escape(job.name) + ' · ' + escape(box.quantity) + ' pcs</div><div class="line code">' + escape(box.id) + '</div></div></section></body></html>');
   popup.document.close();
   return '';
 }
 
 export { manufacturingQrMatrix, manufacturingQrPath, manufacturingPrintBox };
+
+export function manufacturingPrintBoxBatch(labels){
+ if(window.bridgesDesktop?.version!==1||!window.chrome?.webview)return 'Bulk printing requires the Windows Shop Floor app.';
+ if(!labels.length||labels.length>100)return 'Choose between 1 and 100 individuals.';
+ window.chrome.webview.postMessage({type:'bridges.print-boxes',labels:labels.map(({order,work,job,box,person})=>({
+ matrix:manufacturingQrMatrix(box.id),person:String(person?.name||'Unassigned'),orderTitle:String(order.title||''),orderId:String(order.id||''),workId:String(work.id||''),job:String(job.name||''),quantity:String(box.quantity),boxId:String(box.id)}))});
+ return '';
+}

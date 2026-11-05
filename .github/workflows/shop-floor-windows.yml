@@ -36,3 +36,7 @@ jobs:
           }
           gh release upload shop-floor-v1 Bridges-Shop-Floor-Windows-x64.zip --repo $env:GITHUB_REPOSITORY --clobber
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          [xml]$project = Get-Content desktop/BridgesShopFloor/BridgesShopFloor.csproj
+          @{version=[string]$project.Project.PropertyGroup.Version;sha256=(Get-FileHash Bridges-Shop-Floor-Windows-x64.zip -Algorithm SHA256).Hash} | ConvertTo-Json | Set-Content shop-floor-update.json
+          gh release upload shop-floor-v1 shop-floor-update.json --repo $env:GITHUB_REPOSITORY --clobber
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

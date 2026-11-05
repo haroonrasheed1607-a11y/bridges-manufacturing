@@ -20,3 +20,10 @@ test('desktop labels go to the native printer bridge without creating a print fr
  assert.equal(sent.type,'bridges.print-box');assert.equal(sent.boxId,'BOX-2');assert.equal(sent.person,'Alex');assert.equal(sent.matrix.length,25);
  }finally{globalThis.window=old;}
 });
+test('native bulk printing sends a single batch with reusable saved box IDs',async()=>{
+ const {manufacturingPrintBoxBatch}=await import('../src/domain/boxLabels.js');const old=globalThis.window;let sent;
+ globalThis.window={bridgesDesktop:{version:1},chrome:{webview:{postMessage:m=>sent=m}}};
+ try{const label={order:{id:'O1',title:'Assembly'},work:{id:'W1'},job:{name:'Sub1'},box:{id:'BOX-3',quantity:10},person:{name:'Sam'}};
+ assert.equal(manufacturingPrintBoxBatch([label]),'');assert.equal(sent.type,'bridges.print-boxes');assert.equal(sent.labels[0].boxId,'BOX-3');assert.match(manufacturingPrintBoxBatch([]),/1 and 100/);
+ }finally{globalThis.window=old;}
+});

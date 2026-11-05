@@ -25,3 +25,16 @@ WebView2 stores the login session under the current Windows user's LocalAppData/
 ## Build
 Windows developer command: `dotnet publish desktop/BridgesShopFloor/BridgesShopFloor.csproj -c Release -r win-x64 --self-contained true -o desktop-output`.
 The GitHub workflow builds the portable x64 package automatically. Printer hardware and Windows driver validation must be done on the actual station. Keep the web deployment current before using native printing.
+
+
+## Version 1.3: updates, preview and batches
+Install v1.3 once by replacing all extracted files. On future launches the app checks the fixed GitHub release for a newer version, downloads it over HTTPS, verifies its SHA-256 against the release manifest, stages files, and restarts with the update. Updates require write permission to the app folder. Keep it in a user-owned permanent folder. If the check fails the current version remains usable. Online screens update with the website. Native app version numbers must increase for future desktop releases.
+
+Use **Preview before printing** to inspect a single label or whole batch. **Preview last batch** shows the most recent submitted labels; the preview toolbar can print them again, so avoid printing the same batch twice accidentally.
+
+**Bulk box labels** lets you choose a work order, sub-job and individuals. Available means active non-coaches without open boxes; it is not a guarantee of attendance or free booked hours. You may include individuals with open boxes explicitly. One box is saved per person; the last can contain fewer pieces. The backend checks remaining capacity. Saving is sequential, not all-or-nothing: on a failure, already saved boxes are listed and can be printed without creating them again. No physical print success is inferred from a successful save or spool submission.
+
+Top clearance is approximately 6 mm. Test actual cutting and clipping with the Brother driver before production.
+
+## Security status
+Public download/source code does not itself grant admin access. However, the currently enabled passwordless scanner/boxer login endpoint intentionally grants those restricted roles to anyone who can reach it. This is a testing/shared-device configuration, not production-ready access control. Before going live, replace it with staff authentication or enrolled devices and remove the weak test admin password. The executable and updater are not code-signed: HTTPS and checksums protect transfer integrity but do not protect against compromise of the publishing GitHub account. Protect that account and add signing before a wider rollout. Sessions remain scoped to each Windows user; sign out on shared PCs. The app only accepts native print messages from its fixed website origin, validates label structure and restricts printer selection to QL-800 drivers. This is a targeted review, not a complete security audit.

@@ -1,6 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Box label length now fits its contents automatically while preserving the current text and QR sizes."
+    "Added top label spacing, Windows print preview and sub-job bulk labels for selected individuals.",
+    "Windows v1.3 adds automatic startup updates after a one-time installation."
   ]
 }

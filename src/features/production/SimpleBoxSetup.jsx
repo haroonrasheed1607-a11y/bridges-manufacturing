@@ -1,3 +1,4 @@
+import {BulkBoxSetup} from './BulkBoxSetup.jsx';
 import {React} from '../../vendor/react-runtime.js';
 import {useManufacturing} from '../../state/ManufacturingContext.jsx';
 import {useScreenMemory} from '../../state/useScreenMemory.js';
@@ -31,7 +32,7 @@ export function SimpleBoxSetup(){
   }catch{setError('Unable to prepare the label. If the box was saved, reprint its label instead of creating another.');}
   finally{lock.current=false;setBusy(false);}
  }
- return <section className="panel simple-box-setup"><h2>Box setup</h2><form onSubmit={create}>
+ return <><section className="panel simple-box-setup"><h2>Box setup</h2><form onSubmit={create}>
  <label className="field"><span>Available jobs</span><select value={selected?.work.id||''} onChange={e=>{setWorkId(e.target.value);setLabel(null);setError('');}} disabled={!jobs.length}>
  {!jobs.length&&<option value="">No jobs available</option>}{jobs.map(({order,work})=><option key={work.id} value={work.id}>{order.title} · {work.description||work.id}</option>)}
  </select></label>
@@ -40,5 +41,5 @@ export function SimpleBoxSetup(){
  <button className="primary" disabled={busy||!job||!personId||quantity<1}>{busy?'Creating…':'Create & print box'}</button>
  </form>{error&&<p className="alert" role="alert">{error}</p>}
  {label&&<div className="box-label-ready" role="status"><p>Box ready · {label.box.id}</p><button className="primary" onClick={()=>setError(manufacturingPrintBox(label.order,label.work,label.job,label.box,label.person))}>Reprint label</button></div>}
- </section>;
+ </section>{window.bridgesDesktop?.bulkPrinting&&<BulkBoxSetup/>}</>;
 }
