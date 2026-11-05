@@ -18,7 +18,9 @@ sealed class ShopFloor : Form {
  List<LabelData>? lastLabels;
  record LabelData(string[] Lines,bool[][]? Matrix);
  public ShopFloor(){
-  Text="Bridges Shop Floor v1.5 · QL-800";Width=680;Height=850;MinimumSize=new(480,600);
+  Text="Bridges Shop Floor v1.6 · QL-800";
+  var area=Screen.PrimaryScreen?.WorkingArea??new Rectangle(0,0,1280,900);
+  Width=Math.Max(480,Math.Min(1280,area.Width-40));Height=Math.Max(600,Math.Min(900,area.Height-60));MinimumSize=new(480,600);StartPosition=FormStartPosition.CenterScreen;
   var tools=new FlowLayoutPanel{Dock=DockStyle.Top,Height=85,Padding=new(6)};
   var refresh=new Button{Text="Reload",AutoSize=true};refresh.Click+=(_,_)=>web.Reload();
   var test=new Button{Text="Test printer",AutoSize=true};test.Click+=(_,_)=>TestPrinter();

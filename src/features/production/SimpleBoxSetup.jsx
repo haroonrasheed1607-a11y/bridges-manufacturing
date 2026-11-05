@@ -12,10 +12,12 @@ import {
 import { manufacturingToday } from "../../utils/dates.js";
 import { createId } from "../../utils/ids.js";
 import { nextBoxJob, remainingBoxPieces } from "./boxSetupModel.js";
-export function SimpleBoxSetup() {
+export function SimpleBoxSetup({ includeBulk = true } = {}) {
   const { orders, workforce, createProductionBox } = useManufacturing();
   const [workId, setWorkId] = useScreenMemory("simple-box-job", "");
   const [personId, setPersonId] = React.useState("");
+  const [jobSearch, setJobSearch] = React.useState(""),
+    [personSearch, setPersonSearch] = React.useState("");
   const [label, setLabel] = React.useState(null);
   const [error, setError] = React.useState("");
   const [busy, setBusy] = React.useState(false);
@@ -30,6 +32,19 @@ export function SimpleBoxSetup() {
   const selected = jobs.find((x) => x.work.id === workId) || jobs[0];
   const people = workforce.people.filter(
     (p) => !manufacturingIsCoach(p) && p.active !== false,
+  );
+  const visibleJobs = jobs.filter(
+    (x) =>
+      x.work.id === selected?.work.id ||
+      [x.order.title, x.work.description, x.work.id]
+        .join(" ")
+        .toLowerCase()
+        .includes(jobSearch.toLowerCase()),
+  );
+  const visiblePeople = people.filter(
+    (p) =>
+      p.id === personId ||
+      p.name.toLowerCase().includes(personSearch.toLowerCase()),
   );
   const job = selected && nextBoxJob(selected.work);
   const current = useCurrentWork(personId, orders);
@@ -101,13 +116,23 @@ export function SimpleBoxSetup() {
   return (
     <>
       <section className="panel simple-box-setup">
-        <h2>Box setup</h2>
+        <h2>New box label</h2>
         <div className="single-box-columns">
           <div>
             <form onSubmit={create}>
               <label className="field">
-                <span>Available jobs</span>
+                <span>1 · Select a job</span>
+                <input
+                  type="search"
+                  aria-label="Search available jobs"
+                  placeholder="Search job or work order…"
+                  value={jobSearch}
+                  onChange={(e) => setJobSearch(e.target.value)}
+                />
                 <select
+                  size={4}
+                  className="setup-choice-list"
+                  aria-label="Available jobs"
                   value={selected?.work.id || ""}
                   onChange={(e) => {
                     setWorkId(e.target.value);
@@ -117,7 +142,7 @@ export function SimpleBoxSetup() {
                   disabled={!jobs.length}
                 >
                   {!jobs.length && <option value="">No jobs available</option>}
-                  {jobs.map(({ order, work }) => (
+                  {visibleJobs.map(({ order, work }) => (
                     <option key={work.id} value={work.id}>
                       {order.title} · {work.description || work.id}
                     </option>
@@ -125,9 +150,19 @@ export function SimpleBoxSetup() {
                 </select>
               </label>
               <label className="field">
-                <span>Individual</span>
+                <span>2 · Select an individual</span>
+                <input
+                  type="search"
+                  aria-label="Search individuals"
+                  placeholder="Search individual name…"
+                  value={personSearch}
+                  onChange={(e) => setPersonSearch(e.target.value)}
+                />
                 <select
                   required
+                  size={6}
+                  className="setup-choice-list"
+                  aria-label="Individual"
                   value={personId}
                   onChange={(e) => {
                     setPersonId(e.target.value);
@@ -135,7 +170,7 @@ export function SimpleBoxSetup() {
                   }}
                 >
                   <option value="">Select individual</option>
-                  {people.map((p) => (
+                  {visiblePeople.map((p) => (
                     <option key={p.id} value={p.id}>
                       {p.name}
                     </option>
@@ -143,7 +178,7 @@ export function SimpleBoxSetup() {
                 </select>
               </label>
               {job && (
-                <p className="quiet" aria-live="polite">
+                <p className="setup-job-summary" aria-live="polite">
                   {job.name} · {quantity} pieces per box
                 </p>
               )}
@@ -158,7 +193,13 @@ export function SimpleBoxSetup() {
                   quantity < 1
                 }
               >
-                {busy ? "Creating…" : "Create & print box"}
+                {busy
+                  ? "Creating…"
+                  : current.checking
+                    ? "Checking individual…"
+                    : current.busy
+                      ? "Individual already has work"
+                      : "Create & print box"}
               </button>
             </form>
             {error && (
@@ -200,7 +241,7 @@ export function SimpleBoxSetup() {
           />
         </div>
       </section>
-      <BulkBoxSetup />
+      {includeBulk && <BulkBoxSetup />}
     </>
   );
 }

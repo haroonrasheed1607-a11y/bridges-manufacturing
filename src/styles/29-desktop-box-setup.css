@@ -1,0 +1,11 @@
+.minimal-shop-floor.box-setup-workspace .shell{max-width:1280px;padding:28px 28px 72px;width:100%}
+.box-setup-heading{margin:0 0 20px}.box-setup-heading h2{font-size:30px;margin:4px 0 8px}.box-setup-heading p{color:#607080;margin:0}
+.setup-task-tabs{justify-content:flex-start;margin-bottom:22px;gap:6px;border-bottom:1px solid #d8e0e8;padding-bottom:12px}.setup-task-tabs button{min-width:150px;min-height:44px}
+.box-setup-screen .simple-box-setup{padding:24px!important}.box-setup-screen .simple-box-setup>h2{font-size:19px;margin:0 0 20px}
+.box-setup-screen .single-box-columns{grid-template-columns:minmax(0,1.35fr) minmax(280px,.85fr);gap:32px}
+.box-setup-screen .current-work-panel{position:sticky;top:20px;min-height:360px;padding:24px;background:white;border:1px solid #d9e2ea;border-top:4px solid #1d6e53;box-shadow:0 6px 22px #142b4510}
+.box-setup-screen .current-work-panel h3{font-size:18px;line-height:1.4;margin-top:0}.box-setup-screen .current-barcode .box-qr{width:190px;height:190px;align-self:center}
+.simple-box-setup .field>span{font-weight:650;color:#263e52;margin-bottom:8px}.simple-box-setup input[type=search]{margin-bottom:8px;min-height:42px;font-size:15px}.simple-box-setup select.setup-choice-list{font-size:15px;min-height:120px;padding:6px;background:#fbfcfe;border-color:#c8d5e1}.setup-choice-list option{padding:10px 12px;border-radius:4px;min-height:36px}
+.setup-job-summary{padding:12px 16px;background:#edf5f1;border-radius:8px;font-size:14px;color:#245640}.box-setup-screen .simple-box-setup form>.primary{margin-top:8px;font-size:17px;min-height:52px}
+.box-label-ready{padding:14px;background:#f0f7f3;border-radius:8px}.box-label-ready button{margin-top:8px}.bulk-setup-panel fieldset{max-height:300px;overflow:auto;margin:18px 0;border:1px solid #dce3e9}.bulk-setup-panel .field{max-width:740px}
+@media(max-width:800px){.minimal-shop-floor.box-setup-workspace .shell{padding:18px 14px 80px}.box-setup-screen .single-box-columns{grid-template-columns:1fr}.box-setup-screen .current-work-panel{position:static;min-height:0}.setup-task-tabs{flex-wrap:wrap}.setup-task-tabs button{min-width:0;flex:1}.box-setup-screen .simple-box-setup{padding:18px!important}}

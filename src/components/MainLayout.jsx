@@ -13,7 +13,7 @@ function MainLayout({
   } = useManufacturing();
   return (0, jsxRuntime.jsxs)(`div`, {
     id: `manufacturing-app`,
-    className: ['box_setup','box_scanner'].includes(profile?.role) ? 'minimal-shop-floor' : '',
+    className: ['box_setup','box_scanner'].includes(profile?.role) ? 'minimal-shop-floor'+(profile?.role==='box_setup'?' box-setup-workspace':'') : '',
     children: [(0, jsxRuntime.jsx)(ResponsiveTables, {}), (0, jsxRuntime.jsx)(AppHeader, {}), (0, jsxRuntime.jsxs)(`div`, {
       className: `draft-banner`,
       children: [(0, jsxRuntime.jsx)(`span`, {

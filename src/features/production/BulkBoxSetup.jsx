@@ -10,7 +10,7 @@ import { manufacturingToday } from "../../utils/dates.js";
 import { createId } from "../../utils/ids.js";
 import { remainingBoxPieces } from "./boxSetupModel.js";
 import { datedBulkBoxPlan } from "./bulkPlan.js";
-export function BulkBoxSetup() {
+export function BulkBoxSetup({expanded=false}={}) {
   const { orders, workforce, createProductionBox } = useManufacturing();
   const [date, setDate] = React.useState(manufacturingToday);
   const [workId, setWorkId] = React.useState(""),
@@ -134,7 +134,7 @@ export function BulkBoxSetup() {
     }
   }
   return (
-    <details className="panel">
+    <details className="panel bulk-setup-panel" open={expanded||undefined}>
       <summary>Bulk box labels</summary>
       <form onSubmit={create}>
         <p>
