@@ -19,7 +19,7 @@ sealed class ShopFloor : Form {
  List<LabelData>? lastLabels;
  record LabelData(string[] Lines,bool[][]? Matrix);
  public ShopFloor(){
-  Text="Bridges Shop Floor v1.8 · QL-800";
+  Text="Bridges Shop Floor v1.9 · QL-800";
   var area=Screen.PrimaryScreen?.WorkingArea??new Rectangle(0,0,1280,900);
   Width=Math.Max(480,Math.Min(1280,area.Width-40));Height=Math.Max(600,Math.Min(900,area.Height-60));MinimumSize=new(480,600);StartPosition=FormStartPosition.CenterScreen;
   var tools=new FlowLayoutPanel{Dock=DockStyle.Top,Height=85,Padding=new(6)};
@@ -58,7 +58,7 @@ sealed class ShopFloor : Form {
    await web.CoreWebView2.Profile.SetPermissionStateAsync(CoreWebView2PermissionKind.Microphone,Origin,CoreWebView2PermissionState.Deny);
   } catch { status.Text="Camera permission setup unavailable · update WebView2 Runtime"; }
   web.CoreWebView2.WebMessageReceived+=Receive;
-  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.8\",cameraSettings:true})});}");
+  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.9\",cameraSettings:true})});}");
   web.CoreWebView2.NavigationCompleted+=(_,e)=>status.Text=e.IsSuccess?"Ready · select boxer or scanner to begin":"Connection failed · check internet and Reload";
   web.Source=new Uri(Origin);
  }catch(Exception ex){MessageBox.Show("Install Microsoft Edge WebView2 Runtime, then restart.\n\n"+ex.Message,"Unable to start");}}
@@ -93,10 +93,11 @@ sealed class ShopFloor : Form {
    using var doc=new PrintDocument();doc.PrinterSettings.PrinterName=printer;
    if(!doc.PrinterSettings.IsValid)throw new Exception("Selected QL-800 is unavailable.");
    doc.DocumentName="Bridges box labels";doc.PrintController=new StandardPrintController();
-   using var normal=new Font("Arial",8f);using var bold=new Font("Arial",9f,FontStyle.Bold);using var code=new Font("Consolas",6.5f);
+   using var normal=new Font("Arial",6f);using var bold=new Font("Arial",6.75f,FontStyle.Bold);using var code=new Font("Consolas",4.875f);
    using var format=new StringFormat{Trimming=StringTrimming.EllipsisCharacter,FormatFlags=StringFormatFlags.NoWrap};
+   using var nameFormat=new StringFormat{Trimming=StringTrimming.None,FormatFlags=StringFormatFlags.NoWrap};
    using var measure=doc.PrinterSettings.CreateMeasurementGraphics();measure.PageUnit=GraphicsUnit.Display;
-   var layouts=labels.Select(label=>label.Lines.Select((line,i)=>i==0?17f:i==label.Lines.Length-1?12f:15f).ToArray()).ToArray();
+   var layouts=labels.Select(label=>label.Lines.Select((line,i)=>i==0?12.75f:i==label.Lines.Length-1?9f:11.25f).ToArray()).ToArray();
    int Height(int index)=>(int)Math.Ceiling(Math.Max(80f,layouts[index].Sum()+20f));
    doc.DefaultPageSettings.PaperSize=new PaperSize("Bridges 62 mm auto length",244,Height(0));
    doc.DefaultPageSettings.Margins=new Margins(0,0,0,0);doc.DefaultPageSettings.Landscape=false;
@@ -109,9 +110,9 @@ sealed class ShopFloor : Form {
     g.FillRectangle(Brushes.White,0,0,244,labelHeight);
     const float module=2f;const float left=9f;float top=(labelHeight-66f)/2;
     if(label.Matrix!=null)for(int y=0;y<25;y++)for(int x=0;x<25;x++)if(label.Matrix[y][x])g.FillRectangle(Brushes.Black,left+(x+4)*module,top+(y+4)*module,module,module);
-    float textY=10; // Keep top clearance; compact one-line rows fit the shorter label.
+    float textY=(labelHeight-heights.Sum())/2; // Center the compact text block beside the QR.
     for(int i=0;i<label.Lines.Length;i++){
-     g.DrawString(label.Lines[i],i==0?bold:i==label.Lines.Length-1?code:normal,Brushes.Black,new RectangleF(79,textY,155,heights[i]),format);textY+=heights[i];
+     g.DrawString(label.Lines[i],i==0?bold:i==label.Lines.Length-1?code:normal,Brushes.Black,new RectangleF(79,textY,155,heights[i]),i==0?nameFormat:format);textY+=heights[i];
     }
     page++;e.HasMorePages=page<labels.Count;
    };

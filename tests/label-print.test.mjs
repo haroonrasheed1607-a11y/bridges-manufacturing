@@ -9,7 +9,7 @@ test('browser labels print in a same-page frame; preview does not print automati
  const popup={document:doc,requestAnimationFrame:f=>scheduled=f,addEventListener:(n,f)=>{if(n==='afterprint')after=f;},focus(){},print(){printed++;}};
  globalThis.window={};globalThis.document={body:element(),createElement:tag=>{assert.equal(tag,'iframe');return {...element(),contentWindow:popup};}};globalThis.setTimeout=()=>0;
  try{
- assert.equal(manufacturingPrintBox(label.order,label.work,label.job,label.box,label.person),'');assert.equal(printed,0);scheduled();assert.equal(printed,1);assert.ok(values.includes('A & B'));assert.ok(!values.includes('O1 / W1'));assert.ok(values.some(v=>typeof v==='string'&&v.includes('width:16.5mm;height:16.5mm')));after();assert.equal(removed,1);
+ assert.equal(manufacturingPrintBox(label.order,label.work,label.job,label.box,label.person),'');assert.equal(printed,0);scheduled();assert.equal(printed,1);assert.ok(values.includes('A & B'));assert.ok(!values.includes('O1 / W1'));assert.ok(values.some(v=>typeof v==='string'&&v.includes('font:6.75pt Arial')&&v.includes('.line:first-child{text-overflow:clip}')));assert.ok(values.some(v=>typeof v==='string'&&v.includes('width:16.5mm;height:16.5mm')));after();assert.equal(removed,1);
  assert.equal(manufacturingPreviewLabels([label]),'');scheduled();assert.equal(printed,1);
  }finally{Object.assign(globalThis,originals);}
 });

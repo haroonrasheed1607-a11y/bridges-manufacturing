@@ -21,7 +21,7 @@ export function printBrowser(labels, { preview = false } = {}) {
   };
   const style = node(
     "style",
-    `@page{size:62mm 20.32mm;margin:0}*{box-sizing:border-box}html,body{margin:0;background:white;color:black}body{font:9pt Arial}.label{width:62mm;min-height:20.32mm;padding:2mm 2mm 1.5mm;display:flex;align-items:center;gap:1mm;break-after:page}.label:last-child{break-after:auto}svg{width:16.5mm;height:16.5mm;flex:none}.text{flex:1;min-width:0;line-height:1.15}.line{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}strong{font-size:10pt}.code{font:7pt monospace}.toolbar{padding:12px;position:sticky;top:0;background:#eee}.toolbar button{padding:12px;margin-right:12px}@media screen{body.preview .label{margin:16px;border:1px dashed #999}}@media print{.toolbar{display:none}}`,
+    `@page{size:62mm 20.32mm;margin:0}*{box-sizing:border-box}html,body{margin:0;background:white;color:black}body{font:6.75pt Arial}.label{width:62mm;min-height:20.32mm;padding:2mm 2mm 1.5mm;display:flex;align-items:center;gap:1mm;break-after:page}.label:last-child{break-after:auto}svg{width:16.5mm;height:16.5mm;flex:none}.text{flex:1;min-width:0;line-height:1.15}.line{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.line:first-child{text-overflow:clip}strong{font-size:7.5pt}.code{font:5.25pt monospace}.toolbar{padding:12px;position:sticky;top:0;background:#eee}.toolbar button{padding:12px;margin-right:12px}@media screen{body.preview .label{margin:16px;border:1px dashed #999}}@media print{.toolbar{display:none}}`,
     doc.head,
   );
   doc.title = "Bridges box labels";

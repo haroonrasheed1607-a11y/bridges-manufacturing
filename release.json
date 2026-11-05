@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Compact stickers use approximately 20 mm of roll length, with QR codes reduced to 75% and the order-number line removed."
+    "Sticker text is reduced to 75%, individual names clip on one line, and the order-number row remains removed."
   ]
 }
