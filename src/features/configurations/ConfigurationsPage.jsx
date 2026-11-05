@@ -5,8 +5,8 @@ export function ConfigurationsPage(){
  if(profile?.role!=='admin')return null;
  return <><div className="page-heading"><div><div className="eyebrow">ADMINISTRATION</div><h2>Configurations</h2></div></div>
  <section className="panel"><h3>Windows Shop Floor app</h3><p>Box setup, barcode scanning and direct Brother QL-800 label printing, connected to your existing manufacturing data.</p>
- <p><a className="primary" href="https://github.com/haroonrasheed1607-a11y/bridges-manufacturing/actions/runs/41943671003/artifacts/13377910715" target="_blank" rel="noopener noreferrer">Download for Windows (64-bit)</a></p>
- <p className="quiet">Version 1.0 · About 73 MB · GitHub sign-in may be required. This build download is retained for 30 days from publication.</p>
+ <p><a className="primary" href="https://github.com/haroonrasheed1607-a11y/bridges-manufacturing/releases/download/shop-floor-v1/Bridges-Shop-Floor-Windows-x64.zip" target="_blank" rel="noopener noreferrer">Download for Windows (64-bit)</a></p>
+ <p className="quiet">Version 1.0 · About 73 MB · Direct download · No GitHub login required.</p>
  <ol><li>Extract the entire ZIP into a folder.</li><li>Install the Brother QL-800 Windows driver and connect the printer by USB.</li><li>Run BridgesShopFloor.exe. Install Microsoft Edge WebView2 Runtime if prompted.</li><li>Select the QL-800 and choose Test printer before printing production labels.</li></ol>
  <p>Use a 62 mm continuous roll with a 20.32 mm label length. The desktop app prints without browser tabs or a print dialog; b-PAC is not required.</p>
  <p className="quiet">The Windows app is unsigned. Physical label sizing and QR readability should be checked on the printer. Internet is required.</p>

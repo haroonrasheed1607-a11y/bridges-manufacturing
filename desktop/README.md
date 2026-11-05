@@ -3,8 +3,8 @@
 A compact Windows desktop app for Bridges Manufacturing. Uses the current online Shop Floor and shared Supabase data, with native QL-800 printing. No browser tab, extension, b-PAC template or print dialog is needed. Internet is required for sign-in and database operations; there is no offline queue.
 
 ## Download and run
-1. Open the repository's Actions → Build Windows Shop Floor → latest successful run.
-2. Download **Bridges-Shop-Floor-Windows-x64**, extract the entire ZIP into a permanent folder.
+1. Download from https://github.com/haroonrasheed1607-a11y/bridges-manufacturing/releases/download/shop-floor-v1/Bridges-Shop-Floor-Windows-x64.zip (no login required).
+2. Extract the entire ZIP into a permanent folder.
 3. Install Brother's QL-800 Windows driver and connect the printer by USB.
 4. Install Microsoft Edge WebView2 Evergreen Runtime if Windows does not already have it.
 5. Run **BridgesShopFloor.exe**. Keep all files in the extracted folder together. The app includes .NET, so a separate .NET installation is not needed.

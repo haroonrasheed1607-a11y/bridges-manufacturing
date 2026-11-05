@@ -5,7 +5,7 @@ on:
     branches: [main]
     paths: ['desktop/**', '.github/workflows/shop-floor-windows.yml']
 permissions:
-  contents: read
+  contents: write
 jobs:
   windows:
     runs-on: windows-latest
@@ -23,3 +23,16 @@ jobs:
           name: Bridges-Shop-Floor-Windows-x64
           path: desktop-output/
           retention-days: 30
+      - name: Publish public Windows download
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: pwsh
+        run: |
+          Compress-Archive -Path desktop-output/* -DestinationPath Bridges-Shop-Floor-Windows-x64.zip
+          gh release view shop-floor-v1 --repo $env:GITHUB_REPOSITORY
+          if ($LASTEXITCODE -ne 0) {
+            gh release create shop-floor-v1 --repo $env:GITHUB_REPOSITORY --target $env:GITHUB_SHA --title "Bridges Shop Floor for Windows" --notes "Windows x64 portable app for Brother QL-800. Extract all files and run BridgesShopFloor.exe. Requires Brother driver and WebView2 Runtime. Physical printer validation is required."
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+          gh release upload shop-floor-v1 Bridges-Shop-Floor-Windows-x64.zip --repo $env:GITHUB_REPOSITORY --clobber
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

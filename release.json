@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Added an admin-only Configurations page with the Windows Shop Floor download and printer setup instructions."
+    "Windows Shop Floor now has a direct public download without GitHub sign-in."
   ]
 }
