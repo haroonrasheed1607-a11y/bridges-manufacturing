@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Drawing.Printing;
 using System.Text.Json;
 using Microsoft.Web.WebView2.Core;
@@ -18,7 +19,7 @@ sealed class ShopFloor : Form {
  List<LabelData>? lastLabels;
  record LabelData(string[] Lines,bool[][]? Matrix);
  public ShopFloor(){
-  Text="Bridges Shop Floor v1.6 · QL-800";
+  Text="Bridges Shop Floor v1.7 · QL-800";
   var area=Screen.PrimaryScreen?.WorkingArea??new Rectangle(0,0,1280,900);
   Width=Math.Max(480,Math.Min(1280,area.Width-40));Height=Math.Max(600,Math.Min(900,area.Height-60));MinimumSize=new(480,600);StartPosition=FormStartPosition.CenterScreen;
   var tools=new FlowLayoutPanel{Dock=DockStyle.Top,Height=85,Padding=new(6)};
@@ -51,8 +52,13 @@ sealed class ShopFloor : Form {
    e.State=Trusted(e.Uri)&&e.PermissionKind==CoreWebView2PermissionKind.Camera
     ?CoreWebView2PermissionState.Allow:CoreWebView2PermissionState.Deny;
   };
+  // Older releases persisted a camera denial. Replace it before loading the site.
+  try {
+   await web.CoreWebView2.Profile.SetPermissionStateAsync(CoreWebView2PermissionKind.Camera,Origin,CoreWebView2PermissionState.Allow);
+   await web.CoreWebView2.Profile.SetPermissionStateAsync(CoreWebView2PermissionKind.Microphone,Origin,CoreWebView2PermissionState.Deny);
+  } catch { status.Text="Camera permission setup unavailable · update WebView2 Runtime"; }
   web.CoreWebView2.WebMessageReceived+=Receive;
-  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true})});}");
+  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.7\",cameraSettings:true})});}");
   web.CoreWebView2.NavigationCompleted+=(_,e)=>status.Text=e.IsSuccess?"Ready · select boxer or scanner to begin":"Connection failed · check internet and Reload";
   web.Source=new Uri(Origin);
  }catch(Exception ex){MessageBox.Show("Install Microsoft Edge WebView2 Runtime, then restart.\n\n"+ex.Message,"Unable to start");}}
@@ -62,6 +68,9 @@ sealed class ShopFloor : Form {
    if(e.WebMessageAsJson.Length>800000)throw new Exception("Label batch too large.");
    using var message=JsonDocument.Parse(e.WebMessageAsJson);var m=message.RootElement;
    string? type=m.GetProperty("type").GetString();
+   if(type=="bridges.camera-settings"){
+    Process.Start(new ProcessStartInfo("ms-settings:privacy-webcam"){UseShellExecute=true});return;
+   }
    var entries=type=="bridges.print-box"?new[]{m}:type=="bridges.print-boxes"?m.GetProperty("labels").EnumerateArray().ToArray():Array.Empty<JsonElement>();
    if(entries.Length==0)return;
    if(entries.Length>100)throw new Exception("Print at most 100 labels per batch.");

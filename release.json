@@ -1,7 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Redesigned Box Setup for desktop with a wider workspace, searchable selection lists and a persistent current-barcode panel.",
-    "Single, bulk and dumping setup now have separate task tabs; Windows v1.6 opens at a desktop-friendly size."
+    "Windows v1.7 resets camera permissions saved by older releases and allows video for the trusted app address.",
+    "Camera errors now distinguish Windows privacy settings from browser permissions, with a Windows settings shortcut."
   ]
 }

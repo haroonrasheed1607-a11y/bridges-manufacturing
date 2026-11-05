@@ -53,3 +53,7 @@ Single box setup now shows the selected individual's current barcode alongside t
 
 ## Version 1.5: dated batches and webcam scanning
 Bulk setup follows work date → individuals → job/sub-job. All created boxes in one batch use that same date; each individual must be free of unfinished work. Box assignment currently uses Monday–Friday work dates. To scan with the PC webcam, choose **Scan QR code** and select the camera if more than one is connected. Allow Windows camera access for desktop apps in Privacy & security → Camera. The app requests video only, stops the camera after a scan or closing the scanner, and routes both box and reusable dumping QR codes through the usual completion logic. Test on your actual webcam and printer.
+
+
+## Version 1.7: recover saved camera denials
+On startup the desktop app explicitly grants video camera permission to its fixed app origin in the WebView2 profile, replacing denials saved by older releases. Microphone permission stays denied. The scanner shows Windows-specific instructions and an **Open Windows camera settings** button when camera access fails. Windows privacy controls, administrator/device policies, disconnected hardware and cameras busy in other applications still apply. No Chrome login or Chrome site permission is needed inside this desktop app. Verify the title says v1.7 after updating.

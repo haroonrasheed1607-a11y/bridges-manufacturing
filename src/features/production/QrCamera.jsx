@@ -1,3 +1,4 @@
+import {cameraErrorMessage} from './cameraErrors.js';
 import { useEffect, useRef, useState } from "react";
 
 export function QrCamera({ onScan, onClose }) {
@@ -100,13 +101,7 @@ export function QrCamera({ onScan, onClose }) {
       } catch (e) {
         if (closed) return;
         stop();
-        setError(
-          e.name === "NotAllowedError"
-            ? "Camera access was denied. Allow camera access in your browser settings, or enter the box code manually."
-            : e.name === "NotFoundError"
-              ? "No camera was found. Enter the box code manually."
-              : e.message || "Could not open the camera.",
-        );
+        setError(cameraErrorMessage(e,!!window.bridgesDesktop));
       }
     }
     start();
@@ -133,9 +128,7 @@ export function QrCamera({ onScan, onClose }) {
         </button>
       </div>
       {error ? (
-        <p role="alert" className="alert">
-          {error}
-        </p>
+        <div><p role="alert" className="alert">{error}</p>{window.bridgesDesktop?.cameraSettings&&<button type="button" onClick={()=>window.chrome.webview.postMessage({type:'bridges.camera-settings'})}>Open Windows camera settings</button>}</div>
       ) : (
         <>
           <p role="status">
