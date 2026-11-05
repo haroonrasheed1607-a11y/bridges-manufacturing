@@ -19,3 +19,10 @@ export function dumpingLabel(assignment, orders, people) {
 export function scanRequestKey(profileId, code) {
   return "bridges-dump-pending:" + profileId + ":" + code;
 }
+
+export function completedLoadPieces(batchQuantity, multiplier, actual = "") {
+  const batch = Number(batchQuantity), factor = Number(multiplier);
+  const quantity = actual === "" ? batch * factor : Number(actual);
+  if (!Number.isInteger(batch) || batch < 1 || ![1, 2].includes(factor) || !Number.isInteger(quantity) || quantity < 1 || quantity > batch * 2) throw new Error("Enter between 1 and two loads of pieces.");
+  return quantity;
+}

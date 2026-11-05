@@ -15,3 +15,9 @@ test('attendance action log replaces legacy arrival/departure without changing p
  const data={days:{'2026-11-04':{attendanceStatus:'present',arrival:'09:00',departure:'14:00'}},manual:[{date:'2026-11-04',code:'AT',time:'08:00'},{date:'2026-11-04',code:'5001',pieces:25}]};
  const log=attendanceActionLog(data);assert.equal(log.filter(r=>r.code==='AT').length,1);assert.equal(log.find(r=>r.code==='AT').time,'09:00');assert.equal(pieceSummary([],log)['5001']['2026-11-04'],25);
 });
+
+test('load confirmation calculates single, double and partial loads and rejects invalid counts',async()=>{
+ const {completedLoadPieces}=await import('../src/features/dumping/model.js');
+ assert.equal(completedLoadPieces(100,1),100);assert.equal(completedLoadPieces(100,2),200);assert.equal(completedLoadPieces(100,1,'25'),25);
+ for(const args of [[100,3],[100,1,'201'],[100,1,'1.5'],[100,1,'0'],[0,1]]) assert.throws(()=>completedLoadPieces(...args));
+});

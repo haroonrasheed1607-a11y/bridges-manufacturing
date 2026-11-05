@@ -1,3 +1,4 @@
+import { ScannerDailyWork } from './ScannerDailyWork.jsx';
 import {DumpingScanner} from '../dumping/DumpingScanner.jsx';
 import {isDumpingCode} from '../dumping/model.js';
 import { QrCamera } from './QrCamera.jsx';
@@ -28,6 +29,19 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     scanner = React.useRef(null),
     saving = React.useRef(false);
   React.useEffect(() => { if (selectedCode) document.querySelector('.scanned-box-panel')?.scrollIntoView({behavior:'smooth',block:'start'}); }, [selectedCode]);
+  React.useEffect(() => {
+    if (!minimal || dumpCode || cameraOpen || selectedCode) return;
+    let buffer = '', lastKey = 0;
+    function readScanner(event) {
+      if (event.target?.matches?.('input,select,textarea,[contenteditable="true"]') || event.ctrlKey || event.altKey || event.metaKey) return;
+      if (Date.now() - lastKey > 150) buffer = '';
+      lastKey = Date.now();
+      if (event.key === 'Enter') { if (buffer.length >= 5) scan(buffer); buffer = ''; }
+      else if (event.key.length === 1) buffer += event.key;
+    }
+    window.addEventListener('keydown', readScanner);
+    return () => window.removeEventListener('keydown', readScanner);
+  }, [minimal, dumpCode, cameraOpen, selectedCode, orders]);
   const selected = manufacturingFindBox(orders, selectedCode),
     completed = selected && (selected.box.completedAt || selected.box.status === 'completed'),
     individual = selected && workforce.people.find(person => person.id === selected.box.personId),
@@ -86,7 +100,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
   if(dumpCode)return h(DumpingScanner,{key:dumpCode,code:dumpCode,onDone:()=>{setDumpCode('');dumpLock.current=false;setTimeout(focusScanner,0);}});
   return h('div', {
     className: 'production-line-page'
-  }, !minimal && h('div', {
+  }, minimal && h(ScannerDailyWork, {refreshKey:message}), !minimal && h('div', {
     className: 'page-heading'
   }, h('div', null, h('div', {
     className: 'eyebrow'
@@ -95,9 +109,9 @@ function ManufacturingScanComplete({minimal=false} = {}) {
   }, 'Scan a box QR label with your phone camera, use a connected scanner, or enter the code. Then confirm completed pieces.')), h('button', {
     type: 'button',
     onClick: focusScanner
-  }, 'Focus scanner')), h('section', {
+  }, 'Focus scanner')), !minimal && h('section', {
     className: 'panel scanner-panel'
-  }, h('form', {
+  }, !minimal && h('form', {
     onSubmit: event => {
       event.preventDefault();
       scan(code);

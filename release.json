@@ -1,7 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Windows v1.10 prevents duplicate app instances and waits/retries locked files before updating.",
-    "Update failures now report accurate rollback status and recovery steps."
+    "Reusable QR scans now confirm 1\u00d7 or 2\u00d7 loads before recording completed pieces.",
+    "Scanner login shows daily completed pieces by individual, sorted highest first, instead of manual Box ID entry."
   ]
 }
