@@ -10,3 +10,8 @@ test('bulk excludes already allocated and completed pieces',()=>{
  assert.deepEqual(bulkBoxPlan(w,j,['A']),[{personId:'A',quantity:10}]);
  assert.throws(()=>bulkBoxPlan(w,j,[]),/Select/);
 });
+test('dated bulk plans assign every label to the selected day and reject invalid or non-working dates',async()=>{
+ const {datedBulkBoxPlan}=await import('../src/features/production/bulkPlan.js');const w={perPack:25,boxes:[]},j={id:'a',quantity:100,completed:0};
+ assert.deepEqual(datedBulkBoxPlan(w,j,['A','B'],'2026-11-06').map(b=>b.date),['2026-11-06','2026-11-06']);
+ assert.throws(()=>datedBulkBoxPlan(w,j,['A'],'2026-11-07'),/working day/);assert.throws(()=>datedBulkBoxPlan(w,j,['A'],'2026-02-30'),/valid work date/);
+});

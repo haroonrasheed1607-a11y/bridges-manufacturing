@@ -9,7 +9,6 @@ do $$declare admin_id uuid;scanner_id uuid;setup_id uuid;result jsonb;report jso
  insert into public.orders(id,customer_id,stage,data) values(oid,(select id from public.customers limit 1),1,jsonb_build_object('title','Rollback test','quantity',250,'perPack',25,'required',today,'expected',today));
  insert into public.work_orders(id,order_id,quantity,pieces_per_pack,data) values(wid,oid,250,25,'{"type":"Assembly","seconds":30,"packSeconds":0,"hoursPerDay":6,"description":"Test assembly","instructions":"Test"}');
  insert into public.sub_jobs(id,work_order_id,quantity,data) values(jid,wid,250,'{"name":"Test sub-job","packType":"Box"}');
- insert into public.boxes(id,sub_job_id,person_id,quantity,data) values('TEST-DUMP-BOX',jid,pid,30,'{}');
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
  perform public.app_availability(today,today+6,pid,'available',6,array[0,1,2,3,4,5,6]);
  result:=public.app_availability(today,today+6,pid);if jsonb_array_length(result)<>7 then raise exception 'Availability range failed';end if;
@@ -18,6 +17,9 @@ do $$declare admin_id uuid;scanner_id uuid;setup_id uuid;result jsonb;report jso
  report:=public.app_individual_timesheet(pid,week);if report#>>array['data','days',today::text,'arrival']<>'09:00' then raise exception 'Attendance timesheet overlay failed';end if;
  perform set_config('request.jwt.claim.sub',setup_id::text,true);
  perform public.app_dumping_assign(code,jid,pid,100);
+ -- Simulate a legacy outstanding box: new APIs now prohibit creating this overlap.
+ insert into public.boxes(id,sub_job_id,person_id,quantity,data) values('TEST-DUMP-BOX',jid,pid,30,'{}');
+
  begin perform public.app_dumping_scan(code,req);raise exception 'Setup user scanned work';exception when insufficient_privilege then null;end;
  perform set_config('request.jwt.claim.sub',scanner_id::text,true);
  result:=public.app_dumping_scan(code,req);if (result->>'pieces')::int<>100 then raise exception 'Default batch failed';end if;

@@ -1,5 +1,6 @@
 -- Rollback-only integration test; requires seeded demo production work and provisioned shop-floor users.
 begin;
+insert into public.people(id,name,kind,hours_per_day,data) values('SHOP-FLOOR-TEST-PERSON','Rollback shop floor person','individual',6,'{}');
 select set_config('request.jwt.claim.sub',(select id::text from public.staff_profiles where role='box_setup' and active limit 1),true);
 set local role authenticated;
 do $$declare data jsonb;begin
@@ -9,7 +10,7 @@ do $$declare data jsonb;begin
  begin perform public.app_complete_box('DEMO-BOX-001',1);raise exception 'Setup completed a box';exception when insufficient_privilege then null;end;
  begin perform public.app_save_customer('Forbidden');raise exception 'Setup edited a customer';exception when insufficient_privilege then null;end;
  begin perform public.app_save_order('{}',0,'Forbidden');raise exception 'Setup edited an order';exception when insufficient_privilege then null;end;
- perform public.app_create_box('DEMO-ORD-005','DEMO-WO-005','{"id":"SHOP-FLOOR-TEST-BOX","jobId":"DEMO-WO-005-SJ-001","personId":"DEMO-PERSON-1","quantity":1,"date":"2026-11-03"}');
+ perform public.app_create_box('DEMO-ORD-005','DEMO-WO-005','{"id":"SHOP-FLOOR-TEST-BOX","jobId":"DEMO-WO-005-SJ-001","personId":"SHOP-FLOOR-TEST-PERSON","quantity":1,"date":"2026-11-03"}');
 end$$;
 reset role;
 select set_config('request.jwt.claim.sub',(select id::text from public.staff_profiles where role='box_scanner' and active limit 1),true);

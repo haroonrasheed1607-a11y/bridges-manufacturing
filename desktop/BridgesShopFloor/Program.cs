@@ -18,7 +18,7 @@ sealed class ShopFloor : Form {
  List<LabelData>? lastLabels;
  record LabelData(string[] Lines,bool[][]? Matrix);
  public ShopFloor(){
-  Text="Bridges Shop Floor v1.4 · QL-800";Width=680;Height=850;MinimumSize=new(480,600);
+  Text="Bridges Shop Floor v1.5 · QL-800";Width=680;Height=850;MinimumSize=new(480,600);
   var tools=new FlowLayoutPanel{Dock=DockStyle.Top,Height=85,Padding=new(6)};
   var refresh=new Button{Text="Reload",AutoSize=true};refresh.Click+=(_,_)=>web.Reload();
   var test=new Button{Text="Test printer",AutoSize=true};test.Click+=(_,_)=>TestPrinter();
@@ -44,7 +44,11 @@ sealed class ShopFloor : Form {
   web.CoreWebView2.Settings.AreDefaultContextMenusEnabled=false;
   web.CoreWebView2.NavigationStarting+=(_,e)=>{if(!Trusted(e.Uri)){e.Cancel=true;status.Text="External navigation blocked.";}};
   web.CoreWebView2.NewWindowRequested+=(_,e)=>e.Handled=true;
-  web.CoreWebView2.PermissionRequested+=(_,e)=>e.State=CoreWebView2PermissionState.Deny;
+  web.CoreWebView2.PermissionRequested+=(_,e)=>{
+   // Only the fixed trusted app origin may request video; microphone and all other permissions stay blocked.
+   e.State=Trusted(e.Uri)&&e.PermissionKind==CoreWebView2PermissionKind.Camera
+    ?CoreWebView2PermissionState.Allow:CoreWebView2PermissionState.Deny;
+  };
   web.CoreWebView2.WebMessageReceived+=Receive;
   await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true})});}");
   web.CoreWebView2.NavigationCompleted+=(_,e)=>status.Text=e.IsSuccess?"Ready · select boxer or scanner to begin":"Connection failed · check internet and Reload";

@@ -20,7 +20,7 @@ The native print command submits to the Windows spooler. “Sent” means queued
 ## Installation notes
 The build is unsigned; Windows may show an unknown-publisher notice. This is not a signed installer. Only obtain the app from this repository. Production deployment should add code signing and a managed installer.
 
-WebView2 stores the login session under the current Windows user's LocalAppData/BridgesShopFloor/Browser. Use Sign out on shared PCs. Native printing accepts structured labels only from the fixed Bridges Manufacturing HTTPS origin. External navigation and popup windows are blocked; camera permission is disabled in the desktop app (use a keyboard scanner).
+WebView2 stores the login session under the current Windows user's LocalAppData/BridgesShopFloor/Browser. Use Sign out on shared PCs. Native printing accepts structured labels only from the fixed Bridges Manufacturing HTTPS origin. External navigation and popup windows are blocked; camera video is allowed only for the trusted app origin; audio remains disabled.
 
 ## Build
 Windows developer command: `dotnet publish desktop/BridgesShopFloor/BridgesShopFloor.csproj -c Release -r win-x64 --self-contained true -o desktop-output`.
@@ -32,7 +32,7 @@ Install v1.3 once by replacing all extracted files. On future launches the app c
 
 Use **Preview before printing** to inspect a single label or whole batch. **Preview last batch** shows the most recent submitted labels; the preview toolbar can print them again, so avoid printing the same batch twice accidentally.
 
-**Bulk box labels** lets you choose a work order, sub-job and individuals. Available means active non-coaches without open boxes; it is not a guarantee of attendance or free booked hours. You may include individuals with open boxes explicitly. One box is saved per person; the last can contain fewer pieces. The backend checks remaining capacity. Saving is sequential, not all-or-nothing: on a failure, already saved boxes are listed and can be printed without creating them again. No physical print success is inferred from a successful save or spool submission.
+**Bulk box labels** lets you choose a work order, sub-job and individuals. Available means active non-coaches without open boxes or active unfinished dumping work; it is not a guarantee of attendance or free booked hours. Individuals with unfinished box or dumping work cannot receive another barcode. One box is saved per person; the last can contain fewer pieces. The backend checks remaining capacity. Saving is sequential, not all-or-nothing: on a failure, already saved boxes are listed and can be printed without creating them again. No physical print success is inferred from a successful save or spool submission.
 
 Top clearance is approximately 6 mm. Test actual cutting and clipping with the Brother driver before production.
 
@@ -46,3 +46,10 @@ The shared Shop Floor supports box tracking and reusable dumping assignments in 
 Availability and Attendance are under Directory for managers/admins and available to Job Coaches. Managers/coaches enter availability on an individual's behalf; there is no new student login. Unknown days remain unknown. Attendance and dumping totals feed weekly timesheets, with recorded attendance overriding that date's legacy attendance fields. Work hours must be explicitly recorded and are not inferred from production scans.
 
 Bulk box labels and preview are also available in the web app. The web app uses its normal browser print dialog; silent printing remains a Windows driver feature.
+
+
+Single box setup now shows the selected individual's current barcode alongside the form. A new barcode cannot be created while an unfinished box or active unfinished dumping assignment exists. The database enforces this across single, advanced and bulk setup. Reprinting never creates another assignment. The previous bulk option to include people with open boxes has been removed.
+
+
+## Version 1.5: dated batches and webcam scanning
+Bulk setup follows work date → individuals → job/sub-job. All created boxes in one batch use that same date; each individual must be free of unfinished work. Box assignment currently uses Monday–Friday work dates. To scan with the PC webcam, choose **Scan QR code** and select the camera if more than one is connected. Allow Windows camera access for desktop apps in Privacy & security → Camera. The app requests video only, stops the camera after a scan or closing the scanner, and routes both box and reusable dumping QR codes through the usual completion logic. Test on your actual webcam and printer.

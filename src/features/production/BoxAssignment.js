@@ -1,3 +1,5 @@
+import {CurrentWorkPanel} from './CurrentWorkPanel.jsx';
+import {useCurrentWork} from './useCurrentWork.js';
 // features/production/BoxAssignment.js
 import { FormField } from "../../components/common/FormField.js";
 import { manufacturingPrintBox } from "../../domain/boxLabels.js";
@@ -33,9 +35,11 @@ function ManufacturingProductionBoxes({
     allocated = job ? boxes.filter(box => box.jobId === job.id).reduce((sum, box) => sum + Number(box.completedAt || box.status === 'completed' ? box.completedPieces ?? box.quantity : box.quantity), 0) : 0,
     remaining = job ? job.quantity - Math.max(allocated,Number(job.completed||0)+boxes.filter(box=>box.jobId===job.id&&!box.completedAt&&box.status!=='completed').reduce((sum,box)=>sum+Number(box.quantity),0)) : 0,
     defaultQuantity = Math.min(work?.perPack || 0, remaining);
+  const current = useCurrentWork(personId,context.orders);
   async function create(event) {
     event.preventDefault();
     setError('');
+    if(current.busy||current.checking){setError('Complete the individual’s current work first.');return;}
     const person = individuals.find(item => item.id === personId),
       pieces = Number(quantity || defaultQuantity);
     if (!work || !job || !person) {
@@ -50,13 +54,13 @@ function ManufacturingProductionBoxes({
     const box = {id:createId('BOX'),jobId:job.id,personId:person.id,quantity:pieces,date,coachId:work.coachId||null};
     const problem = await context.createProductionBox(order.id,work.id,box);
     creating.current=false;
-    if(problem){setError(problem);return;}
+    if(problem){setError(problem);current.reload();return;}
     setQuantity('');
     setLastBox(box);
     // Print from an explicit second tap so browsers allow the print window after an API save.
 
   }
-  return h('section', {
+  return h('div',{className:'single-box-columns'},h('section', {
     className: 'panel production-boxes'
   }, h('h3', null, 'Production · box assignment'), h('p', {
     className: 'quiet'
@@ -132,7 +136,7 @@ function ManufacturingProductionBoxes({
     }
   }, 'Fill sample data'), h('button', {
     className: 'primary',
-    disabled: remaining < 1 || !individuals.length
+    disabled: remaining < 1 || !individuals.length || current.busy || current.checking
   }, 'Create & assign box'))), !individuals.length && h('p', {
     className: 'callout'
   }, 'Add individuals in the people directory before assigning boxes.'), error && h('p', {
@@ -158,7 +162,7 @@ function ManufacturingProductionBoxes({
     onClick: () => setError(manufacturingPrintBox(order, work, work.jobs.find(item => item.id === box.jobId), box, workforce.people.find(person => person.id === box.personId)))
   }, 'Print QR label')))) : h('p', {
     className: 'empty'
-  }, 'No boxes created for this work order yet.'));
+  }, 'No boxes created for this work order yet.')),h(CurrentWorkPanel,{person:individuals.find(p=>p.id===personId),current,onError:setError}));
 }
 
 export { ManufacturingProductionBoxes };

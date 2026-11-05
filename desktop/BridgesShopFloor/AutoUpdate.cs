@@ -7,7 +7,7 @@ namespace BridgesShopFloor;
 static class AutoUpdate {
  const string Release="https://api.github.com/repos/haroonrasheed1607-a11y/bridges-manufacturing/releases/tags/shop-floor-v1";
  public static async Task<bool> Check(Action<string> status){
-  using var http=new HttpClient{Timeout=TimeSpan.FromMinutes(3)};http.DefaultRequestHeaders.UserAgent.ParseAdd("BridgesShopFloor/1.4");
+  using var http=new HttpClient{Timeout=TimeSpan.FromMinutes(3)};http.DefaultRequestHeaders.UserAgent.ParseAdd("BridgesShopFloor/1.5");
   using var release=JsonDocument.Parse(await http.GetStringAsync(Release));
   var assets=release.RootElement.GetProperty("assets").EnumerateArray().ToArray();
   var manifest=assets.FirstOrDefault(a=>a.GetProperty("name").GetString()=="shop-floor-update.json");

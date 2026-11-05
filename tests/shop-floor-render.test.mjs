@@ -10,6 +10,9 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  async function render(file,name,role='admin'){
  const mod=await server.ssrLoadModule(file);return renderToStaticMarkup(React.createElement(ManufacturingContext.Provider,{value:{...base,profile:{id:'u1',role}}},React.createElement(mod[name])));
  }
+ const {CurrentWorkPanel}=await server.ssrLoadModule('/src/features/production/CurrentWorkPanel.jsx');
+ const panel=renderToStaticMarkup(React.createElement(CurrentWorkPanel,{person:workforce.people[0],current:{busy:true,items:[{id:'BOX-0123456789ABCDEF',orderId:'O1',orderTitle:'Assembly order',workId:'W1',description:'Parts assembly',jobName:'Sub-job 1',quantity:25}]},onError(){}}));
+ assert.match(panel,/A new barcode cannot be created/);assert.match(panel,/BOX-0123456789ABCDEF/);assert.match(panel,/Reprint current barcode/);
  assert.match(await render('/src/features/availability/AvailabilityPage.jsx','AvailabilityPage'),/Individual availability/);
  assert.match(await render('/src/features/attendance/AttendancePage.jsx','AttendancePage'),/Daily attendance roster/);
  assert.match(await render('/src/features/dumping/DumpingSetup.jsx','DumpingSetup'),/100/);

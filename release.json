@@ -1,8 +1,8 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Added weekly/monthly availability and daily attendance linked to individual timesheets.",
-    "Added reusable dumping QR assignments with automatic batch scans, named success screens and duplicate protection.",
-    "Web and Windows Shop Floor now share bulk labels and preview."
+    "Single box setup displays current barcodes and prevents new assignments while an individual has unfinished work.",
+    "Bulk printing now selects one work date, individuals and a shared job for each batch.",
+    "Windows v1.5 enables webcam QR scanning with camera selection."
   ]
 }
