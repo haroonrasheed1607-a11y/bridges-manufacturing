@@ -1,7 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Added top label spacing, Windows print preview and sub-job bulk labels for selected individuals.",
-    "Windows v1.3 adds automatic startup updates after a one-time installation."
+    "Reformatted shared workspace state and documented its sections for easier source review."
   ]
 }
