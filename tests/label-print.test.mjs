@@ -8,7 +8,7 @@ test('labels print in an embedded frame after load and remove it after printing'
  globalThis.document={createElement(tag){assert.equal(tag,'iframe');return frame;},body:{appendChild(){}}};globalThis.setTimeout=()=>0;
  try{
  assert.equal(manufacturingPrintBox({title:'A & B',id:'O1'},{id:'W1'},{name:'Sub 1'},{id:'BOX-1',quantity:25},{name:'Alex'}),'');
- assert.equal(printed,0);assert.match(html,/62mm 20.32mm/);assert.match(html,/A &amp; B/);
+ assert.equal(printed,0);assert.match(html,/62mm 40.64mm/);assert.match(html,/A &amp; B/);
  load();assert.equal(printed,1);after();assert.equal(removed,1);
  }finally{globalThis.window=oldWindow;globalThis.document=oldDocument;globalThis.setTimeout=oldTimeout;}
 });

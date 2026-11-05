@@ -63,22 +63,22 @@ sealed class ShopFloor : Form {
    using var doc=new PrintDocument();doc.PrinterSettings.PrinterName=printer;
    if(!doc.PrinterSettings.IsValid)throw new Exception("Selected QL-800 is unavailable.");
    doc.DocumentName="Bridges box label";doc.PrintController=new StandardPrintController();
-   doc.DefaultPageSettings.PaperSize=new PaperSize("Bridges 62 x 20.32 mm",244,80);
+   doc.DefaultPageSettings.PaperSize=new PaperSize("Bridges 62 x 40.64 mm",244,160);
    doc.DefaultPageSettings.Margins=new Margins(0,0,0,0);doc.DefaultPageSettings.Landscape=false;
    doc.PrintPage+=(_,e)=>{
     var g=e.Graphics!;g.PageUnit=GraphicsUnit.Display;
     g.TranslateTransform(-e.PageSettings.HardMarginX,-e.PageSettings.HardMarginY);
-    g.FillRectangle(Brushes.White,0,0,244,80);
-    // 62 mm stock, 58 mm printable area. Integer 300-dpi module size: 6 dots.
-    const float module=2f;const float left=9f;const float top=7f;
+    g.FillRectangle(Brushes.White,0,0,244,160);
+    // 62 mm stock, 58 mm printable area. Integer 300-dpi module size: 8 dots.
+    const float module=8f/3f;const float left=9f;const float top=36f;
     if(matrix!=null)for(int y=0;y<25;y++)for(int x=0;x<25;x++)if(matrix[y][x])g.FillRectangle(Brushes.Black,left+(x+4)*module,top+(y+4)*module,module,module);
-    using var normal=new Font("Arial",6.3f);using var bold=new Font("Arial",7f,FontStyle.Bold);using var code=new Font("Consolas",5.3f);
-    using var format=new StringFormat{Trimming=StringTrimming.EllipsisCharacter,FormatFlags=StringFormatFlags.NoWrap};
-    for(int i=0;i<lines.Length;i++)g.DrawString(lines[i],i==0?bold:i==4?code:normal,Brushes.Black,new RectangleF(79,7+i*12,155,12),format);
+    using var normal=new Font("Arial",8f);using var bold=new Font("Arial",9f,FontStyle.Bold);using var code=new Font("Consolas",6.5f);
+    using var format=new StringFormat{Trimming=StringTrimming.EllipsisCharacter,FormatFlags=0};
+    for(int i=0;i<lines.Length;i++)g.DrawString(lines[i],i==0?bold:i==4?code:normal,Brushes.Black,new RectangleF(100,10+i*28,133,27),format);
     e.HasMorePages=false;
    };
    doc.Print();status.Text="Sent to "+printer+" · "+lines[^1];
   }finally{printing=false;}
  }
- void TestPrinter(){try{Print(["BRIDGES SHOP FLOOR","QL-800 test label","62 × 20.32 mm","Check roll size and cutter","TEST — not a production box"],null);}catch(Exception ex){MessageBox.Show(ex.Message,"Printer test");}}
+ void TestPrinter(){try{Print(["BRIDGES SHOP FLOOR","QL-800 test label","62 × 40.64 mm","Check roll size and cutter","TEST — not a production box"],null);}catch(Exception ex){MessageBox.Show(ex.Message,"Printer test");}}
 }

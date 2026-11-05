@@ -13,7 +13,7 @@ A compact Windows desktop app for Bridges Manufacturing. Uses the current online
 8. Choose **Log in as boxer**, select a job and individual, then **Create & print box**. For a connected keyboard barcode scanner, choose **Log in as scanner**; scan and confirm completion.
 
 ## Roll setup
-Use a **62 mm continuous DK roll**, not die-cut labels. In Brother Printing Preferences select 62 mm continuous tape, approximately **20.32 mm length**, no scaling, and automatic cutting. The app requests this size; the driver and roll settings must agree. QR is left; person, order/work order, sub-job, pieces and box ID are right. Long text is shortened to fit. Confirm QR readability with a real label.
+Use a **62 mm continuous DK roll**, not die-cut labels. In Brother Printing Preferences select 62 mm continuous tape, approximately **40.64 mm length**, no scaling, and automatic cutting. The app requests this size; the driver and roll settings must agree. QR is left; person, order/work order, sub-job, pieces and box ID are right. Long text is shortened to fit. Confirm QR readability with a real label.
 
 The native print command submits to the Windows spooler. “Sent” means queued, not physical proof of printing. If a cable/roll error occurs, inspect the Windows print queue before reprinting to avoid duplicates. Reprint uses the same box ID and does not create another box.
 
