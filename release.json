@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Doubled box label height to 1.6 inches, with larger QR codes and text in web and Windows printing."
+    "Box label length now fits its contents automatically while preserving the current text and QR sizes."
   ]
 }

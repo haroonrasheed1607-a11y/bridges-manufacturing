@@ -96,11 +96,16 @@ function manufacturingPrintBox(order, work, job, box, person) {
   popup.addEventListener('afterprint',cleanup,{once:true});
   const timeout = setTimeout(cleanup,300000);
   frame.addEventListener('load',()=>{
-    try {popup.focus();popup.print();}
+    try {
+      const label=popup.document.querySelector('.label');
+      if(label){const mm=Math.ceil(label.getBoundingClientRect().height*25.4/96*10)/10;
+        const page=popup.document.createElement('style');page.textContent='@page{size:62mm '+mm+'mm;margin:0}';popup.document.head.appendChild(page);}
+      popup.focus();popup.print();
+    }
     catch {clearTimeout(timeout);cleanup();window.alert('Printing could not open. Use Reprint label to try again.');}
   },{once:true});
   popup.document.open();
-  popup.document.write('<!doctype html><html><head><title>Box ' + escape(box.id) + '</title><style>@page{size:62mm 40.64mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#000;background:white}body{font:9pt Arial}.label{width:62mm;height:40.64mm;padding:2mm 2mm;display:flex;align-items:center;gap:1mm;overflow:hidden}svg{width:22mm;height:22mm;flex:none}.text{flex:1;min-width:0;line-height:1.15}.line{overflow:hidden;overflow-wrap:anywhere;max-height:2.4em}strong{font-size:10pt}.code{font:7pt monospace;margin-top:.5mm}</style></head><body><section class="label"><svg viewBox="0 0 33 33" shape-rendering="crispEdges"><rect width="33" height="33" fill="white"/><path d="' + manufacturingQrPath(box.id) + '" fill="black"/></svg><div class="text"><div class="line"><strong>' + escape(person?.name || 'Unassigned') + '</strong></div><div class="line">' + escape(order.title) + '</div><div class="line">' + escape(order.id) + ' / ' + escape(work.id) + '</div><div class="line">' + escape(job.name) + ' · ' + escape(box.quantity) + ' pcs</div><div class="line code">' + escape(box.id) + '</div></div></section></body></html>');
+  popup.document.write('<!doctype html><html><head><title>Box ' + escape(box.id) + '</title><style>@page{size:62mm 40.64mm;margin:0}*{box-sizing:border-box}html,body{margin:0;padding:0;color:#000;background:white}body{font:9pt Arial}.label{width:62mm;min-height:26mm;height:auto;padding:2mm 2mm;display:flex;align-items:center;gap:1mm;overflow:hidden}svg{width:22mm;height:22mm;flex:none}.text{flex:1;min-width:0;line-height:1.15}.line{overflow:hidden;overflow-wrap:anywhere;max-height:2.4em}strong{font-size:10pt}.code{font:7pt monospace;margin-top:.5mm}</style></head><body><section class="label"><svg viewBox="0 0 33 33" shape-rendering="crispEdges"><rect width="33" height="33" fill="white"/><path d="' + manufacturingQrPath(box.id) + '" fill="black"/></svg><div class="text"><div class="line"><strong>' + escape(person?.name || 'Unassigned') + '</strong></div><div class="line">' + escape(order.title) + '</div><div class="line">' + escape(order.id) + ' / ' + escape(work.id) + '</div><div class="line">' + escape(job.name) + ' · ' + escape(box.quantity) + ' pcs</div><div class="line code">' + escape(box.id) + '</div></div></section></body></html>');
   popup.document.close();
   return '';
 }

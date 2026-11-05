@@ -63,22 +63,29 @@ sealed class ShopFloor : Form {
    using var doc=new PrintDocument();doc.PrinterSettings.PrinterName=printer;
    if(!doc.PrinterSettings.IsValid)throw new Exception("Selected QL-800 is unavailable.");
    doc.DocumentName="Bridges box label";doc.PrintController=new StandardPrintController();
-   doc.DefaultPageSettings.PaperSize=new PaperSize("Bridges 62 x 40.64 mm",244,160);
+   using var normal=new Font("Arial",8f);using var bold=new Font("Arial",9f,FontStyle.Bold);using var code=new Font("Consolas",6.5f);
+   using var format=new StringFormat{Trimming=StringTrimming.EllipsisCharacter,FormatFlags=0};
+   using var measure=doc.PrinterSettings.CreateMeasurementGraphics();measure.PageUnit=GraphicsUnit.Display;
+   var heights=lines.Select((line,i)=>Math.Min(27f,Math.Max(14f,(float)Math.Ceiling(measure.MeasureString(line,i==0?bold:i==4?code:normal,133,format).Height)+2))).ToArray();
+   int labelHeight=(int)Math.Ceiling(Math.Max(108f,heights.Sum()+20f));
+   doc.DefaultPageSettings.PaperSize=new PaperSize("Bridges 62 mm auto length",244,labelHeight);
    doc.DefaultPageSettings.Margins=new Margins(0,0,0,0);doc.DefaultPageSettings.Landscape=false;
    doc.PrintPage+=(_,e)=>{
     var g=e.Graphics!;g.PageUnit=GraphicsUnit.Display;
     g.TranslateTransform(-e.PageSettings.HardMarginX,-e.PageSettings.HardMarginY);
-    g.FillRectangle(Brushes.White,0,0,244,160);
+    g.FillRectangle(Brushes.White,0,0,244,labelHeight);
     // 62 mm stock, 58 mm printable area. Integer 300-dpi module size: 8 dots.
-    const float module=8f/3f;const float left=9f;const float top=36f;
+    const float module=8f/3f;const float left=9f;float top=(labelHeight-88f)/2;
     if(matrix!=null)for(int y=0;y<25;y++)for(int x=0;x<25;x++)if(matrix[y][x])g.FillRectangle(Brushes.Black,left+(x+4)*module,top+(y+4)*module,module,module);
-    using var normal=new Font("Arial",8f);using var bold=new Font("Arial",9f,FontStyle.Bold);using var code=new Font("Consolas",6.5f);
-    using var format=new StringFormat{Trimming=StringTrimming.EllipsisCharacter,FormatFlags=0};
-    for(int i=0;i<lines.Length;i++)g.DrawString(lines[i],i==0?bold:i==4?code:normal,Brushes.Black,new RectangleF(100,10+i*28,133,27),format);
+    float textY=10;
+    for(int i=0;i<lines.Length;i++){
+     g.DrawString(lines[i],i==0?bold:i==4?code:normal,Brushes.Black,new RectangleF(100,textY,133,heights[i]),format);
+     textY+=heights[i];
+    }
     e.HasMorePages=false;
    };
    doc.Print();status.Text="Sent to "+printer+" · "+lines[^1];
   }finally{printing=false;}
  }
- void TestPrinter(){try{Print(["BRIDGES SHOP FLOOR","QL-800 test label","62 × 40.64 mm","Check roll size and cutter","TEST — not a production box"],null);}catch(Exception ex){MessageBox.Show(ex.Message,"Printer test");}}
+ void TestPrinter(){try{Print(["BRIDGES SHOP FLOOR","QL-800 test label","62 mm · auto length","Check roll size and cutter","TEST — not a production box"],null);}catch(Exception ex){MessageBox.Show(ex.Message,"Printer test");}}
 }
