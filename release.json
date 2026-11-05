@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Box labels now print from the current page without opening a new tab."
+    "Added a Windows Shop Floor app with native QL-800 label printing and shared online data."
   ]
 }

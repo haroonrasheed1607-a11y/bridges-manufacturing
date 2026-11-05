@@ -72,6 +72,12 @@ function manufacturingQrPath(value) {
   return manufacturingQrMatrix(value).flatMap((row, y) => row.flatMap((dark, x) => dark ? ['M' + (x + 4) + ' ' + (y + 4) + 'h1v1h-1z'] : [])).join('');
 }
 function manufacturingPrintBox(order, work, job, box, person) {
+  if (window.bridgesDesktop?.version === 1 && window.chrome?.webview) {
+    window.chrome.webview.postMessage({type:'bridges.print-box',matrix:manufacturingQrMatrix(box.id),
+      person:String(person?.name || 'Unassigned'),orderTitle:String(order.title || ''),orderId:String(order.id || ''),
+      workId:String(work.id || ''),job:String(job.name || ''),quantity:String(box.quantity),boxId:String(box.id)});
+    return '';
+  }
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({
       '&': '&amp;',
       '<': '&lt;',

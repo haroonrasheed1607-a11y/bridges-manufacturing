@@ -1,0 +1,25 @@
+name: Build Windows Shop Floor
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['desktop/**', '.github/workflows/shop-floor-windows.yml']
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build self-contained Windows app
+        run: dotnet publish desktop/BridgesShopFloor/BridgesShopFloor.csproj -c Release -r win-x64 --self-contained true -o desktop-output -p:PublishSingleFile=false
+      - name: Include instructions
+        run: Copy-Item desktop/README.md desktop-output/START-HERE.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Bridges-Shop-Floor-Windows-x64
+          path: desktop-output/
+          retention-days: 30
