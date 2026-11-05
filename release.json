@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Added a Windows Shop Floor app with native QL-800 label printing and shared online data."
+    "Added an admin-only Configurations page with the Windows Shop Floor download and printer setup instructions."
   ]
 }
