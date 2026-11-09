@@ -76,7 +76,7 @@ function AttendanceRow({ person, record, onSave, busy }) {
 }
 export function AttendancePage() {
   const { workforce } = useManufacturing(),
-    people = workforce.people.filter((p) => p.kind === "individual");
+    people = workforce.people.filter((p) => p.kind === "individual" && p.active !== false);
   const [date, setDate] = React.useState(manufacturingToday),
     [records, setRecords] = React.useState([]),
     [busy, setBusy] = React.useState(false),

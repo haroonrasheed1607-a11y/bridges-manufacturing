@@ -2,7 +2,7 @@ import { React } from "../../vendor/react-runtime.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { manufacturingToday } from "../../utils/dates.js";
-import { manufacturingBookedDay } from "../../domain/workforce.js";
+import { availableHoursOn, manufacturingBookedDay } from "../../domain/workforce.js";
 import {
   availabilityDates,
   availabilityFor,
@@ -10,7 +10,7 @@ import {
 } from "./model.js";
 export function AvailabilityPage() {
   const { workforce, orders } = useManufacturing(),
-    people = workforce.people.filter((p) => p.kind === "individual");
+    people = workforce.people.filter((p) => p.kind === "individual" && p.active !== false);
   const [start, setStart] = React.useState(manufacturingToday),
     [days, setDays] = React.useState(7),
     [records, setRecords] = React.useState([]),
@@ -75,7 +75,7 @@ export function AvailabilityPage() {
           <h2>Individual availability</h2>
           <p>
             Reported availability for future planning. Bookings are shown
-            separately; unreported dates remain unknown.
+            separately; dated reports override repeating weekly availability.
           </p>
         </div>
       </div>
@@ -110,7 +110,7 @@ export function AvailabilityPage() {
             <thead>
               <tr>
                 <th>Individual</th>
-                <th>Reported hours</th>
+                <th>Available hours</th>
                 {dates.map((d) => (
                   <th key={d}>{d.slice(5)}</th>
                 ))}
@@ -118,7 +118,13 @@ export function AvailabilityPage() {
             </thead>
             <tbody>
               {people.map((p) => {
-                const summary = availabilitySummary(records, p.id, dates);
+                const effective = dates.map(date => {
+                  const report = availabilityFor(records, p.id, date);
+                  if (report.status !== "unknown" || !p.weeklyHours) return {...report, personId:p.id, date};
+                  const hours = availableHoursOn(p, date);
+                  return {personId:p.id, date, hours, status:hours > 0 ? "available" : "unavailable"};
+                });
+                const summary = availabilitySummary(effective, p.id, dates);
                 return (
                   <tr key={p.id}>
                     <th>{p.name}</th>
@@ -127,7 +133,7 @@ export function AvailabilityPage() {
                       <small>{summary.unknown} unknown days</small>
                     </td>
                     {dates.map((d) => {
-                      const r = availabilityFor(records, p.id, d),
+                      const r = availabilityFor(effective, p.id, d),
                         booked = manufacturingBookedDay(
                           p,
                           d,

@@ -14,7 +14,7 @@ import {
   manufacturingWorkflowBlock,
 } from "../domain/workflow.js";
 import { manufacturingIsCoach } from "../domain/workforce.js";
-import { manufacturingWeekdays } from "../utils/dates.js";
+import { bookingDates } from "../domain/workforce.js";
 import { createId } from "../utils/ids.js";
 
 const ManufacturingContext = React.createContext(null);
@@ -208,13 +208,13 @@ function ManufacturingProvider({ children }) {
   }
   async function saveIndividual(value) {
     const person = {
-      ...value,
       id: value.id || createId("PERSON"),
       name: value.name.trim(),
       role: (value.role || "").trim(),
       kind:
         value.kind || (manufacturingIsCoach(value) ? "coach" : "individual"),
       hoursPerDay: Number(value.hoursPerDay),
+      ...(value.weeklyHours !== undefined ? {weeklyHours: value.weeklyHours?.map(Number) ?? null} : {}),
     };
     if (!person.name) return "Enter a name.";
     if (
@@ -230,14 +230,28 @@ function ManufacturingProvider({ children }) {
       return e.message;
     }
   }
+  async function importIndividuals(rows) {
+    try {
+      await mutate("app_import_individuals", {p_rows: rows}, "Individuals imported.");
+      return "";
+    } catch (e) { return e.message; }
+  }
+  async function setIndividualActive(id, active) {
+    try {
+      await mutate("app_set_individual_active", {p_person: id, p_active: active}, "Individual status updated.");
+      return "";
+    } catch (e) { return e.message; }
+  }
   async function saveBooking(value) {
     const booking = {
       ...value,
       id: value.id || createId("BOOK"),
       hours: Number(value.hours),
     };
-    if (!manufacturingWeekdays(booking.start, booking.end))
-      return "Choose a date range containing a working day.";
+    const person = current.current.workforce.people.find(item => item.id === booking.personId);
+    if (!person || person.active === false) return "Choose an active individual.";
+    if (!bookingDates(person, booking.start, booking.end).length)
+      return "Choose a date range containing an available day.";
     try {
       await mutate(
         "app_save_booking",
@@ -328,6 +342,8 @@ function ManufacturingProvider({ children }) {
     createProductionBox,
     addCustomer,
     saveIndividual,
+    importIndividuals,
+    setIndividualActive,
     saveBooking,
     releaseBooking,
     notice,

@@ -30,7 +30,7 @@ function ManufacturingProductionBoxes({
     [lastBox, setLastBox] = React.useState(null), creating = React.useRef(false);
   const work = order.workOrders.find(item => item.id === workId),
     job = work?.jobs.find(item => item.id === jobId),
-    individuals = workforce.people.filter(person => !manufacturingIsCoach(person)),
+    individuals = workforce.people.filter(person => !manufacturingIsCoach(person) && person.active !== false),
     boxes = work?.boxes || [],
     allocated = job ? boxes.filter(box => box.jobId === job.id).reduce((sum, box) => sum + Number(box.completedAt || box.status === 'completed' ? box.completedPieces ?? box.quantity : box.quantity), 0) : 0,
     remaining = job ? job.quantity - Math.max(allocated,Number(job.completed||0)+boxes.filter(box=>box.jobId===job.id&&!box.completedAt&&box.status!=='completed').reduce((sum,box)=>sum+Number(box.quantity),0)) : 0,

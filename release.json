@@ -1,7 +1,8 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Single-use barcode scans complete the assigned box immediately.",
-    "Reusable barcodes require enough time between scans to fill the load, based on work-order timing."
+    "Import individuals from Excel with confirmation for matching names.",
+    "Disable individuals while keeping their work records.",
+    "Set repeating weekly availability and use it for capacity and booking dates."
   ]
 }

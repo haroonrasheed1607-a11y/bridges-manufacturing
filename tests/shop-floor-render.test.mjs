@@ -10,6 +10,12 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  async function render(file,name,role='admin'){
  const mod=await server.ssrLoadModule(file);return renderToStaticMarkup(React.createElement(ManufacturingContext.Provider,{value:{...base,profile:{id:'u1',role}}},React.createElement(mod[name])));
  }
+ const {prepareIndividualRows}=await server.ssrLoadModule('/src/features/individuals/IndividualImport.jsx');
+ const rows=prepareIndividualRows([['Name','Role','Hours per day'],[' alex ','Assembly',4],['Alex','Packing',5],['Jordan','Packing',6]],workforce.people);
+ assert.equal(rows[0].decision,'');assert.equal(rows[0].matches[0].id,'P1');
+ assert.equal(rows[1].decision,'skip');assert.equal(rows[2].decision,'add');
+ const individuals=await render('/src/features/individuals/IndividualsPage.js','ManufacturingIndividuals');
+ assert.match(individuals,/Import Excel/);assert.match(individuals,/Disable/);
  const {CurrentWorkPanel}=await server.ssrLoadModule('/src/features/production/CurrentWorkPanel.jsx');
  const panel=renderToStaticMarkup(React.createElement(CurrentWorkPanel,{person:workforce.people[0],current:{busy:true,items:[{id:'BOX-0123456789ABCDEF',orderId:'O1',orderTitle:'Assembly order',workId:'W1',description:'Parts assembly',jobName:'Sub-job 1',quantity:25}]},onError(){}}));
  assert.match(panel,/A new barcode cannot be created/);assert.match(panel,/BOX-0123456789ABCDEF/);assert.match(panel,/Reprint current barcode/);

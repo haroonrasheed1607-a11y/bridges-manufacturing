@@ -1,18 +1,20 @@
+import { IndividualImport } from './IndividualImport.jsx';
+import { WeeklyHours } from './WeeklyHours.jsx';
 import {useScreenMemory} from '../../state/useScreenMemory.js';
 import { TimesheetsPage } from '../timesheets/TimesheetsPage.jsx';
 // features/individuals/IndividualsPage.js
 import { FormField } from "../../components/common/FormField.js";
-import { manufacturingBookedDay, manufacturingBookingActive, manufacturingIndividualCapacity, manufacturingIsCoach, manufacturingNextAvailability } from "../../domain/workforce.js";
+import { availableHoursOn, bookingDates, manufacturingBookedDay, manufacturingBookingActive, manufacturingIndividualCapacity, manufacturingIsCoach, manufacturingNextAvailability } from "../../domain/workforce.js";
 import { manufacturingWorkSeconds } from "../../domain/workOrders.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
-import { formatDate, manufacturingDate, manufacturingDayOffset, manufacturingFinish, manufacturingToday, manufacturingWeekdays } from "../../utils/dates.js";
+import { formatDate, manufacturingDayOffset, manufacturingFinish, manufacturingToday } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
 
 function ManufacturingIndividuals() {
   const {
       setView, orders,
       workforce,
-      saveIndividual,
+      saveIndividual, importIndividuals, setIndividualActive,
       saveBooking,
       releaseBooking,
       open
@@ -22,6 +24,10 @@ function ManufacturingIndividuals() {
   const [week, setWeek] = useScreenMemory('individuals-week',manufacturingToday),
     [search, setSearch] = React.useState(''),
     [availability, setAvailability] = React.useState('all'),
+    [importOpen, setImportOpen] = React.useState(false),
+    [personStatus, setPersonStatus] = React.useState('active'),
+    [statusChange, setStatusChange] = React.useState(null),
+    [statusBusy, setStatusBusy] = React.useState(false),
     [personForm, setPersonForm] = React.useState(null),
     [bookingForm, setBookingForm] = React.useState(null),
     [selected, setSelected] = React.useState(''),
@@ -39,7 +45,9 @@ function ManufacturingIndividuals() {
       work
     }))),
     allActive = workforce.bookings.filter(booking => manufacturingBookingActive(booking, orders));
-  const people = workforce.people.map(person => ({
+  const activePeople = workforce.people.filter(person => person.active !== false);
+  const people = workforce.people.filter(person => personStatus === 'all' ||
+    (personStatus === 'active' ? person.active !== false : person.active === false)).map(person => ({
     ...person,
     load: manufacturingIndividualCapacity(person, week, end, workforce.bookings, orders)
   })).filter(person => (person.name + ' ' + person.role).toLowerCase().includes(search.toLowerCase()) && (availability === 'all' || availability === 'available' && person.load.free > 0 || availability === 'full' && person.load.free <= .001 || availability === 'over' && person.load.over > .001)).sort((a, b) => b.load.free - a.load.free || a.name.localeCompare(b.name));
@@ -56,7 +64,7 @@ function ManufacturingIndividuals() {
     setMessage('');
     const first = options[0];
     setBookingForm({
-      personId: personId || workforce.people[0]?.id || '',
+      personId: personId || activePeople[0]?.id || '',
       orderId: first?.order.id || '',
       workId: first?.work.id || '',
       start: week,
@@ -83,10 +91,19 @@ function ManufacturingIndividuals() {
     selectedBookings = workforce.bookings.filter(booking => booking.personId === selected).sort((a, b) => a.start.localeCompare(b.start));
   const bookingWork = options.find(option => option.work.id === bookingForm?.workId && option.order.id === bookingForm?.orderId),
     bookingPerson = workforce.people.find(person => person.id === bookingForm?.personId),
-    bookingDays = bookingForm ? manufacturingWeekdays(bookingForm.start, bookingForm.end) : 0;
-  const bookingWarning = bookingForm && bookingPerson && bookingDays > 0 && Number(bookingForm.hours) > 0 ? Array.from({
-    length: Math.min(3660, Math.max(0, Math.round((manufacturingDate(bookingForm.end) - manufacturingDate(bookingForm.start)) / 86400000) + 1))
-  }, (_, index) => manufacturingDayOffset(bookingForm.start, index)).some(date => manufacturingWeekdays(date, date) && manufacturingBookedDay(bookingPerson, date, workforce.bookings.filter(item => item.id !== bookingForm.id), orders) + Number(bookingForm.hours) / bookingDays > bookingPerson.hoursPerDay + .001) : false;
+    plannedDates = bookingForm && bookingPerson ? bookingDates(bookingPerson, bookingForm.start, bookingForm.end) : [],
+    bookingDays = plannedDates.length;
+  const bookingWarning = bookingDays > 0 && Number(bookingForm.hours) > 0 && plannedDates.some(date =>
+    manufacturingBookedDay(bookingPerson, date, workforce.bookings.filter(item => item.id !== bookingForm.id), orders) +
+      Number(bookingForm.hours) / bookingDays > availableHoursOn(bookingPerson, date) + .001);
+  async function changeStatus() {
+    if (!statusChange || statusBusy) return;
+    setStatusBusy(true);
+    const enabling = statusChange.active === false;
+    try {
+      if (notify(await setIndividualActive(statusChange.id, enabling), enabling ? 'Individual enabled.' : 'Individual disabled.')) setStatusChange(null);
+    } finally { setStatusBusy(false); }
+  }
   if(timesheetPerson!==null)return h(TimesheetsPage,{initialPerson:timesheetPerson,onBack:()=>setTimesheetPerson(null)});
   return h('div', {
     className: 'individuals-page'
@@ -98,7 +115,7 @@ function ManufacturingIndividuals() {
     className: 'quiet'
   }, 'See booked work and remaining capacity before making future bookings.')), h('div', {
     className: 'people-heading-actions'
-  }, formButton('Weekly timesheets',()=>setTimesheetPerson(selected||'')), formButton('Availability chart',()=>setView('availability')), formButton('Attendance roster',()=>setView('attendance')), formButton('＋ Add individual', () => {
+  }, formButton('Weekly timesheets',()=>setTimesheetPerson(selected||'')), formButton('Availability chart',()=>setView('availability')), formButton('Attendance roster',()=>setView('attendance')), formButton('Import Excel', () => setImportOpen(true)), formButton('＋ Add individual', () => {
     setPersonForm({
       name: '',
       role: '',
@@ -108,7 +125,7 @@ function ManufacturingIndividuals() {
     setMessage('');
   }), h('button', {
     className: 'primary',
-    disabled: !workforce.people.length || !options.length,
+    disabled: !activePeople.length || !options.length,
     onClick: () => beginBooking()
   }, '＋ Book work'))), h('div', {
     role: 'status',
@@ -116,7 +133,21 @@ function ManufacturingIndividuals() {
   }, message), error && h('p', {
     role: 'alert',
     className: 'alert'
-  }, error), personForm && h('form', {
+  }, error), importOpen && h(IndividualImport, {
+    people: workforce.people,
+    onClose: () => setImportOpen(false),
+    onImport: async rows => {
+      const problem = await importIndividuals(rows);
+      if (!problem) setMessage(rows.length + ' individuals imported.');
+      return problem;
+    }
+  }), statusChange && h('section', {className:'panel', 'aria-label':'Confirm individual status'},
+    h('h3', null, (statusChange.active === false ? 'Enable ' : 'Disable ') + statusChange.name + '?'),
+    h('p', null, statusChange.active === false ? 'This individual can receive new work again.' : 'This individual will be removed from new assignment lists. Existing records will remain available.'),
+    h('div', {className:'form-actions'},
+      h('button', {disabled:statusBusy, onClick:()=>setStatusChange(null)}, 'Cancel'),
+      h('button', {className:'primary',disabled:statusBusy,onClick:changeStatus}, statusChange.active === false ? 'Enable individual' : 'Disable individual')
+    )), personForm && h('form', {
     className: 'panel form-panel',
     onSubmit: async event => {
       event.preventDefault();
@@ -180,7 +211,10 @@ function ManufacturingIndividuals() {
       ...personForm,
       hoursPerDay: event.target.value
     })
-  }, 'Monday–Friday. Default: 6 hours.')), h('div', {
+  }, 'Default for Monday–Friday if a weekly pattern is not set.')), !manufacturingIsCoach(personForm) && h(WeeklyHours, {
+    person:personForm,
+    onChange:weeklyHours => setPersonForm(current=>({...current,weeklyHours}))
+  }), h('div', {
     className: 'form-actions'
   }, formButton('Cancel', () => {
     setPersonForm(null);
@@ -204,7 +238,7 @@ function ManufacturingIndividuals() {
     disabled: !options.length || !workforce.people.length,
     onClick: () => {
       const option = options.find(item => item.work.id === bookingForm.workId) || options[0],
-        person = workforce.people.find(item => item.id === bookingForm.personId) || workforce.people[0],
+        person = activePeople.find(item => item.id === bookingForm.personId) || activePeople[0],
         start = manufacturingFinish(week, 1);
       setBookingForm({
         ...bookingForm,
@@ -228,7 +262,7 @@ function ManufacturingIndividuals() {
     onChange: event => updateBooking('personId', event.target.value)
   }, h('option', {
     value: ''
-  }, 'Select individual'), workforce.people.map(person => h('option', {
+  }, 'Select individual'), activePeople.map(person => h('option', {
     key: person.id,
     value: person.id
   }, person.name)))), h(FormField, {
@@ -285,7 +319,7 @@ function ManufacturingIndividuals() {
     setBookingForm(null);
     setError('');
   }), h('button', {
-    className: 'primary'
+    className: 'primary', disabled: !bookingDays || bookingPerson?.active === false
   }, 'Save booking'))), h('section', {
     className: 'panel'
   }, h('div', {
@@ -306,7 +340,8 @@ function ManufacturingIndividuals() {
     value: search,
     placeholder: 'Name, role or skill…',
     onChange: event => setSearch(event.target.value)
-  }), h(FormField, {
+  }), h(FormField, {label:'Status'}, h('select', {value:personStatus,onChange:event=>setPersonStatus(event.target.value)},
+    h('option',{value:'active'},'Active'),h('option',{value:'disabled'},'Disabled'),h('option',{value:'all'},'All statuses'))), h(FormField, {
     label: 'Availability'
   }, h('select', {
     value: availability,
@@ -316,7 +351,7 @@ function ManufacturingIndividuals() {
     value
   }, label))))), h('p', {
     className: 'people-period-note'
-  }, formatDate(week) + ' – ' + formatDate(end) + ' · Monday–Friday capacity. Booked hours are distributed evenly across each booking’s working days. Bookings stop consuming capacity after production is complete or they are released.'), !options.length && h('p', {
+  }, formatDate(week) + ' – ' + formatDate(end) + ' · Capacity follows each repeating weekly schedule. Booked hours are spread across the dates assigned when the booking was saved. Bookings stop consuming capacity after production is complete or they are released.'), !options.length && h('p', {
     className: 'callout'
   }, 'Finalize a work order on an active order to make it available for individual booking.'), workforce.people.length ? h('div', {
     className: 'capacity-scroll',
@@ -354,16 +389,17 @@ function ManufacturingIndividuals() {
       className: 'block quiet'
     }, person.role || 'No role set'), h('small', {
       className: 'block quiet'
-    }, person.hoursPerDay + ' h/day')), ...dates.map(date => {
-      const working = manufacturingWeekdays(date, date),
+    }, person.active === false ? 'Disabled' : person.weeklyHours ? 'Weekly schedule' : person.hoursPerDay + ' h/day')), ...dates.map(date => {
+      const capacity = availableHoursOn(person, date),
+        working = capacity > 0 || manufacturingBookedDay(person, date, workforce.bookings, orders) > 0,
         booked = manufacturingBookedDay(person, date, workforce.bookings, orders),
-        free = Math.max(0, person.hoursPerDay - booked),
-        tone = !working ? 'off' : booked > person.hoursPerDay + .001 ? 'over' : free < .001 ? 'full' : booked > 0 ? 'partial' : 'free';
+        free = Math.max(0, capacity - booked),
+        tone = !working ? 'off' : booked > capacity + .001 ? 'over' : free < .001 ? 'full' : booked > 0 ? 'partial' : 'free';
       return h('td', {
         key: date
       }, h('div', {
         className: 'capacity-day ' + tone
-      }, h('strong', null, !working ? 'Off' : formatHours(booked) + ' booked'), working && h('small', null, booked > person.hoursPerDay + .001 ? formatHours(booked - person.hoursPerDay) + ' over' : formatHours(free) + ' free')));
+      }, h('strong', null, !working ? 'Off' : formatHours(booked) + ' booked'), working && h('small', null, booked > capacity + .001 ? formatHours(booked - capacity) + ' over' : formatHours(free) + ' free')));
     }), h('td', null, h('strong', null, formatHours(person.load.booked) + ' booked'), h('small', {
       className: 'block quiet'
     }, formatHours(person.load.free) + ' available'), person.load.over > .001 && h('small', {
@@ -374,13 +410,13 @@ function ManufacturingIndividuals() {
       className: 'people-row-actions'
     }, h('button', {
       onClick: () => beginBooking(person.id),
-      disabled: !options.length
+      disabled: !options.length || person.active === false
     }, 'Book work'), formButton('View bookings', () => setSelected(person.id)), formButton('Edit', () => {
       setPersonForm({
         ...person
       });
       setError('');
-    }))));
+    }), !manufacturingIsCoach(person) && formButton(person.active === false ? 'Enable' : 'Disable', () => setStatusChange(person)))));
   })))) : h('div', {
     className: 'empty'
   }, 'Add individuals to start planning workload and availability.'), workforce.people.length > 0 && !people.length && h('p', {
