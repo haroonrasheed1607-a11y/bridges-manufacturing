@@ -65,9 +65,8 @@ export function DumpingScanner({ code, onDone }) {
   }
   React.useEffect(() => {
     let cancelled = false;
-    manufacturingApi.rpc("app_dumping_list").then(rows => {
+    manufacturingApi.rpc("app_reusable_barcode", {p_id: code}).then(found => {
       if (cancelled) return;
-      const found = rows.find(row => row.id === code);
       if (!found) throw new Error("Reusable QR not found. Ask Box Setup to check this label.");
       setAssignment(found);
       if (pending.current) { setSubmitted(true); setPieces(String(pending.current.pieces ?? "")); }
@@ -119,7 +118,7 @@ export function DumpingScanner({ code, onDone }) {
       {!busy && (
         <>
           {assignment && <>
-          <p>{workforce.people.find(p => p.id === assignment.personId)?.name || "Team member"} · {assignment.batchQuantity} pieces per load</p>
+          <p>{workforce.people.find(p => p.id === assignment.personId)?.name || "Team member"} · {assignment.batchQuantity} pieces per load{assignment.workDate && " · Plan date " + assignment.workDate}</p>
           <label className="field">Load size
             <select value={multiplier} disabled={submitted} onChange={e => { setMultiplier(Number(e.target.value)); setPieces(""); }}>
               <option value={1}>1× · {assignment.batchQuantity} pieces</option>

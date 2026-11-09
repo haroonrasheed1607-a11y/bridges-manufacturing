@@ -144,7 +144,7 @@ export function DumpingSetup() {
         </p>
       )}
       <div className="dumping-assignments">
-        {assignments.map((a) => {
+        {assignments.filter(a => !a.workDate).map((a) => {
           const label = dumpingLabel(a, orders, workforce.people);
           if (!label) return null;
           return (
@@ -192,7 +192,7 @@ export function DumpingSetup() {
             </article>
           );
         })}
-        {!assignments.length && <p>No reusable assignments yet.</p>}
+        {!assignments.some(a => !a.workDate) && <p>No reusable assignments yet.</p>}
       </div>
     </section>
   );

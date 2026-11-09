@@ -1,8 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Import individuals from Excel with confirmation for matching names.",
-    "Disable individuals while keeping their work records.",
-    "Set repeating weekly availability and use it for capacity and booking dates."
+    "Plan a sub-job by date and select the individuals who will share its remaining pieces.",
+    "Preview, print or reprint the entire day\u2019s reusable stickers from Plan."
   ]
 }

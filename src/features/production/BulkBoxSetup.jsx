@@ -57,7 +57,7 @@ export function BulkBoxSetup({expanded=false}={}) {
   dumping
     .filter(
       (a) =>
-        a.active &&
+        a.active && (!a.workDate || a.workDate === manufacturingToday()) &&
         orders.some(
           (o) =>
             o.stage === 1 &&
