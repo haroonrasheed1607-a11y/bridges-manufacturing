@@ -1,0 +1,47 @@
+.plan-page { --plan-list-height: clamp(150px, calc(100dvh - 445px), 410px); }
+.plan-heading, .plan-pane-heading, .plan-print-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.plan-heading { margin-bottom: 10px; }
+.plan-heading h2, .plan-heading p, .plan-pane-heading h3 { margin: 0; }
+.plan-heading h2 { font-size: 28px; }
+.plan-toolbar.panel, .plan-pane.panel { padding: 14px; margin: 0; min-width: 0; }
+.plan-toolbar { display: grid; grid-template-columns: minmax(145px, 175px) minmax(0, 1fr); gap: 12px; }
+.plan-page .field { margin: 0; min-width: 0; }
+.plan-toolbar select, .plan-toolbar input, .plan-search input { width: 100%; min-height: 40px; }
+.plan-status p { margin: 8px 0 0; }
+.plan-columns { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; margin-top: 12px; }
+.plan-pane-heading { padding-bottom: 10px; }
+.plan-page .plan-search { margin-bottom: 8px; }
+.plan-list {
+  max-height: var(--plan-list-height);
+  overflow: auto;
+  border: 1px solid #d9e2ea;
+  border-radius: 6px;
+}
+.plan-list > p { margin: 12px; }
+.plan-person, .plan-stickers li { padding: 7px 10px; border-bottom: 1px solid #e5ebf0; }
+.plan-person { display: flex; align-items: center; gap: 9px; cursor: pointer; }
+.plan-person:has(input:checked) { background: #eaf5f0; }
+.plan-person input { flex: none; }
+.plan-person small, .plan-stickers small { display: block; overflow-wrap: anywhere; }
+.plan-stickers ul { list-style: none; padding: 0; margin: 0; }
+.plan-person:last-child, .plan-stickers li:last-child { border-bottom: 0; }
+@media (max-width: 700px) {
+  .plan-page { --plan-list-height: 190px; }
+  .plan-toolbar, .plan-columns { grid-template-columns: minmax(0, 1fr); }
+  .plan-toolbar.panel, .plan-pane.panel { padding: 11px; }
+}
+@media (min-width: 701px) {
+  .work:has(.plan-page) { padding-block: 18px 24px; }
+}
+@media (min-width: 1100px) {
+  .plan-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
+  .plan-people > p { grid-column: 1 / -1; }
+  .plan-person:nth-child(odd) { border-right: 1px solid #e5ebf0; }
+  .plan-person:last-child { border-bottom: 1px solid #e5ebf0; }
+}

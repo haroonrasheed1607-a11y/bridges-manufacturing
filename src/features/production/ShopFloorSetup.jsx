@@ -1,4 +1,3 @@
-import { PlanPage } from "../plan/PlanPage.jsx";
 import { React } from "../../vendor/react-runtime.js";
 import { SimpleBoxSetup } from "./SimpleBoxSetup.jsx";
 import { BulkBoxSetup } from "./BulkBoxSetup.jsx";
@@ -7,7 +6,6 @@ export function ShopFloorSetup() {
   const [mode, setMode] = React.useState("box");
   const tabs = [
     ["box", "Single box"],
-    ["plan", "Plan"],
     ["bulk", "Bulk box labels"],
     ["dumping", "Reusable barcode"],
   ];
@@ -41,8 +39,6 @@ export function ShopFloorSetup() {
       </div>
       {mode === "box" ? (
         <SimpleBoxSetup includeBulk={false} />
-      ) : mode === "plan" ? (
-        <PlanPage />
       ) : mode === "bulk" ? (
         <BulkBoxSetup expanded />
       ) : (

@@ -1,9 +1,10 @@
+import { PlanPage } from './features/plan/PlanPage.jsx';
 import {BarcodeApprovals} from './features/admin-approvals/BarcodeApprovals.jsx';
 import {AvailabilityPage} from './features/availability/AvailabilityPage.jsx';
 import {AttendancePage} from './features/attendance/AttendancePage.jsx';
 import {ConfigurationsPage} from './features/configurations/ConfigurationsPage.jsx';
 import { UsersPage } from './features/users/UsersPage.jsx';
-import { isShopFloorRole } from './features/auth/permissions.js';
+import { canUsePlan, isShopFloorRole } from './features/auth/permissions.js';
 import { React } from './vendor/react-runtime.js';
 import { WorkOrdersPage } from './features/work-orders/WorkOrdersPage.js';
 // app/App.js
@@ -25,6 +26,7 @@ function App() {
     view: e, manager, setView, profile,
     order: t
   } = useManufacturing();
+  if(e === 'plan' && canUsePlan(profile?.role)) return <AppLayout><PlanPage /></AppLayout>;
   if(isShopFloorRole(profile?.role))return React.createElement(AppLayout,null,React.createElement(ManufacturingProductionLine));
   if(['admin','manager','coach'].includes(profile?.role)&&['availability','attendance'].includes(e))return React.createElement(AppLayout,null,React.createElement(e==='availability'?AvailabilityPage:AttendancePage));
   if(!manager)return React.createElement(AppLayout,null,e==='detail'&&t?React.createElement(React.Fragment,null,React.createElement('button',{onClick:()=>setView('board')},'← Job board'),React.createElement('h2',null,t.title),React.createElement(WorkOrdersPage)):e==='board'?React.createElement(ManufacturingJobBoard):React.createElement(ManufacturingProductionLine));

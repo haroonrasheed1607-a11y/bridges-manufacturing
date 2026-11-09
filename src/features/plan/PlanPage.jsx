@@ -88,79 +88,94 @@ export function PlanPage() {
     setError(preview ? manufacturingPreviewLabels(printable) : manufacturingPrintBoxBatch(printable));
   }
 
-  return <section className="panel">
-    <h2>Plan</h2>
-    <p>Choose a date and sub-job, then select the people who will work on it. They share the sub-job balance.</p>
+  const editable = !busy && loadedDate === date && date >= today;
+  const printable = !busy && loadedDate === date && labels.length > 0;
+  const changed = selected.length !== savedPeople.length || selected.some(id => !savedPeople.includes(id));
+  return <section className="plan-page">
+    <header className="plan-heading">
+      <div>
+        <h2>Plan</h2>
+        <p className="quiet">Assign people to a sub-job and print the day’s reusable stickers.</p>
+      </div>
+      <button type="button" disabled={busy} onClick={load}>Refresh</button>
+    </header>
     <form onSubmit={save}>
-      <label className="field">Work date
-        <input type="date" required value={date} disabled={busy}
-          onChange={e => {
-            if (!e.target.value) return;
-            setLabels([]);
-            setLoadedDate("");
-            setSelected([]);
-            setJobId("");
-            setDate(e.target.value);
-          }} />
-      </label>
-      <fieldset disabled={busy || loadedDate !== date || date < today}>
+      <div className="panel plan-toolbar">
+        <label className="field">Work date
+          <input type="date" required value={date} disabled={busy}
+            onChange={e => {
+              if (!e.target.value) return;
+              setLabels([]);
+              setLoadedDate("");
+              setSelected([]);
+              setJobId("");
+              setDate(e.target.value);
+            }} />
+        </label>
         <label className="field">Sub-job
-          <select required value={jobId} onChange={e => {
+          <select required value={jobId} disabled={!editable} onChange={e => {
             const id = e.target.value;
             setJobId(id);
             setSelected(labels.filter(label => label.jobId === id).map(label => label.personId));
             setSearch("");
             setNotice("");
           }}>
-            <option value="">Select a sub-job</option>
+            <option value="">{jobs.length ? "Select a sub-job" : "No unfinished sub-jobs in production"}</option>
             {jobs.map(({order, work, job}) => <option key={job.id} value={job.id}>
               {order.title} · {work.description} · {job.name} ({job.quantity - job.completed} remaining)
             </option>)}
           </select>
         </label>
-        {current && <fieldset>
-          <legend>Individuals · {selected.length} selected</legend>
-          <label className="field">Search individuals
-            <input type="search" value={search} onChange={e => setSearch(e.target.value)} />
+      </div>
+      {(busy || error || notice || date < today) && <div className="plan-status">
+        {busy && <p role="status">{saving.current ? "Saving plan…" : "Loading plan…"}</p>}
+        {error && <p role="alert" className="alert">{error}</p>}
+        {notice && <p role="status">{notice}</p>}
+        {date < today && <p className="quiet">Past plans are read-only.</p>}
+      </div>}
+      <div className="plan-columns">
+        <section className="panel plan-pane" aria-labelledby="plan-people-heading">
+          <div className="plan-pane-heading">
+            <div><h3 id="plan-people-heading">Individuals</h3><small className="quiet">{selected.length} selected</small></div>
+            <button className="primary" disabled={!editable || !current || !changed}>
+              {selected.length || !savedPeople.length ? "Save plan" : "Clear plan"}
+            </button>
+          </div>
+          <label className="field plan-search">Search individuals
+            <input type="search" value={search} disabled={!current || !editable} onChange={e => setSearch(e.target.value)} />
           </label>
-          <div className="table-wrap" style={{maxHeight:"18rem",overflow:"auto"}}>
-            {people.map(person => {
+          <div className="plan-list plan-people" role="region" aria-label="Individuals for selected sub-job" tabIndex={0}>
+            {!current ? <p className="quiet">Select a sub-job to choose individuals.</p> : people.length ? people.map(person => {
               const alreadyPlanned = otherPeople.has(person.id);
               const checked = selected.includes(person.id);
               const hours = availableHoursOn(person, date);
-              return <label key={person.id} style={{display:"block",padding:"6px"}}>
+              return <label className="plan-person" key={person.id}>
                 <input type="checkbox" checked={checked}
-                  disabled={alreadyPlanned || (person.active === false && !checked)}
-                  onChange={e => setSelected(ids => e.target.checked ? [...ids,person.id] : ids.filter(id => id !== person.id))} />
-                {" " + person.name}
-                <small className="quiet"> · {alreadyPlanned ? "On another plan" : person.active === false ? "Disabled" : hours + " h scheduled"}</small>
+                  disabled={!editable || alreadyPlanned || (person.active === false && !checked)}
+                  onChange={e => setSelected(ids => e.target.checked ? [...ids, person.id] : ids.filter(id => id !== person.id))} />
+                <span><strong>{person.name}</strong>
+                  <small className="quiet">{alreadyPlanned ? "On another plan" : person.active === false ? "Disabled" : hours + " h scheduled"}</small>
+                </span>
               </label>;
-            })}
-            {!people.length && <p>No matching individuals.</p>}
+            }) : <p className="quiet">No matching individuals.</p>}
           </div>
-        </fieldset>}
-        <div className="form-actions">
-          <button className="primary" disabled={!current || (!selected.length && !savedPeople.length)}>
-            {selected.length || !savedPeople.length ? "Save plan" : "Clear sub-job plan"}
-          </button>
-        </div>
-      </fieldset>
+        </section>
+        <section className="panel plan-pane" aria-labelledby="plan-stickers-heading">
+          <div className="plan-pane-heading">
+            <div><h3 id="plan-stickers-heading">Day’s stickers</h3><small className="quiet">{formatDate(date)} · {labels.length} saved</small></div>
+            <div className="plan-print-actions">
+              <button type="button" disabled={!printable} onClick={() => print(true)}>Preview</button>
+              <button type="button" className="primary" disabled={!printable} onClick={() => print(false)}>Print all{labels.length > 0 ? " (" + labels.length + ")" : ""}</button>
+            </div>
+          </div>
+          <div className="plan-list plan-stickers" role="region" aria-label="Saved stickers" tabIndex={0}>
+            {labels.length ? <ul>{labels.map(label => <li key={label.id}>
+              <strong>{label.personName}</strong>
+              <small className="quiet">{label.orderTitle} · {label.jobName || label.jobId}</small>
+            </li>)}</ul> : !busy && <p className="quiet">Save a plan to see and print its stickers here.</p>}
+          </div>
+        </section>
+      </div>
     </form>
-    {date < today && <p className="quiet">Past plans are read-only.</p>}
-    {busy && <p role="status">Loading plan…</p>}
-    {error && <p role="alert" className="alert">{error}</p>}
-    {notice && <p role="status">{notice}</p>}
-    <h3>Stickers for {formatDate(date)}</h3>
-    <div className="form-actions">
-      <button type="button" disabled={busy} onClick={load}>Refresh plan</button>
-      <button type="button" disabled={busy || !labels.length} onClick={() => print(true)}>Preview day’s stickers</button>
-      <button type="button" className="primary" disabled={busy || !labels.length} onClick={() => print(false)}>Print all {labels.length || ""} stickers</button>
-    </div>
-    {labels.length ? <div className="table-wrap"><table>
-      <thead><tr><th>Individual</th><th>Order</th><th>Sub-job</th></tr></thead>
-      <tbody>{labels.map(label => <tr key={label.id}>
-        <td>{label.personName}</td><td>{label.orderTitle}</td><td>{label.jobName || label.jobId}</td>
-      </tr>)}</tbody>
-    </table></div> : !busy && <p>No stickers saved for this date.</p>}
   </section>;
 }

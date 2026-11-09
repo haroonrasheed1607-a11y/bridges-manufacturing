@@ -1,4 +1,3 @@
-import {PlanPage} from '../plan/PlanPage.jsx';
 import {ShopFloorSetup} from './ShopFloorSetup.jsx';
 import {DumpingSetup} from '../dumping/DumpingSetup.jsx';
 import {BulkBoxSetup} from './BulkBoxSetup.jsx';
@@ -23,7 +22,7 @@ function ManufacturingProductionLine() {
   const activeOrders = orders.filter(order => order.stage === 1 && order.workOrders.length),
     order = activeOrders.find(item => item.id === orderId) || activeOrders[0];
   const tabs = productionTabs(profile?.role);
-  if(tabs.some(([value])=>value==='print')) tabs.push(['dumping','Reusable barcode'],['plan','Plan']);
+  if(tabs.some(([value])=>value==='print')) tabs.push(['dumping','Reusable barcode']);
   if (!tabs.length) return h('p', {role:'alert'}, 'Production access required.');
   const tab = tabs.some(([value]) => value === selectedTab) ? selectedTab : tabs[0][0];
   function selectTab(value) {
@@ -66,7 +65,7 @@ function ManufacturingProductionLine() {
     role: 'tabpanel',
     'aria-labelledby': 'production-tab-' + tab,
     key: tab
-  }, tab === 'scan' ? h(ManufacturingScanComplete) : tab === 'dumping' ? h(DumpingSetup) : tab === 'plan' ? h(PlanPage) : h(React.Fragment, null, h('section', {
+  }, tab === 'scan' ? h(ManufacturingScanComplete) : tab === 'dumping' ? h(DumpingSetup) : h(React.Fragment, null, h('section', {
     className: 'panel'
   }, h('h3', null, 'Generate printouts for boxes'), h('p', {
     className: 'quiet'

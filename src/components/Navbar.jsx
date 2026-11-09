@@ -1,4 +1,4 @@
-import { isShopFloorRole } from '../features/auth/permissions.js';
+import { canUsePlan, isShopFloorRole } from '../features/auth/permissions.js';
 // components/layout/Navigation.js
 import { useManufacturing } from "../state/ManufacturingContext.jsx";
 import { React } from "../vendor/react-runtime.js";
@@ -69,6 +69,7 @@ function Navbar() {
       hidden: expanded !== id
     }, items.map(([title, route, description]) => link(title, route, description))));
   }
+  const plan = canUsePlan(profile?.role) ? [link('Plan','plan')] : [];
   return h('nav', {
     ref: root,
     className: 'main-navigation refined-navigation',
@@ -80,7 +81,7 @@ function Navbar() {
         button?.focus();
       }
     }
-  }, ...(manager ? [link('Dashboard', 'dashboard'), dropdown('orders', 'Orders', [['All orders', 'orders', 'View and manage customer orders'], ['New order', 'new', 'Create a customer request']]), link('Job Board', 'board'), link('Shop Floor', 'productionline'), dropdown('directory', 'Directory', [['Customers', 'customers', 'Customer records and orders'], ['Individuals', 'individuals', 'Work bookings and future availability'], ['Availability','availability','Reported weekly and monthly availability'], ['Attendance','attendance','Daily attendance roster'], ...(profile?.role==='admin' ? [['Users', 'users', 'Staff accounts and password management']] : [])]), ...(profile?.role==='admin' ? [link('Configurations','configurations')] : [])] : isShopFloorRole(profile?.role) ? [link(profile.role==='box_setup'?'Box Setup':'Scan & Complete','productionline')] : [link('Shop Floor','productionline'),link('Job Board','board'),...(profile?.role==='coach'?[link('Availability','availability'),link('Attendance','attendance')]:[])]) );
+  }, ...(manager ? [link('Dashboard', 'dashboard'), dropdown('orders', 'Orders', [['All orders', 'orders', 'View and manage customer orders'], ['New order', 'new', 'Create a customer request']]), link('Job Board', 'board'), ...plan, link('Shop Floor', 'productionline'), dropdown('directory', 'Directory', [['Customers', 'customers', 'Customer records and orders'], ['Individuals', 'individuals', 'Work bookings and future availability'], ['Availability','availability','Reported weekly and monthly availability'], ['Attendance','attendance','Daily attendance roster'], ...(profile?.role==='admin' ? [['Users', 'users', 'Staff accounts and password management']] : [])]), ...(profile?.role==='admin' ? [link('Configurations','configurations')] : [])] : isShopFloorRole(profile?.role) ? [link(profile.role==='box_setup'?'Box Setup':'Scan & Complete','productionline'),...plan] : [link('Shop Floor','productionline'),...plan,link('Job Board','board'),...(profile?.role==='coach'?[link('Availability','availability'),link('Attendance','attendance')]:[])]) );
 }
 
 export { Navbar };
