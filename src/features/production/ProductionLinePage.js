@@ -22,7 +22,7 @@ function ManufacturingProductionLine() {
   const activeOrders = orders.filter(order => order.stage === 1 && order.workOrders.length),
     order = activeOrders.find(item => item.id === orderId) || activeOrders[0];
   const tabs = productionTabs(profile?.role);
-  if(tabs.some(([value])=>value==='print')) tabs.push(['dumping','Dumping · reusable QR']);
+  if(tabs.some(([value])=>value==='print')) tabs.push(['dumping','Reusable barcode']);
   if (!tabs.length) return h('p', {role:'alert'}, 'Production access required.');
   const tab = tabs.some(([value]) => value === selectedTab) ? selectedTab : tabs[0][0];
   function selectTab(value) {

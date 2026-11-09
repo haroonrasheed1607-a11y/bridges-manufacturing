@@ -1,6 +1,6 @@
 -- Integration checks always roll back: no test people/orders/completions remain.
 begin;
-do $$declare admin_id uuid;scanner_id uuid;setup_id uuid;result jsonb;report jsonb;oid text:='TEST-DUMP-ORDER';wid text:='TEST-DUMP-WORK';jid text:='TEST-DUMP-JOB';pid text:='TEST-DUMP-PERSON';code text:='DUMP-0123456789ABCDEF';req uuid:=gen_random_uuid();rev bigint;today date:=(now() at time zone 'America/Chicago')::date;week date:=date_trunc('week',now() at time zone 'America/Chicago')::date;begin
+do $$declare admin_id uuid;scanner_id uuid;setup_id uuid;result jsonb;report jsonb;oid text:='TEST-DUMP-ORDER';wid text:='TEST-DUMP-WORK';jid text:='TEST-DUMP-JOB';pid text:='TEST-DUMP-PERSON';code text:='REUSE-0123456789ABCDEF';req uuid:=gen_random_uuid();rev bigint;today date:=(now() at time zone 'America/Chicago')::date;week date:=date_trunc('week',now() at time zone 'America/Chicago')::date;begin
  select id into admin_id from public.staff_profiles where role='admin' and active limit 1;
  select id into scanner_id from public.staff_profiles where role='box_scanner' and active limit 1;
  select id into setup_id from public.staff_profiles where role='box_setup' and active limit 1;
@@ -24,8 +24,10 @@ do $$declare admin_id uuid;scanner_id uuid;setup_id uuid;result jsonb;report jso
  perform set_config('request.jwt.claim.sub',scanner_id::text,true);
  result:=public.app_dumping_scan(code,req,200);if (result->>'pieces')::int<>200 then raise exception 'Default batch failed';end if;
  result:=public.app_dumping_scan(code,req);if not (result->>'duplicate')::boolean or (select completed from public.sub_jobs where id=jid)<>200 then raise exception 'Retry counted twice';end if;
- begin perform public.app_dumping_scan(code,gen_random_uuid());raise exception 'Expected duplicate guard';exception when raise_exception then if sqlerrm not like 'Duplicate scan blocked%' then raise;end if;end;
- update public.dumping_assignments set last_scan_at=now()-interval '10 seconds' where id=code;
+ begin perform public.app_dumping_scan(code,gen_random_uuid());raise exception 'Expected duplicate guard';exception when raise_exception then if sqlerrm not like 'Too soon to scan%' then raise;end if;end;
+ update public.dumping_assignments set last_scan_at=clock_timestamp()-interval '51 minutes' where id=code;
+ begin perform public.app_dumping_scan(code,gen_random_uuid(),200);raise exception 'Double load accepted before its fill time';exception when raise_exception then if sqlerrm not like 'Too soon to scan%' then raise;end if;end;
+ update public.dumping_assignments set last_scan_at=clock_timestamp()-interval '101 minutes' where id=code;
  begin perform public.app_dumping_scan(code,gen_random_uuid());raise exception 'Expected capacity guard';exception when raise_exception then if sqlerrm not like 'Batch exceeds%' then raise;end if;end;
  begin perform public.app_dumping_scan(code,gen_random_uuid(),201);raise exception 'Over two loads accepted';exception when raise_exception then if sqlerrm not like 'Batch exceeds%' then raise;end if;end;
  perform public.app_dumping_scan(code,gen_random_uuid(),20);

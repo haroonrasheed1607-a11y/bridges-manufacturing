@@ -7,7 +7,7 @@ export function ShopFloorSetup() {
   const tabs = [
     ["box", "Single box"],
     ["bulk", "Bulk box labels"],
-    ["dumping", "Dumping · reusable QR"],
+    ["dumping", "Reusable barcode"],
   ];
   return (
     <div className="box-setup-screen">

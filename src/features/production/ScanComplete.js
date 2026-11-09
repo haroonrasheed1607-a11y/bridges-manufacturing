@@ -54,12 +54,11 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     scanner.current?.focus();
     scanner.current?.select();
   }
-  function scan(value) {
-    if(dumpLock.current)return;
+  function scan(value, preview = false) {
+    if(dumpLock.current || saving.current)return;
     if(isDumpingCode(value)){
       dumpLock.current=true;setDumpCode(String(value).trim().toUpperCase());setCode('');setSelectedCode('');setError('');return;
     }
-    saving.current = false;
     setMessage('');
     setLast(null);
     setError('');
@@ -74,20 +73,24 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     setSelectedCode(found.box.id);
     setPieces(String(found.box.completedPieces ?? found.box.quantity));
     if (found.box.completedAt || found.box.status === 'completed') setError('This box was already completed on ' + formatTimestamp(found.box.completedAt) + '. It will not be counted again.');else if (found.order.stage !== 1) setError('This order is not currently in production.');
+    else if (!preview) void recordBox(found, found.box.quantity);
   }
   async function complete(event) {
     event.preventDefault();
-    if (!selected || saving.current) return;
+    if (selected) await recordBox(selected, Number(pieces));
+  }
+  async function recordBox(selected, quantity) {
+    if (saving.current) return;
     saving.current = true;
-    const result = await completeProductionBox(selected.box.id, Number(pieces));
+    const result = await completeProductionBox(selected.box.id, quantity);
+    saving.current = false;
     if (result.error) {
-      saving.current = false;
       setError(result.error);
       return;
     }
     setLast({
       ...result,
-      individualName: individual?.name || selected.box.personId,
+      individualName: workforce.people.find(person => person.id === selected.box.personId)?.name || selected.box.personId,
       orderTitle: selected.order.title
     });
     setMessage('Box completed · ' + result.box.completedPieces + ' pieces recorded. Ready for the next scan.');
@@ -106,7 +109,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     className: 'eyebrow'
   }, 'SCAN & COMPLETE WORK'), h('h2', null, 'Scan & complete work'), h('p', {
     className: 'quiet'
-  }, 'Scan a box QR label with your phone camera, use a connected scanner, or enter the code. Then confirm completed pieces.')), h('button', {
+  }, 'Scan a box QR label with your phone camera, use a connected scanner, or enter the code. A single-use scan completes the assigned box. Reusable barcodes prompt for load size.')), h('button', {
     type: 'button',
     onClick: focusScanner
   }, 'Focus scanner')), !minimal && h('section', {
@@ -134,16 +137,16 @@ function ManufacturingScanComplete({minimal=false} = {}) {
   }, h('button', {
     className: 'primary',
     disabled: !code.trim()
-  }, 'Find box'), h('button', {
+  }, 'Scan code'), h('button', {
     type: 'button',
     className: 'sample-data-button',
     onClick: () => {
       const sample = orders.flatMap(order => order.stage === 1 ? order.workOrders.flatMap(work => (work.boxes || []).filter(box => !box.completedAt && box.status !== 'completed')) : [])[0];
-      if (sample) scan(sample.id);else setError('Create and assign a box in production first, then use this button to load it.');
+      if (sample) scan(sample.id, true);else setError('Create and assign a box in production first, then use this button to load it.');
     }
   }, 'Load a test box'))), !minimal && h('p', {
     className: 'scanner-help'
-  }, 'Scanners that type the code and send Enter work here. You can also type or paste a box ID and choose Find box.')), error && h('div', {
+  }, 'Scanners that type the code and send Enter work here. You can also type or paste a box ID and choose Scan code.')), error && h('div', {
     className: 'alert',
     role: 'alert'
   }, error), h('div', {

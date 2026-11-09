@@ -139,7 +139,7 @@ function ApprovalQueue() {
                 onChange={(e) => filter(setKind, e.target.value)}
               >
                 <option value="box">Unfinished box codes</option>
-                <option value="dumping">Active reusable dumping codes</option>
+                <option value="dumping">Active reusable barcodes</option>
               </select>
             </label>
             <label className="field">

@@ -50,7 +50,7 @@ export function DumpingSetup() {
     try {
       setAssignments(
         await manufacturingApi.rpc("app_dumping_assign", {
-          p_id: createId("DUMP"),
+          p_id: createId("REUSE"),
           p_job: selected.job.id,
           p_person: personId,
           p_quantity: Number(quantity),
@@ -76,7 +76,7 @@ export function DumpingSetup() {
   }
   return (
     <section className="panel">
-      <h2>Dumping · reusable QR</h2>
+      <h2>Reusable barcode</h2>
       <p>
         One reusable QR per individual and sub-job. Each accepted scan records
         another batch. Assignments do not reserve pieces; every scan checks

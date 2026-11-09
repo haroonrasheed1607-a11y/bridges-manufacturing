@@ -1,7 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Reusable QR scans now confirm 1\u00d7 or 2\u00d7 loads before recording completed pieces.",
-    "Scanner login shows daily completed pieces by individual, sorted highest first, instead of manual Box ID entry."
+    "Single-use barcode scans complete the assigned box immediately.",
+    "Reusable barcodes require enough time between scans to fill the load, based on work-order timing."
   ]
 }

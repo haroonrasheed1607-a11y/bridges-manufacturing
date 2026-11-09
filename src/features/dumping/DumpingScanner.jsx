@@ -1,7 +1,7 @@
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
-import { DUMPING_COOLDOWN_MS, scanRequestKey, completedLoadPieces } from "./model.js";
+import { SUCCESS_DISPLAY_MS, scanRequestKey, completedLoadPieces } from "./model.js";
 export function DumpingScanner({ code, onDone }) {
   const { workforce, refresh, profile } = useManufacturing();
   const [result, setResult] = React.useState(null),
@@ -79,7 +79,7 @@ export function DumpingScanner({ code, onDone }) {
     const timer = setTimeout(() => {
       setReady(true);
       onDone();
-    }, DUMPING_COOLDOWN_MS);
+    }, SUCCESS_DISPLAY_MS);
     return () => clearTimeout(timer);
   }, [result?.eventId]);
   const person = workforce.people.find((p) => p.id === result?.personId);

@@ -1,6 +1,6 @@
-export const DUMPING_COOLDOWN_MS = 5000;
+export const SUCCESS_DISPLAY_MS = 5000;
 export function isDumpingCode(value) {
-  return /^DUMP-[A-F0-9]{16}$/i.test(String(value || "").trim());
+  return /^(?:DUMP|REUSE)-[A-F0-9]{16}$/i.test(String(value || "").trim());
 }
 export function dumpingLabel(assignment, orders, people) {
   const order = orders.find((o) => o.id === assignment.orderId),
