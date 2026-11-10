@@ -54,38 +54,54 @@ function manufacturingAutoSubJobs(work) {
   }
   return jobs;
 }
+function manufacturingCanEditWorkOrder(order, work) {
+  return order.stage < 2 &&
+    !work.jobs.some(job => Number(job.completed) > 0) &&
+    !(work.boxes || []).some(box => box.completedAt || box.status === 'completed');
+}
+
 function manufacturingBuildWorkOrder(order, {
   id, type, description, instructions, parts = [],
   seconds = Number(order.seconds ?? 30), packSeconds = 20,
   hoursPerDay = Number(order.hoursPerDay ?? 6),
   startDate = order.startDate || manufacturingToday(),
-  required = order.required, assignedPeople = '', packsOverride = null,
+  required = order.required, existingWork, assignedPeople = '', packsOverride = null,
 }) {
-  const { quantity, perPack, packCount } = manufacturingOrderPlan(order);
+  const { quantity, perPack, packCount } = manufacturingOrderPlan(existingWork ?? order);
   const totalSeconds = manufacturingWorkSeconds({
     quantity, perPack, seconds, packSeconds, timingVersion: 2,
   });
   const plan = manufacturingOrderPlan({
-    ...order,
+    ...order, quantity, perPack,
     seconds: quantity ? totalSeconds / quantity : seconds,
     hoursPerDay, startDate, required, assignedPeople,
   });
   const work = {
+    ...existingWork,
     id, type, description, instructions, parts: type === 'Assembly' ? parts : [],
     timingVersion: 2, quantity, perPack, packCount, seconds, packSeconds,
     packageSeconds: seconds * perPack + packSeconds,
     hoursPerDay, startDate, required, expected: plan.expected,
     people: plan.people, recommendedPeople: plan.recommendedPeople,
-    assignedPeople: assignedPeople || null, totalSeconds, audits: [], packing: [],
+    assignedPeople: assignedPeople || null, totalSeconds,
+    audits: existingWork?.audits ?? [], packing: existingWork?.packing ?? [],
   };
   const suggestedPacks = manufacturingSuggestedPacks(work);
-  const packsPerSubJob = packsOverride === null ? suggestedPacks : Number(packsOverride);
+  const packsPerSubJob = existingWork
+    ? existingWork.packsPerSubJob
+    : packsOverride === null ? suggestedPacks : Number(packsOverride);
   return {
     suggestedPacks,
     work: {
       ...work,
       packsPerSubJob,
-      jobs: manufacturingAutoSubJobs({ ...work, packsPerSubJob }),
+      jobs: existingWork
+        ? existingWork.jobs.map(job => ({
+          ...job,
+          targetSeconds: hoursPerDay * 1800,
+          estimatedSeconds: manufacturingWorkSeconds({ ...work, quantity: job.quantity }),
+        }))
+        : manufacturingAutoSubJobs({ ...work, packsPerSubJob }),
     },
   };
 }
@@ -108,4 +124,4 @@ function manufacturingDefaultParts() {
   }];
 }
 
-export { manufacturingWorkSeconds, manufacturingWorkDuration, manufacturingSuggestedPacks, manufacturingAutoSubJobs, manufacturingBuildWorkOrder, manufacturingDefaultParts };
+export { manufacturingWorkSeconds, manufacturingWorkDuration, manufacturingSuggestedPacks, manufacturingAutoSubJobs, manufacturingBuildWorkOrder, manufacturingCanEditWorkOrder, manufacturingDefaultParts };

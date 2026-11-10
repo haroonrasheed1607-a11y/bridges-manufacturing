@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Added quick work order approval to Order Requests. The popup reuses request details and generates sub-jobs automatically."
+    "Work orders can be edited before production progress is recorded. Existing sub-job barcodes and assignments are preserved."
   ]
 }

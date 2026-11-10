@@ -1,5 +1,6 @@
 // features/work-orders/WorkOrdersPage.js
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
+import { manufacturingCanEditWorkOrder } from "../../domain/workOrders.js";
 import { React } from "../../vendor/react-runtime.js";
 import { ManufacturingProductionBoxes } from "../production/BoxAssignment.js";
 import { ManufacturingPrintSection } from "./PrintSection.js";
@@ -14,7 +15,29 @@ function WorkOrdersPage() {
       setView
     } = useManufacturing(),
     h = React.createElement,
-    [adding, setAdding] = React.useState(false);
+    [adding, setAdding] = React.useState(false),
+    [editing, setEditing] = React.useState(null);
+
+  const editingWork = editing && order.workOrders.find(work => work.id === editing.id);
+  React.useEffect(() => {
+    if (editing && (!editingWork || !manufacturingCanEditWorkOrder(order, editingWork))) setEditing(null);
+  }, [editing, editingWork, order.stage]);
+
+  async function saveEdit(work) {
+    const saved = await change(order.id, current => {
+      const existing = current.workOrders.find(item => item.id === work.id);
+      if (!existing || !manufacturingCanEditWorkOrder(current, existing)) {
+        throw new Error('This work order is locked because production progress has been recorded.');
+      }
+      if (current._revision !== editing.revision) {
+        throw new Error('This order changed while you were editing. Reopen the work order and try again.');
+      }
+      const workOrders = current.workOrders.map(item => item.id === work.id ? work : item);
+      const expected = workOrders.map(item => item.expected).filter(Boolean).sort().at(-1);
+      return { ...current, workOrders, expected };
+    }, 'Work order updated.');
+    if (saved) setEditing(null);
+  }
   return h(React.Fragment, null, h('div', {
     className: 'section-heading'
   }, h('div', null, h('h3', null, 'Work orders & sub-jobs'), h('p', {
@@ -23,7 +46,7 @@ function WorkOrdersPage() {
     className: 'paper-editor-buttons'
   }, manager && order.stage < 2 && order.workOrders.length > 0 && h('button', {
     onClick: () => setView('individuals')
-  }, 'Book individuals'), manager && order.stage === 0 && !order.workOrderApprovedAt && !adding && h('button', {
+  }, 'Book individuals'), manager && order.stage === 0 && !order.workOrderApprovedAt && !adding && !editing && h('button', {
     onClick: () => setAdding(true)
   }, '＋ Add work order'))), order.stage === 1 && h(ManufacturingProductionBoxes, {
     orderKey: order.id
@@ -40,10 +63,23 @@ function WorkOrdersPage() {
     }
   }), !order.workOrders.length && !adding && h('p', {
     className: 'empty'
-  }, 'No work orders yet. Add a work order to prepare the job sheet.'), order.workOrders.map(work => h('div', {
-    key: work.id,
-    className: 'saved-work-paper'
-  }, h(ManufacturingWorkPaper, {
+  }, 'No work orders yet. Add a work order to prepare the job sheet.'), order.workOrders.map(work => {
+    const canEdit = manager && manufacturingCanEditWorkOrder(order, work);
+    if (editing?.id === work.id && canEdit) {
+      return h('div', { key: work.id, className: 'saved-work-paper' }, h(WorkOrderForm, {
+        order, existingWork: work, onSave: saveEdit, onCancel: () => setEditing(null)
+      }));
+    }
+    return h('div', {
+      key: work.id,
+      className: 'saved-work-paper'
+    }, canEdit && h('button', {
+      type: 'button',
+      disabled: adding || !!editing,
+      onClick: () => setEditing({ id: work.id, revision: order._revision })
+    }, 'Edit work order'), manager && !canEdit && h('p', {
+      className: 'quiet'
+    }, 'Editing locked after production progress is recorded.'), h(ManufacturingWorkPaper, {
     order,
     work,
     progressControls: job => manager && order.stage === 1 ? h('form', {
@@ -73,7 +109,8 @@ function WorkOrdersPage() {
   }), h(ManufacturingPrintSection, {
     order,
     work
-  }))));
+  }));
+  }));
 }
 
 export { WorkOrdersPage };

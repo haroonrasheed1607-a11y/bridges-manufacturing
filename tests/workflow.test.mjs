@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { manufacturingDemoData } from '../src/state/demoData.js';
 import { manufacturingBoardStage, manufacturingBoardStages, manufacturingNextOrderState, manufacturingTransitionLabel } from '../src/domain/workflow.js';
-import { manufacturingBuildWorkOrder } from '../src/domain/workOrders.js';
+import { manufacturingBuildWorkOrder, manufacturingCanEditWorkOrder } from '../src/domain/workOrders.js';
 import { getStageBlocker, validateWorkOrder } from '../src/domain/validation.js';
 import { manufacturingColumnProgress } from '../src/domain/boardProgress.js';
 import { manufacturingFindBox, manufacturingCompleteBox } from '../src/domain/production.js';
@@ -77,6 +77,29 @@ test('quick approval builds a valid full-quantity work order and awaits coach as
   assert.ok(approved.workOrderApprovedAt);
   assert.equal(manufacturingBoardStage(approved), 1);
   assert.match(getStageBlocker(approved), /Job Coaches/);
+});
+
+test('pre-scan edits preserve sub-job and box references and lock after progress', () => {
+  const order = { stage: 1, quantity: 600, perPack: 25, required: '2026-11-16' };
+  const existingWork = {
+    id: 'WO-1', quantity: 300, perPack: 25, packsPerSubJob: 12, coachId: 'coach-1',
+    jobs: [{ id: 'custom-subjob', name: 'Assembly', quantity: 300, completed: 0, packType: 'Box' }],
+    boxes: [{ id: 'box-1', jobId: 'custom-subjob', quantity: 25 }],
+  };
+  assert.equal(manufacturingCanEditWorkOrder(order, existingWork), true);
+  const { work } = manufacturingBuildWorkOrder(order, {
+    existingWork, id: existingWork.id, type: 'Assembly', description: 'Assemble',
+    instructions: 'Check the finished piece.', seconds: 45,
+  });
+  assert.equal(validateWorkOrder(work), '');
+  assert.equal(work.coachId, existingWork.coachId);
+  assert.deepEqual(work.boxes, existingWork.boxes);
+  assert.equal(work.jobs[0].id, 'custom-subjob');
+  assert.equal(work.jobs[0].quantity, 300);
+  assert.equal(work.jobs[0].estimatedSeconds, 300 * 45 + 12 * 20);
+  assert.equal(manufacturingCanEditWorkOrder(order, { ...work, jobs: [{ ...work.jobs[0], completed: 1 }] }), false);
+  assert.equal(manufacturingCanEditWorkOrder(order, { ...work, boxes: [{ ...work.boxes[0], completedAt: '2026-11-10' }] }), false);
+  assert.equal(manufacturingCanEditWorkOrder({ ...order, stage: 2 }, work), false);
 });
 
 test('box completion updates pieces once and rejects a second completion', () => {

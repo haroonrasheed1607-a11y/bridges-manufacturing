@@ -14,27 +14,32 @@ import { ManufacturingWorkPlanSummary } from "./WorkPlanSummary.js";
 
 function WorkOrderForm({
   order,
+  existingWork,
   onSave,
   onCancel
 }) {
   const { orderDisplayTitle } = useManufacturing();
   const h = React.createElement,
-    [id] = React.useState(() => createId('WO')),
-    [type, setType] = React.useState('Assembly'),
-    [description, setDescription] = React.useState(''),
-    [instructions, setInstructions] = React.useState(''),
-    [seconds, setSeconds] = React.useState(Number(order.seconds ?? 30)),
-    [packSeconds, setPackSeconds] = React.useState(20),
-    [parts, setParts] = React.useState(manufacturingDefaultParts),
-    [hoursPerDay, setHoursPerDay] = React.useState(Number(order.hoursPerDay ?? 6)),
-    [startDate, setStartDate] = React.useState(order.startDate || manufacturingToday()),
-    [required, setRequired] = React.useState(order.required),
-    [assignedPeople, setAssignedPeople] = React.useState(''),
+    [id] = React.useState(() => existingWork?.id ?? createId('WO')),
+    [type, setType] = React.useState(existingWork?.type === 'Packing' ? 'Packaging' : existingWork?.type ?? 'Assembly'),
+    [description, setDescription] = React.useState(existingWork?.description ?? ''),
+    [instructions, setInstructions] = React.useState(existingWork?.instructions ?? ''),
+    [seconds, setSeconds] = React.useState(existingWork && existingWork.timingVersion !== 2
+      ? Number(existingWork.seconds) + Number(existingWork.packSeconds ?? 0)
+      : Number(existingWork?.seconds ?? order.seconds ?? 30)),
+    [packSeconds, setPackSeconds] = React.useState(existingWork && existingWork.timingVersion !== 2
+      ? Number(existingWork.packageSeconds ?? 0)
+      : Number(existingWork?.packSeconds ?? 20)),
+    [parts, setParts] = React.useState(() => existingWork?.parts ?? (existingWork ? [] : manufacturingDefaultParts())),
+    [hoursPerDay, setHoursPerDay] = React.useState(Number(existingWork?.hoursPerDay ?? order.hoursPerDay ?? 6)),
+    [startDate, setStartDate] = React.useState(existingWork?.startDate || order.startDate || manufacturingToday()),
+    [required, setRequired] = React.useState(existingWork?.required || order.required),
+    [assignedPeople, setAssignedPeople] = React.useState(existingWork?.assignedPeople ?? (existingWork?.recommendedPeople ? '' : existingWork?.people ?? '')),
     [error, setError] = React.useState(''),
     [packsOverride, setPacksOverride] = React.useState(null);
   const { work, suggestedPacks } = manufacturingBuildWorkOrder(order, {
     id, type, description, instructions, parts, seconds, packSeconds,
-    hoursPerDay, startDate, required, assignedPeople, packsOverride,
+    hoursPerDay, startDate, required, assignedPeople, packsOverride, existingWork,
   });
   const { quantity, perPack, packageSeconds, recommendedPeople, packsPerSubJob } = work;
   const field = (label, props, hint) => h(FormField, {
@@ -70,7 +75,7 @@ function WorkOrderForm({
     className: 'paper-editor-toolbar'
   }, h('p', {
     className: 'quiet'
-  }, 'Prepare the work order, then save it for production.'), h('div', null, h('button', {
+  }, existingWork ? 'Edit work order ' + existingWork.id : 'Prepare the work order, then save it for production.'), h('div', null, !existingWork && h('button', {
     type: 'button',
     className: 'sample-data-button',
     onClick: () => {
@@ -161,7 +166,7 @@ function WorkOrderForm({
     value: instructions,
     onChange: event => setInstructions(event.target.value),
     placeholder: 'Describe the steps and quality requirements.'
-  }))), section('04', 'SUB-JOBS', h('div', {
+  }))), section('04', 'SUB-JOBS', !existingWork && h('div', {
     className: 'work-plan-people'
   }, field('Packs per sub-job', {
     type: 'number',
@@ -176,7 +181,9 @@ function WorkOrderForm({
     onClick: () => setPacksOverride(null)
   }, 'Use suggestion')), h('p', {
     className: 'paper-section-note'
-  }, work.jobs.length + ' sub-jobs · ' + (packsPerSubJob || 0) + ' packs per sub-job. The final sub-job takes the remaining packs.'), h('details', {
+  }, existingWork
+    ? work.jobs.length + ' existing sub-jobs. Their quantities and barcodes are kept when you save.'
+    : work.jobs.length + ' sub-jobs · ' + (packsPerSubJob || 0) + ' packs per sub-job. The final sub-job takes the remaining packs.'), h('details', {
     className: 'subjob-generated-preview'
   }, h('summary', null, 'Preview generated sub-jobs and barcodes'), h(ManufacturingSubJobSheets, {
     work
@@ -191,7 +198,7 @@ function WorkOrderForm({
   }, 'Cancel'), h('button', {
     className: 'primary',
     disabled: !work.jobs.length
-  }, 'Save work order'))), h(ManufacturingPrintSection, {
+  }, existingWork ? 'Save changes' : 'Save work order'))), !existingWork && h(ManufacturingPrintSection, {
     order,
     work
   }));
