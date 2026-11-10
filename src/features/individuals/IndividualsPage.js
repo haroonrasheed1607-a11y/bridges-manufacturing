@@ -29,6 +29,8 @@ function ManufacturingIndividuals() {
     [statusChange, setStatusChange] = React.useState(null),
     [statusBusy, setStatusBusy] = React.useState(false),
     [personForm, setPersonForm] = React.useState(null),
+    [personError, setPersonError] = React.useState(''),
+    [personSaving, setPersonSaving] = React.useState(false),
     [bookingForm, setBookingForm] = React.useState(null),
     [selected, setSelected] = React.useState(''),
     [error, setError] = React.useState(''),
@@ -104,58 +106,56 @@ function ManufacturingIndividuals() {
       if (notify(await setIndividualActive(statusChange.id, enabling), enabling ? 'Individual enabled.' : 'Individual disabled.')) setStatusChange(null);
     } finally { setStatusBusy(false); }
   }
-  if(timesheetPerson!==null)return h(TimesheetsPage,{initialPerson:timesheetPerson,onBack:()=>setTimesheetPerson(null)});
-  return h('div', {
-    className: 'individuals-page'
-  }, h('div', {
-    className: 'page-heading'
-  }, h('div', null, h('div', {
-    className: 'eyebrow'
-  }, 'OPERATIONS / INDIVIDUALS'), h('h2', null, 'People & availability'), h('p', {
-    className: 'quiet'
-  }, 'See booked work and remaining capacity before making future bookings.')), h('div', {
-    className: 'people-heading-actions'
-  }, formButton('Weekly timesheets',()=>setTimesheetPerson(selected||'')), formButton('Availability chart',()=>setView('availability')), formButton('Attendance roster',()=>setView('attendance')), formButton('Import Excel', () => setImportOpen(true)), formButton('＋ Add individual', () => {
-    setPersonForm({
-      name: '',
-      role: '',
-      hoursPerDay: 6
-    });
-    setError('');
+  const personDialog = React.useRef(null);
+  const editingPersonId = personForm?.id;
+  React.useEffect(() => {
+    if (!editingPersonId) return;
+    const opener = document.activeElement;
+    const dialog = personDialog.current;
+    dialog?.showModal();
+    return () => {
+      if (dialog?.open) dialog.close();
+      opener?.focus();
+    };
+  }, [editingPersonId]);
+
+  function closePersonForm() {
+    setPersonForm(null);
+    setPersonError('');
+  }
+  function editPerson(person) {
+    setPersonError('');
     setMessage('');
-  }), h('button', {
-    className: 'primary',
-    disabled: !activePeople.length || !options.length,
-    onClick: () => beginBooking()
-  }, '＋ Book work'))), h('div', {
-    role: 'status',
-    className: 'quiet'
-  }, message), error && h('p', {
-    role: 'alert',
-    className: 'alert'
-  }, error), importOpen && h(IndividualImport, {
-    people: workforce.people,
-    onClose: () => setImportOpen(false),
-    onImport: async rows => {
-      const problem = await importIndividuals(rows);
-      if (!problem) setMessage(rows.length + ' individuals imported.');
-      return problem;
-    }
-  }), statusChange && h('section', {className:'panel', 'aria-label':'Confirm individual status'},
-    h('h3', null, (statusChange.active === false ? 'Enable ' : 'Disable ') + statusChange.name + '?'),
-    h('p', null, statusChange.active === false ? 'This individual can receive new work again.' : 'This individual will be removed from new assignment lists. Existing records will remain available.'),
-    h('div', {className:'form-actions'},
-      h('button', {disabled:statusBusy, onClick:()=>setStatusChange(null)}, 'Cancel'),
-      h('button', {className:'primary',disabled:statusBusy,onClick:changeStatus}, statusChange.active === false ? 'Enable individual' : 'Disable individual')
-    )), personForm && h('form', {
-    className: 'panel form-panel',
+    setPersonForm({
+      id: person.id,
+      name: person.name,
+      role: person.role ?? '',
+      kind: person.kind,
+      hoursPerDay: person.hoursPerDay,
+      weeklyHours: person.weeklyHours,
+    });
+  }
+  const individualForm = personForm && h('form', {
+    className: editingPersonId ? 'individual-edit-form' : 'panel form-panel',
     onSubmit: async event => {
       event.preventDefault();
-      if (notify(await saveIndividual(personForm), personForm.id ? 'Individual updated.' : 'Individual added.')) setPersonForm(null);
+      if (personSaving) return;
+      setPersonSaving(true);
+      setPersonError('');
+      try {
+        const problem = await saveIndividual(personForm);
+        if (problem) setPersonError(problem);
+        else {
+          setMessage(editingPersonId ? 'Individual updated.' : 'Individual added.');
+          closePersonForm();
+        }
+      } finally {
+        setPersonSaving(false);
+      }
     }
   }, h('div', {
     className: 'section-heading'
-  }, h('h3', null, personForm.id ? 'Edit individual' : 'Add individual'), h('button', {
+  }, h('h3', {id:'individual-form-heading'}, editingPersonId ? 'Edit individual' : 'Add individual'), !editingPersonId && h('button', {
     type: 'button',
     className: 'sample-data-button',
     onClick: () => {
@@ -167,7 +167,7 @@ function ManufacturingIndividuals() {
         role: 'Assembly and packaging',
         hoursPerDay: 6
       });
-      setError('');
+      setPersonError('');
     }
   }, 'Fill sample data')), h('div', {
     className: 'form-grid'
@@ -175,6 +175,7 @@ function ManufacturingIndividuals() {
     required: true,
     maxLength: 160,
     value: personForm.name,
+    autoFocus: !!editingPersonId,
     onChange: event => setPersonForm({
       ...personForm,
       name: event.target.value
@@ -214,14 +215,69 @@ function ManufacturingIndividuals() {
   }, 'Default for Monday–Friday if a weekly pattern is not set.')), !manufacturingIsCoach(personForm) && h(WeeklyHours, {
     person:personForm,
     onChange:weeklyHours => setPersonForm(current=>({...current,weeklyHours}))
-  }), h('div', {
+  }), personError && h('p', {role:'alert', className:'alert'}, personError), h('div', {
     className: 'form-actions'
-  }, formButton('Cancel', () => {
-    setPersonForm(null);
+  }, h('button', {
+    type: 'button',
+    disabled: personSaving,
+    onClick: closePersonForm
+  }, 'Cancel'), h('button', {
+    className: 'primary',
+    disabled: personSaving
+  }, editingPersonId ? 'Save changes' : 'Save individual')));
+  if(timesheetPerson!==null)return h(TimesheetsPage,{initialPerson:timesheetPerson,onBack:()=>setTimesheetPerson(null)});
+  return h('div', {
+    className: 'individuals-page'
+  }, h('div', {
+    className: 'page-heading'
+  }, h('div', null, h('div', {
+    className: 'eyebrow'
+  }, 'OPERATIONS / INDIVIDUALS'), h('h2', null, 'People & availability'), h('p', {
+    className: 'quiet'
+  }, 'See booked work and remaining capacity before making future bookings.')), h('div', {
+    className: 'people-heading-actions'
+  }, formButton('Weekly timesheets',()=>setTimesheetPerson(selected||'')), formButton('Availability chart',()=>setView('availability')), formButton('Attendance roster',()=>setView('attendance')), formButton('Import Excel', () => setImportOpen(true)), formButton('＋ Add individual', () => {
+    setPersonError('');
+    setPersonForm({
+      name: '',
+      role: '',
+      hoursPerDay: 6
+    });
     setError('');
+    setMessage('');
   }), h('button', {
-    className: 'primary'
-  }, 'Save individual'))), bookingForm && h('form', {
+    className: 'primary',
+    disabled: !activePeople.length || !options.length,
+    onClick: () => beginBooking()
+  }, '＋ Book work'))), h('div', {
+    role: 'status',
+    className: 'quiet'
+  }, message), error && h('p', {
+    role: 'alert',
+    className: 'alert'
+  }, error), importOpen && h(IndividualImport, {
+    people: workforce.people,
+    onClose: () => setImportOpen(false),
+    onImport: async rows => {
+      const problem = await importIndividuals(rows);
+      if (!problem) setMessage(rows.length + ' individuals imported.');
+      return problem;
+    }
+  }), statusChange && h('section', {className:'panel', 'aria-label':'Confirm individual status'},
+    h('h3', null, (statusChange.active === false ? 'Enable ' : 'Disable ') + statusChange.name + '?'),
+    h('p', null, statusChange.active === false ? 'This individual can receive new work again.' : 'This individual will be removed from new assignment lists. Existing records will remain available.'),
+    h('div', {className:'form-actions'},
+      h('button', {disabled:statusBusy, onClick:()=>setStatusChange(null)}, 'Cancel'),
+      h('button', {className:'primary',disabled:statusBusy,onClick:changeStatus}, statusChange.active === false ? 'Enable individual' : 'Disable individual')
+    )), individualForm && (editingPersonId ? h('dialog', {
+    ref: personDialog,
+    className: 'individual-edit-dialog',
+    'aria-labelledby': 'individual-form-heading',
+    onCancel: event => {
+      event.preventDefault();
+      if (!personSaving) closePersonForm();
+    }
+  }, individualForm) : individualForm), bookingForm && h('form', {
     className: 'panel booking-panel',
     onSubmit: async event => {
       event.preventDefault();
@@ -250,7 +306,7 @@ function ManufacturingIndividuals() {
         hours: Math.min(4, person.hoursPerDay * 2),
         notes: 'Demo booking for production testing.'
       });
-      setError('');
+      setPersonError('');
     }
   }, 'Fill sample data')), h('div', {
     className: 'form-grid'
@@ -385,7 +441,13 @@ function ManufacturingIndividuals() {
     }, h('button', {
       className: 'text-link',
       onClick: () => setSelected(person.id)
-    }, person.name), h('small', {
+    }, person.name), h('button', {
+      className: 'text-link individual-edit-trigger',
+      type: 'button',
+      'aria-label': 'Edit ' + person.name,
+      'aria-haspopup': 'dialog',
+      onClick: () => editPerson(person)
+    }, 'Edit'), h('small', {
       className: 'block quiet'
     }, person.role || 'No role set'), h('small', {
       className: 'block quiet'
@@ -411,12 +473,7 @@ function ManufacturingIndividuals() {
     }, h('button', {
       onClick: () => beginBooking(person.id),
       disabled: !options.length || person.active === false
-    }, 'Book work'), formButton('View bookings', () => setSelected(person.id)), formButton('Edit', () => {
-      setPersonForm({
-        ...person
-      });
-      setError('');
-    }), !manufacturingIsCoach(person) && formButton(person.active === false ? 'Enable' : 'Disable', () => setStatusChange(person)))));
+    }, 'Book work'), formButton('View bookings', () => setSelected(person.id)), !manufacturingIsCoach(person) && formButton(person.active === false ? 'Enable' : 'Disable', () => setStatusChange(person)))));
   })))) : h('div', {
     className: 'empty'
   }, 'Add individuals to start planning workload and availability.'), workforce.people.length > 0 && !people.length && h('p', {

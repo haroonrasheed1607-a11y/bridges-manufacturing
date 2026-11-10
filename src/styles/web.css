@@ -70,3 +70,10 @@
 .quick-approve-form h3,.quick-approve-form p{margin:0}
 .quick-approve-form textarea{width:100%;resize:vertical}
 .quick-approve-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px}
+
+.individual-edit-trigger{margin-inline-start:8px;text-decoration:underline;text-underline-offset:2px}
+.individual-edit-dialog{width:min(640px,calc(100% - 24px));max-width:640px;padding:0}
+.individual-edit-form{padding:16px 20px}
+.individual-edit-form .form-grid{gap:12px 16px;margin:12px 0}
+.individual-edit-form fieldset{min-width:0}
+.individual-edit-form .form-actions{margin-top:12px;padding-top:12px}

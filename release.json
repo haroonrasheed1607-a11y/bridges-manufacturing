@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Order requests can now be edited before their first work order is created."
+    "Individual profiles can be edited from their names in the directory, including their repeating weekly availability."
   ]
 }
