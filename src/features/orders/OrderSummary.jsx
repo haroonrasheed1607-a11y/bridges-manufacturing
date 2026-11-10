@@ -6,7 +6,7 @@ import { manufacturingBoardStage, manufacturingBoardStages } from "../../domain/
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate } from "../../utils/dates.js";
 
-export function OrderSummary() {
+export function OrderSummary({ onEditRequest } = {}) {
   const { order, orderDisplayTitle } = useManufacturing();
   const stage = manufacturingBoardStage(order);
   const plan = manufacturingOrderPlan(order);
@@ -27,6 +27,7 @@ export function OrderSummary() {
   return <section className="panel order-summary" aria-label="Order summary">
     <header className="order-summary-heading">
       <h2>{orderDisplayTitle(order)}</h2>
+      {onEditRequest && <button type="button" onClick={onEditRequest}>Edit order request</button>}
       <Badge tone={order.stage === 6 ? "green" : ""}>{manufacturingBoardStages[stage]}</Badge>
     </header>
     <dl className="order-summary-facts">

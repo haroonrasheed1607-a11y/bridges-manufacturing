@@ -1,4 +1,5 @@
 // features/orders/OrderDetailsPage.js
+import { manufacturingCanEditOrderRequest } from "../../domain/orders.js";
 import { manufacturingOrderStep, manufacturingTransitionLabel, manufacturingWorkflowBlock } from "../../domain/workflow.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatTimestamp } from "../../utils/dates.js";
@@ -12,6 +13,7 @@ import { QualityCheckPage } from "../quality/QualityCheckPage.js";
 import { WarehousePage } from "../warehouse/WarehousePage.js";
 import { ManufacturingAssignWorkOrder } from "../work-orders/AssignWorkOrder.js";
 import { WorkOrdersPage } from "../work-orders/WorkOrdersPage.js";
+import { CreateOrderPage } from "./CreateOrderPage.js";
 import { OrderSummary } from "./OrderSummary.jsx";
 import { ManufacturingOrderPictures } from "./OrderPictures.js";
 
@@ -21,14 +23,24 @@ function OrderDetailsPage() {
       setView: setView,
       advance: advance,
       notice: notice,
-      workforce,
+      workforce, manager,
       profile
     } = useManufacturing(),
     [activeTab, setActiveTab] = (0, React.useState)(`current`),
+    [editingRequest, setEditingRequest] = (0, React.useState)(null),
+    canEditRequest = manager && manufacturingCanEditOrderRequest(order),
     blocker = manufacturingWorkflowBlock(order, workforce),
     StageComponent = order.stage === 0 && order.workOrderApprovedAt ? ManufacturingAssignWorkOrder : [WorkOrdersPage, WorkOrdersPage, QualityCheckPage, PackingPage, WarehousePage, DeliveryPage][order.stage];
+  if (editingRequest && canEditRequest) return (0, jsxRuntime.jsx)(CreateOrderPage, {
+    existingOrder: editingRequest,
+    onClose: () => setEditingRequest(null)
+  });
   return (0, jsxRuntime.jsxs)(jsxRuntime.Fragment, {
-    children: [(0, jsxRuntime.jsx)(OrderSummary, {}), (0, jsxRuntime.jsxs)(`div`, {
+    children: [editingRequest && !canEditRequest && (0, jsxRuntime.jsx)(`p`, {
+      className: `alert`,
+      role: `status`,
+      children: `A work order has been created. The order request is now locked.`
+    }), (0, jsxRuntime.jsx)(OrderSummary, { onEditRequest: canEditRequest ? () => setEditingRequest(order) : undefined }), (0, jsxRuntime.jsxs)(`div`, {
       className: `detail-layout`,
       children: [(0, jsxRuntime.jsxs)(`section`, {
         className: `panel stage-panel`,

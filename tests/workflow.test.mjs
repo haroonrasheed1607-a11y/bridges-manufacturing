@@ -1,3 +1,4 @@
+import { manufacturingCanEditOrderRequest } from '../src/domain/orders.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { manufacturingDemoData } from '../src/state/demoData.js';
@@ -56,6 +57,13 @@ test('quality and packing progress stays pending until the packing check passes'
     ...work, packing: [{ correct: true }],
   })) };
   assert.equal(manufacturingColumnProgress([packed], 3).percent, 100);
+});
+
+test('order request editing ends as soon as a draft work order exists', () => {
+  const request = { stage: 0, workOrders: [] };
+  assert.equal(manufacturingCanEditOrderRequest(request), true);
+  assert.equal(manufacturingCanEditOrderRequest({ ...request, workOrders: [{ id: 'WO-1' }] }), false);
+  assert.equal(manufacturingCanEditOrderRequest({ ...request, stage: 1 }), false);
 });
 
 test('quick approval builds a valid full-quantity work order and awaits coach assignment', () => {

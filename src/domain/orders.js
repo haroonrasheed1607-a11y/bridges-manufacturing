@@ -35,4 +35,8 @@ function manufacturingFrequencyLabel(order) {
   return days ? 'Every ' + days + ' ' + (days === 1 ? 'day' : 'days') + ' · quantity per repeat' : 'One-time order';
 }
 
-export { manufacturingOrderPlan, manufacturingRepeatDays, manufacturingFrequencyLabel };
+function manufacturingCanEditOrderRequest(order) {
+  return order.stage === 0 && !order.workOrderApprovedAt && !order.workOrders.length;
+}
+
+export { manufacturingCanEditOrderRequest, manufacturingOrderPlan, manufacturingRepeatDays, manufacturingFrequencyLabel };

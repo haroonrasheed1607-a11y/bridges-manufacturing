@@ -1,12 +1,12 @@
 import {JobCompletion} from "../../components/common/JobCompletion.js";
 // features/job-board/JobBoardPage.js
 import { manufacturingColumnProgress } from "../../domain/boardProgress.js";
-import { manufacturingOrderPlan, manufacturingRepeatDays } from "../../domain/orders.js";
+import { manufacturingCanEditOrderRequest, manufacturingOrderPlan, manufacturingRepeatDays } from "../../domain/orders.js";
 import { manufacturingBoardStage, manufacturingBoardStages, manufacturingNextOrderState, manufacturingOrderStep, manufacturingTransitionLabel, manufacturingWorkflowBlock } from "../../domain/workflow.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate, manufacturingToday } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
-import { canQuickApproveWorkOrder, QuickApproveWorkOrder } from "../work-orders/QuickApproveWorkOrder.jsx";
+import { QuickApproveWorkOrder } from "../work-orders/QuickApproveWorkOrder.jsx";
 import { ManufacturingBoardActions } from "./JobActionsDialog.js";
 
 function ManufacturingJobBoard() {
@@ -92,7 +92,7 @@ function ManufacturingJobBoard() {
       className: blocked ? 'compact-job-held' : 'compact-job-ready',
       title: order.stage === 6 ? 'Order completed' : blocked || manufacturingTransitionLabel(order)
     }, order.stage === 6 ? 'Complete' : blocked ? manufacturingOrderStep(order) : 'Ready ···')));
-    return manager && canQuickApproveWorkOrder(order)
+    return manager && manufacturingCanEditOrderRequest(order)
       ? h('div', { key: order.id, className: 'job-request-card' }, details, h(QuickApproveWorkOrder, { order }))
       : details;
   }

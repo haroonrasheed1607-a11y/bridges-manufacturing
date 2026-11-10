@@ -1,5 +1,5 @@
 import { FormField } from "../../components/common/FormField.js";
-import { manufacturingOrderPlan } from "../../domain/orders.js";
+import { manufacturingCanEditOrderRequest, manufacturingOrderPlan } from "../../domain/orders.js";
 import { validateWorkOrder } from "../../domain/validation.js";
 import { manufacturingNextOrderState } from "../../domain/workflow.js";
 import { manufacturingBuildWorkOrder } from "../../domain/workOrders.js";
@@ -7,10 +7,6 @@ import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate } from "../../utils/dates.js";
 import { createId } from "../../utils/ids.js";
 import { React } from "../../vendor/react-runtime.js";
-
-export function canQuickApproveWorkOrder(order) {
-  return order.stage === 0 && !order.workOrderApprovedAt && !order.workOrders.length;
-}
 
 export function QuickApproveWorkOrder({ order }) {
   const { change, orderDisplayTitle, open, storageError } = useManufacturing();
@@ -43,7 +39,7 @@ export function QuickApproveWorkOrder({ order }) {
     submitting.current = true;
     setError("");
     const saved = await change(order.id, current => {
-      if (current._revision !== order._revision || !canQuickApproveWorkOrder(current)) {
+      if (current._revision !== order._revision || !manufacturingCanEditOrderRequest(current)) {
         throw new Error("This request has changed. Reopen it to review the latest details.");
       }
       return manufacturingNextOrderState({

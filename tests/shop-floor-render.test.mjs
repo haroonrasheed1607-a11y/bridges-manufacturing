@@ -5,11 +5,11 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  try{
  const {ManufacturingContext}=await server.ssrLoadModule('/src/state/ManufacturingContext.jsx');
  const orders=[{id:'O1',title:'Assembly order',catalogCode:'PART-42',customer:'Client',required:'2026-11-15',history:[],stage:1,workOrders:[{id:'W1',description:'Parts assembly',quantity:250,perPack:25,jobs:[{id:'J1',name:'Sub-job 1',quantity:250,completed:0}],boxes:[]}]}];
- orders.push({id:'O2',title:'New request',customer:'Client',quantity:100,perPack:25,required:'2026-11-15',stage:0,workOrders:[]});
+ orders.push({id:'O2',title:'New request',customer:'Client',orderNumber:'PO-42',quantity:100,perPack:25,required:'2026-11-15',stage:0,workOrders:[]});
  const workforce={people:[{id:'P1',name:'Alex',kind:'individual',hoursPerDay:6}],bookings:[]};
  const base={orders,order:orders[0],manager:true,orderDisplayTitle:order=>order.catalogCode?order.title+' · '+order.catalogCode:order.title,workforce,customers:[],profile:{id:'u1',role:'admin'},change(){},refresh(){}};
- async function render(file,name,role='admin',view){
- const mod=await server.ssrLoadModule(file);return renderToStaticMarkup(React.createElement(ManufacturingContext.Provider,{value:{...base,view,manager:role==='admin',profile:{id:'u1',role}}},React.createElement(mod[name])));
+ async function render(file,name,role='admin',view,props,order=base.order){
+ const mod=await server.ssrLoadModule(file);return renderToStaticMarkup(React.createElement(ManufacturingContext.Provider,{value:{...base,view,order,manager:role==='admin',profile:{id:'u1',role}}},React.createElement(mod[name],props)));
  }
  const {prepareIndividualRows}=await server.ssrLoadModule('/src/features/individuals/IndividualImport.jsx');
  const rows=prepareIndividualRows([['Name','Role','Hours per day'],[' alex ','Assembly',4],['Alex','Packing',5],['Jordan','Packing',6]],workforce.people);
@@ -19,6 +19,13 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(individuals,/Import Excel/);assert.match(individuals,/Disable/);
  const create=await render('/src/features/orders/CreateOrderPage.js','CreateOrderPage');
  assert.match(create,/Select a client/);assert.match(create,/Select an item/);assert.doesNotMatch(create,/<input[^>]+name="title"/);
+ const editRequest=await render('/src/features/orders/CreateOrderPage.js','CreateOrderPage','admin','detail',{existingOrder:orders[1]});
+ assert.match(editRequest,/Edit order request/);assert.match(editRequest,/PO-42/);assert.match(editRequest,/Save changes/);
+ assert.doesNotMatch(editRequest,/Fill sample data/);
+ const requestDetail=await render('/src/features/orders/OrderDetailsPage.js','OrderDetailsPage','admin','detail',null,orders[1]);
+ assert.match(requestDetail,/Edit order request/);
+ const lockedDetail=await render('/src/features/orders/OrderDetailsPage.js','OrderDetailsPage','admin','detail',null,{...orders[1],workOrderApprovedAt:'2026-11-10'});
+ assert.doesNotMatch(lockedDetail,/Edit order request/);
  const clients=await render('/src/features/customers/CustomersPage.js','ManufacturingCustomers');
  assert.match(clients,/Register client/);
  const {CurrentWorkPanel}=await server.ssrLoadModule('/src/features/production/CurrentWorkPanel.jsx');

@@ -1,11 +1,12 @@
 // features/orders/OrdersPage.js
 import { Badge } from "../../components/common/Badge.js";
 import { EmptyState } from "../../components/common/EmptyState.js";
+import { manufacturingCanEditOrderRequest } from "../../domain/orders.js";
 import { manufacturingBoardStage, manufacturingBoardStages } from "../../domain/workflow.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate } from "../../utils/dates.js";
 import { jsxRuntime } from "../../vendor/jsx-runtime.js";
-import { canQuickApproveWorkOrder, QuickApproveWorkOrder } from "../work-orders/QuickApproveWorkOrder.jsx";
+import { QuickApproveWorkOrder } from "../work-orders/QuickApproveWorkOrder.jsx";
 import { React } from "../../vendor/react-runtime.js";
 
 function OrdersPage() {
@@ -125,7 +126,7 @@ function OrdersPage() {
                   children: `Forecast beyond deadline`
                 })]
               }), (0, jsxRuntime.jsx)(`td`, {
-                children: manager && canQuickApproveWorkOrder(e)
+                children: manager && manufacturingCanEditOrderRequest(e)
                   ? (0, jsxRuntime.jsx)(QuickApproveWorkOrder, { order: e })
                   : (0, jsxRuntime.jsx)(`button`, {
                     className: `icon-button`,

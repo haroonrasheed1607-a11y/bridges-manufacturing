@@ -1,24 +1,30 @@
 // features/orders/CreateOrderPage.js
 import { FormField } from "../../components/common/FormField.js";
-import { manufacturingRepeatDays } from "../../domain/orders.js";
+import { manufacturingCanEditOrderRequest, manufacturingRepeatDays } from "../../domain/orders.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { manufacturingFinish, manufacturingToday } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
 import { ManufacturingOrderPictureUpload } from "./OrderPictureUpload.js";
 
-function CreateOrderPage() {
+function CreateOrderPage({ existingOrder, onClose } = {}) {
   const {
-      create,
+      create, change, storageError,
       setView,
       open, customerCatalog = []
     } = useManufacturing(),
     h = React.createElement;
-  const [clientId, setClientId] = React.useState(''), [itemId, setItemId] = React.useState('');
+  const savedClient = existingOrder && customerCatalog.find(row => row.name === existingOrder.customer);
+  const savedClientId = savedClient?.id ?? (existingOrder ? 'saved-client' : '');
+  const savedItemId = existingOrder ? existingOrder.catalogItemId ?? 'saved-item' : '';
+  const [clientId, setClientId] = React.useState(savedClientId), [itemId, setItemId] = React.useState(savedItemId);
   const client = customerCatalog.find(row => row.id === clientId);
   const item = client?.items.find(row => row.id === itemId);
-  const [orderNumber, setOrderNumber] = React.useState(''),
+  const showSavedItem = existingOrder && clientId === savedClientId && !client?.items.some(row => row.id === savedItemId);
+  const keepSavedItem = existingOrder && clientId === savedClientId && itemId === savedItemId;
+  const hasSelection = !!item || !!keepSavedItem;
+  const [orderNumber, setOrderNumber] = React.useState(existingOrder?.orderNumber ?? ''),
     [createdId, setCreatedId] = React.useState(''),
-    [pictures, setPictures] = React.useState([]),
+    [pictures, setPictures] = React.useState(existingOrder?.pictures ?? []),
     [uploading, setUploading] = React.useState(false),
     [submitError, setSubmitError] = React.useState(''),
     submitting = React.useRef(false);
@@ -27,11 +33,11 @@ function CreateOrderPage() {
     const timer = setTimeout(() => open(createdId), 2000);
     return () => clearTimeout(timer);
   }, [createdId]);
-  const [frequency, setFrequency] = React.useState('one-time'),
-    [customDays, setCustomDays] = React.useState(10),
-    [quantity, setQuantity] = React.useState(0),
-    [perPack, setPerPack] = React.useState(25),
-    [required, setRequired] = React.useState('');
+  const [frequency, setFrequency] = React.useState(existingOrder?.frequency ?? 'one-time'),
+    [customDays, setCustomDays] = React.useState(existingOrder?.repeatEveryDays ?? 10),
+    [quantity, setQuantity] = React.useState(existingOrder?.quantity ?? 0),
+    [perPack, setPerPack] = React.useState(existingOrder?.perPack ?? 25),
+    [required, setRequired] = React.useState(existingOrder?.required ?? '');
   const packCount = perPack > 0 ? Math.ceil(quantity / perPack) : 0;
   const repeatEveryDays = manufacturingRepeatDays(frequency, customDays);
   const field = (label, props, hint) => h(FormField, {
@@ -62,16 +68,18 @@ function CreateOrderPage() {
   }, 'Opening your order…')));
   return h(React.Fragment, null, h('div', {
     className: 'page-heading'
-  }, h('h2', null, 'Order details')), h('form', {
+  }, h('h2', null, existingOrder ? 'Edit order request' : 'Order details')), h('form', {
     className: 'panel form-panel order-details-form',
     onSubmit: async event => {
       event.preventDefault();
-      if (submitting.current || uploading || !item) return;
+      if (submitting.current || uploading || !hasSelection) return;
       submitting.current = true;
       setSubmitError('');
-      const id = await create({
-        ...Object.fromEntries(new FormData(event.currentTarget)),
-        title: item.name, customer: client.name, catalogItemId: item.id,
+      const fields = {
+        ...(keepSavedItem ? {} : {
+          title: item.name, customer: client.name, catalogItemId: item.id,
+          ...(existingOrder ? { catalogCode: item.code, catalogRate: item.rate ?? null } : {}),
+        }),
         orderNumber: orderNumber.trim(),
         quantity,
         perPack,
@@ -79,8 +87,27 @@ function CreateOrderPage() {
         frequency,
         repeatEveryDays,
         pictures,
+        required,
         expected: null
-      });
+      };
+      if (existingOrder) {
+        const saved = await change(existingOrder.id, current => {
+          if (!manufacturingCanEditOrderRequest(current)) {
+            throw new Error('A work order has been created. The order request can no longer be edited.');
+          }
+          if (current._revision !== existingOrder._revision) {
+            throw new Error('This request changed while you were editing. Reopen the editor to review it.');
+          }
+          return { ...current, ...fields };
+        }, 'Order request updated.');
+        if (saved) onClose();
+        else {
+          submitting.current = false;
+          setSubmitError('Unable to update the order request.');
+        }
+        return;
+      }
+      const id = await create(fields);
       if (!id) {
         submitting.current = false;
         setSubmitError('Unable to save the order. Check the connection message and try again.');
@@ -93,7 +120,7 @@ function CreateOrderPage() {
     role: 'status',
     'aria-live': 'polite',
     'aria-atomic': true
-  }, createdId ? '✓ Order has been created. System ID: ' + createdId : ''), h('div', {
+  }, createdId ? '✓ Order has been created. System ID: ' + createdId : ''), !existingOrder && h('div', {
     className: 'sample-form-toolbar'
   }, h('button', {
     type: 'button',
@@ -112,17 +139,19 @@ function CreateOrderPage() {
   }, 'Fill sample data'), h('small', null, 'Fills this form for testing. Review before creating the order.')), section('01', 'Client and item', 'Choose an item from the registered client’s catalog.', h(FormField, {label:'Client'},
     h('select', {required:true,value:clientId,onChange:event=>{setClientId(event.target.value);setItemId('');}},
       h('option',{value:''},'Select a client'),
+      existingOrder && !savedClient && h('option',{value:savedClientId},existingOrder.customer),
       ...customerCatalog.map(row=>h('option',{key:row.id,value:row.id},row.name)))),
     h(FormField,{label:'Item',hint:item?.rate == null ? undefined : 'Catalog rate: ' + item.rate},
-      h('select',{required:true,value:itemId,disabled:!client?.items.length,onChange:event=>setItemId(event.target.value)},
+      h('select',{required:true,value:itemId,disabled:!client?.items.length && !showSavedItem,onChange:event=>setItemId(event.target.value)},
         h('option',{value:''},client && !client.items.length ? 'No items registered for this client' : 'Select an item'),
+        showSavedItem && h('option',{value:savedItemId},existingOrder.title),
         ...(client?.items || []).map(row=>h('option',{key:row.id,value:row.id},row.name + ' · ' + row.code)))),
     field('Order number', {
       value: orderNumber,
       onChange: event => setOrderNumber(event.target.value)
     }, 'Optional customer or purchase order number.'), field('System ID', {
       readOnly: true,
-      value: 'Assigned when saved'
+      value: existingOrder?.id ?? 'Assigned when saved'
     }),
     (!customerCatalog.length || (client && !client.items.length)) && h('button',{
       type:'button',className:'text-link',onClick:()=>setView('customers')
@@ -186,15 +215,15 @@ function CreateOrderPage() {
   }, 'The manager will set production timing and the delivery forecast when finalizing the work order.')), submitError && h('p', {
     className: 'alert',
     role: 'alert'
-  }, submitError), h('div', {
+  }, existingOrder && storageError ? storageError : submitError), h('div', {
     className: 'form-actions'
   }, h('button', {
     type: 'button',
-    onClick: () => setView('orders')
+    onClick: existingOrder ? onClose : () => setView('orders')
   }, 'Cancel'), h('button', {
     className: 'primary',
-    disabled: !!createdId || uploading || !item
-  }, uploading ? 'Preparing pictures…' : 'Create order request'))));
+    disabled: !!createdId || uploading || !hasSelection
+  }, uploading ? 'Preparing pictures…' : existingOrder ? 'Save changes' : 'Create order request'))));
 }
 
 export { CreateOrderPage };

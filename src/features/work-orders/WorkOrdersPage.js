@@ -15,7 +15,7 @@ function WorkOrdersPage() {
       setView
     } = useManufacturing(),
     h = React.createElement,
-    [adding, setAdding] = React.useState(false),
+    [adding, setAdding] = React.useState(null),
     [editing, setEditing] = React.useState(null);
 
   const editingWork = editing && order.workOrders.find(work => work.id === editing.id);
@@ -47,19 +47,22 @@ function WorkOrdersPage() {
   }, manager && order.stage < 2 && order.workOrders.length > 0 && h('button', {
     onClick: () => setView('individuals')
   }, 'Book individuals'), manager && order.stage === 0 && !order.workOrderApprovedAt && !adding && !editing && h('button', {
-    onClick: () => setAdding(true)
+    onClick: () => setAdding({ revision: order._revision })
   }, '＋ Add work order'))), order.stage === 1 && h(ManufacturingProductionBoxes, {
     orderKey: order.id
   }), adding && h(WorkOrderForm, {
     order,
-    onCancel: () => setAdding(false),
+    onCancel: () => setAdding(null),
     onSave: async work => {
-      const saved = await change(order.id, current => ({
-        ...current,
-        workOrders: [...current.workOrders, work],
-        expected: [...current.workOrders.map(item => item.expected), work.expected].filter(Boolean).sort().at(-1)
-      }), 'Work order added.');
-      if (saved) setAdding(false);
+      const saved = await change(order.id, current => {
+        if (current.stage !== 0 || current.workOrderApprovedAt || current._revision !== adding.revision) {
+          throw new Error('This order changed while you were preparing the work order. Reopen the form and try again.');
+        }
+        const workOrders = [...current.workOrders, work];
+        const expected = workOrders.map(item => item.expected).filter(Boolean).sort().at(-1);
+        return { ...current, workOrders, expected };
+      }, 'Work order added.');
+      if (saved) setAdding(null);
     }
   }), !order.workOrders.length && !adding && h('p', {
     className: 'empty'
