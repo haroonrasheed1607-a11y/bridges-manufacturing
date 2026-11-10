@@ -41,3 +41,7 @@
 @media (min-width: 701px) {
   .work:has(.plan-page) { padding-block: 18px 24px; }
 }
+.plan-approval-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.plan-approval-row button{min-height:36px}
+.desktop-shop-floor{max-width:780px;margin:0 auto}
+.desktop-plan-print .plan-toolbar{margin-bottom:12px}

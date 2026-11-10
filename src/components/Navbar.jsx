@@ -1,3 +1,4 @@
+import { hasDesktopPrinter } from "../services/printing/desktopPrinter.js";
 import { canUsePlan, isShopFloorRole } from '../features/auth/permissions.js';
 // components/layout/Navigation.js
 import { useManufacturing } from "../state/ManufacturingContext.jsx";
@@ -69,6 +70,7 @@ function Navbar() {
       hidden: expanded !== id
     }, items.map(([title, route, description]) => link(title, route, description))));
   }
+  if (hasDesktopPrinter()) return null;
   const plan = canUsePlan(profile?.role) ? [link('Plan','plan')] : [];
   return h('nav', {
     ref: root,

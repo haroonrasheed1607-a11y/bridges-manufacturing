@@ -1,3 +1,4 @@
+import { hasDesktopPrinter } from "../../services/printing/desktopPrinter.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 
 const pageNames = {
@@ -19,6 +20,7 @@ const pageNames = {
 
 export function WorkspaceBreadcrumbs() {
   const { view, setView, order, orderDisplayTitle, profile, manager } = useManufacturing();
+  if (hasDesktopPrinter()) return null;
   const parents = [];
   if (["orders", "new", "detail"].includes(view)) parents.push(["board", pageNames.board]);
   if (view === "detail" && manager) parents.push(["orders", pageNames.orders]);

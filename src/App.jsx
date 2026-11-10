@@ -1,3 +1,5 @@
+import { DesktopShopFloor } from "./features/production/DesktopShopFloor.jsx";
+import { hasDesktopPrinter } from "./services/printing/desktopPrinter.js";
 import { PlanPage } from './features/plan/PlanPage.jsx';
 import {BarcodeApprovals} from './features/admin-approvals/BarcodeApprovals.jsx';
 import {AvailabilityPage} from './features/availability/AvailabilityPage.jsx';
@@ -26,6 +28,7 @@ function App() {
     view: e, manager, profile, orderDisplayTitle,
     order: t
   } = useManufacturing();
+  if (hasDesktopPrinter()) return <AppLayout><DesktopShopFloor /></AppLayout>;
   if(e === 'plan' && canUsePlan(profile?.role)) return <AppLayout><PlanPage /></AppLayout>;
   if(isShopFloorRole(profile?.role))return React.createElement(AppLayout,null,React.createElement(ManufacturingProductionLine));
   if(['admin','manager','coach'].includes(profile?.role)&&['availability','attendance'].includes(e))return React.createElement(AppLayout,null,React.createElement(e==='availability'?AvailabilityPage:AttendancePage));

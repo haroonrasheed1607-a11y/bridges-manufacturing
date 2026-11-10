@@ -3,7 +3,7 @@ import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate, manufacturingToday } from "../../utils/dates.js";
 import { availableHoursOn } from "../../domain/workforce.js";
-import { manufacturingPreviewLabels, manufacturingPrintBoxBatch } from "../../domain/boxLabels.js";
+import { dayPlanLabelIds, groupDayPlans } from "./dayPlan.js";
 
 export function PlanPage() {
   const { orders, workforce, orderDisplayTitle } = useManufacturing();
@@ -22,6 +22,7 @@ export function PlanPage() {
   const jobs = orders.filter(o => o.stage === 1).flatMap(order =>
     order.workOrders.flatMap(work => work.jobs.filter(job => job.completed < job.quantity)
       .map(job => ({ order, work, job }))));
+  const plans = groupDayPlans(labels);
   const current = jobs.find(item => item.job.id === jobId);
   const savedPeople = labels.filter(label => label.jobId === jobId).map(label => label.personId);
   const otherPeople = new Set(labels.filter(label => label.jobId !== jobId).map(label => label.personId));
@@ -53,7 +54,7 @@ export function PlanPage() {
     return () => { request.current++; };
   }, [date]);
 
-  async function save(event) {
+  async function move(event) {
     event.preventDefault();
     if (!current || loadedDate !== date || saving.current || busy) return;
     saving.current = true;
@@ -68,7 +69,7 @@ export function PlanPage() {
         p_expected: [...savedPeople].sort(),
       });
       setLabels(rows);
-      setNotice(selected.length ? "Plan saved. Stickers are ready to print." : "People removed from this sub-job plan.");
+      setNotice(selected.length ? "Moved to the approval list." : "People removed from this sub-job plan.");
     } catch (e) {
       setError(e.message);
     } finally {
@@ -77,29 +78,39 @@ export function PlanPage() {
     }
   }
 
-  function print(preview) {
-    const printable = labels.map(label => ({
-      order: { id: label.orderId, title: label.orderTitle },
-      work: { id: label.workId },
-      job: { name: label.workDate.slice(5) + " · " + (label.jobName || "Sub-job") },
-      box: { id: label.id, quantity: label.batchQuantity },
-      person: { name: label.personName },
-    }));
-    setError(preview ? manufacturingPreviewLabels(printable) : manufacturingPrintBoxBatch(printable));
+  async function approve(plan) {
+    if (!editable || saving.current) return;
+    saving.current = true;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const rows = await manufacturingApi.rpc("app_approve_day_plan", {
+        p_date: date,
+        p_job: plan.jobId,
+        p_expected: dayPlanLabelIds(plan),
+      });
+      setLabels(rows);
+      setNotice("Approved. This plan is ready in desktop Print.");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      saving.current = false;
+      setBusy(false);
+    }
   }
 
   const editable = !busy && loadedDate === date && date >= today;
-  const printable = !busy && loadedDate === date && labels.length > 0;
   const changed = selected.length !== savedPeople.length || selected.some(id => !savedPeople.includes(id));
   return <section className="plan-page">
     <header className="plan-heading">
       <div>
         <h2>Plan</h2>
-        <p className="quiet">Assign people to a sub-job and print the day’s reusable stickers.</p>
+        <p className="quiet">Move selected individuals to the plan, then approve it for desktop printing.</p>
       </div>
       <button type="button" disabled={busy} onClick={load}>Refresh</button>
     </header>
-    <form onSubmit={save}>
+    <form onSubmit={move}>
       <div className="panel plan-toolbar">
         <label className="field">Work date
           <input type="date" required value={date} disabled={busy}
@@ -128,7 +139,7 @@ export function PlanPage() {
         </label>
       </div>
       {(busy || error || notice || date < today) && <div className="plan-status">
-        {busy && <p role="status">{saving.current ? "Saving plan…" : "Loading plan…"}</p>}
+        {busy && <p role="status">{saving.current ? "Updating plan…" : "Loading plan…"}</p>}
         {error && <p role="alert" className="alert">{error}</p>}
         {notice && <p role="status">{notice}</p>}
         {date < today && <p className="quiet">Past plans are read-only.</p>}
@@ -138,7 +149,7 @@ export function PlanPage() {
           <div className="plan-pane-heading">
             <div><h3 id="plan-people-heading">Individuals</h3><small className="quiet">{selected.length} selected</small></div>
             <button className="primary" disabled={!editable || !current || !changed}>
-              {selected.length || !savedPeople.length ? "Save plan" : "Clear plan"}
+              {selected.length || !savedPeople.length ? "Move →" : "Clear plan"}
             </button>
           </div>
           <label className="field plan-search">Search individuals
@@ -163,19 +174,23 @@ export function PlanPage() {
             }) : <p className="quiet">No matching individuals.</p>}
           </div>
         </section>
-        <section className="panel plan-pane" aria-labelledby="plan-stickers-heading">
+        <section className="panel plan-pane" aria-labelledby="plan-approval-heading">
           <div className="plan-pane-heading">
-            <div><h3 id="plan-stickers-heading">Day’s stickers</h3><small className="quiet">{formatDate(date)} · {labels.length} saved</small></div>
-            <div className="plan-print-actions">
-              <button type="button" disabled={!printable} onClick={() => print(true)}>Preview</button>
-              <button type="button" className="primary" disabled={!printable} onClick={() => print(false)}>Print all{labels.length > 0 ? " (" + labels.length + ")" : ""}</button>
-            </div>
+            <div><h3 id="plan-approval-heading">Plans for approval</h3><small className="quiet">{formatDate(date)} · {plans.length} plans</small></div>
           </div>
-          <div className="plan-list plan-stickers" role="region" aria-label="Saved stickers" tabIndex={0}>
-            {labels.length ? <ul>{labels.map(label => <li key={label.id}>
-              <strong>{label.personName}</strong>
-              <small className="quiet">{orderDisplayTitle(orders.find(order => order.id === label.orderId) ?? { title: label.orderTitle })} · {label.jobName || label.jobId}</small>
-            </li>)}</ul> : !busy && <p className="quiet">Save a plan to see and print its stickers here.</p>}
+          <div className="plan-list plan-stickers" role="region" aria-label="Plans for approval" tabIndex={0}>
+            {plans.length ? <ul>{plans.map(plan => {
+              const approved = plan.labels.every(label => label.approvedAt);
+              return <li key={plan.jobId} className="plan-approval-row">
+                <div>
+                  <strong>{orderDisplayTitle(orders.find(order => order.id === plan.orderId) ?? { title: plan.orderTitle })}</strong>
+                  <small className="quiet">{plan.jobName || plan.jobId} · {plan.labels.length} individuals</small>
+                  <small className="quiet">{plan.labels.map(label => label.personName).join(", ")}</small>
+                </div>
+                {approved ? <span className="badge green">Approved</span> :
+                  <button type="button" className="primary" disabled={!editable} onClick={() => approve(plan)}>Approve</button>}
+              </li>;
+            })}</ul> : !busy && <p className="quiet">Move selected individuals here to approve their plan.</p>}
           </div>
         </section>
       </div>

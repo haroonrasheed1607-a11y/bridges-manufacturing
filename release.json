@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Work order edits can replace the sub-job split before the first scan. Replacing the split invalidates old labels and clears affected plans."
+    "Plan now moves assignments to approval. The Windows Shop Floor has Scan and Print, with printing limited to approved plans."
   ]
 }
