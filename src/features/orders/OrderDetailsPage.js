@@ -41,9 +41,12 @@ function OrderDetailsPage() {
       children: [(0, jsxRuntime.jsxs)(`div`, {
         children: [(0, jsxRuntime.jsxs)(`div`, {
           className: `eyebrow`,
-          children: [order.id, ` / `, order.customer]
+          children: [`System ID: `, order.id, ` / `, order.customer]
         }), (0, jsxRuntime.jsx)(`h2`, {
           children: order.title
+        }), order.orderNumber && (0, jsxRuntime.jsx)(`p`, {
+          className: `quiet`,
+          children: `Order number: ${order.orderNumber}`
         }), (0, jsxRuntime.jsxs)(`p`, {
           className: `quiet`,
           children: [`Expected `, formatDate(order.expected), ` `, (0, jsxRuntime.jsx)(`span`, {
@@ -121,7 +124,7 @@ function OrderDetailsPage() {
               }), (0, jsxRuntime.jsx)(`h2`, {
                 children: `Signed. Delivered. Complete.`
               }), (0, jsxRuntime.jsxs)(`p`, {
-                children: [order.customer, ` · `, order.id]
+                children: [order.customer, ` · System ID: `, order.id]
               })]
             }), (0, jsxRuntime.jsxs)(`div`, {
               className: `signed-summary`,

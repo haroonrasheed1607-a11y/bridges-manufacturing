@@ -38,7 +38,7 @@ function ManufacturingBoardActions({
     className: 'job-action-body'
   }, h('div', {
     className: 'section-heading'
-  }, h('div', null, h('small', null, order.id), h('h3', {
+  }, h('div', null, h('small', null, 'System ID: ' + order.id), h('h3', {
     id: 'job-action-title'
   }, order.title), h('p', {
     className: 'quiet'

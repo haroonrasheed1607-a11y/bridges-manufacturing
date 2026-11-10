@@ -15,7 +15,7 @@ function OrdersPage() {
     } = useManufacturing(),
     [r, i] = (0, React.useState)(``),
     [a, o] = (0, React.useState)(`all`),
-    s = e.filter(e => (a === `all` || manufacturingBoardStage(e) === Number(a)) && `${e.id} ${e.customer} ${e.title}`.toLowerCase().includes(r.toLowerCase()));
+    s = e.filter(e => (a === `all` || manufacturingBoardStage(e) === Number(a)) && `${e.id} ${e.orderNumber ?? ""} ${e.customer} ${e.title}`.toLowerCase().includes(r.toLowerCase()));
   return (0, jsxRuntime.jsxs)(jsxRuntime.Fragment, {
     children: [(0, jsxRuntime.jsxs)(`div`, {
       className: `page-heading`,
@@ -51,7 +51,7 @@ function OrdersPage() {
             className: `sr-only`,
             children: `Search orders`
           }), (0, jsxRuntime.jsx)(`input`, {
-            placeholder: `Search order or customer…`,
+            placeholder: `Search by order number, System ID, or customer…`,
             value: r,
             onChange: e => i(e.target.value)
           })]
@@ -102,7 +102,10 @@ function OrdersPage() {
                   children: e.title
                 }), (0, jsxRuntime.jsxs)(`div`, {
                   className: `quiet`,
-                  children: [e.id, ` · `, e.customer]
+                  children: [`System ID: `, e.id, ` · `, e.customer]
+                }), e.orderNumber && (0, jsxRuntime.jsx)(`div`, {
+                  className: `quiet`,
+                  children: `Order number: ${e.orderNumber}`
                 })]
               }), (0, jsxRuntime.jsxs)(`td`, {
                 children: [(0, jsxRuntime.jsx)(Badge, {

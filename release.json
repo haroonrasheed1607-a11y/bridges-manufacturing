@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Grouped the manufacturing workflow into six stages from Order Requests to Mark Complete."
+    "Added an optional order number alongside the automatically assigned System ID."
   ]
 }

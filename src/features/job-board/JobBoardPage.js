@@ -26,12 +26,12 @@ function ManufacturingJobBoard() {
     late = order => order.stage < 6 && !!order.required && order.required < today;
   const customers = [...new Set(orders.map(order => order.customer))].sort();
   const visible = orders.filter(order => {
-    const text = [order.id, order.title, order.customer, ...order.workOrders.flatMap(work => [work.id, work.description, work.type])].join(' ').toLowerCase();
+    const text = [order.id, order.orderNumber, order.title, order.customer, ...order.workOrders.flatMap(work => [work.id, work.description, work.type])].join(' ').toLowerCase();
     return text.includes(search.toLowerCase()) && (customer === 'all' || order.customer === customer) && (filter === 'all' || filter === 'active' && order.stage < 6 || filter === 'late' && late(order) || filter === 'completed' && order.stage === 6 || filter === 'repeat' && !!manufacturingRepeatDays(order.frequency, order.repeatEveryDays));
   }).sort((a, b) => (a.required || '9999').localeCompare(b.required || '9999'));
   async function advance(order) {
     if (manufacturingWorkflowBlock(order, workforce)) return;
-    return change(order.id, manufacturingNextOrderState, manufacturingOrderStep, manufacturingTransitionLabel(order) + '.');
+    return change(order.id, manufacturingNextOrderState, manufacturingTransitionLabel(order) + '.');
   }
   function card(order) {
     const plan = manufacturingOrderPlan(order),
@@ -60,7 +60,7 @@ function ManufacturingJobBoard() {
       className: 'job-card-top'
     }, h('span', {
       className: 'job-order-id'
-    }, order.id), late(order) ? h('span', {
+    }, 'System ID: ' + order.id), late(order) ? h('span', {
       className: 'badge red'
     }, 'Overdue') : order.stage === 6 ? h('span', {
       className: 'badge green'
@@ -72,7 +72,10 @@ function ManufacturingJobBoard() {
     }, order.title), h('p', {
       className: 'job-customer',
       title: order.customer
-    }, order.customer), h(JobCompletion,{order}), h('div', {
+    }, order.customer), order.orderNumber && h('p', {
+      className: 'job-customer',
+      title: order.orderNumber
+    }, 'Order number: ' + order.orderNumber), h(JobCompletion,{order}), h('div', {
       className: 'compact-job-quantities'
     }, h('strong', null, plan.quantity.toLocaleString() + ' pcs'), h('span', null, plan.packCount.toLocaleString() + ' packs × ' + plan.perPack)), h('div', {
       className: 'compact-job-dates'

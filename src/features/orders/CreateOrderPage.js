@@ -16,7 +16,8 @@ function CreateOrderPage() {
   const [clientId, setClientId] = React.useState(''), [itemId, setItemId] = React.useState('');
   const client = customerCatalog.find(row => row.id === clientId);
   const item = client?.items.find(row => row.id === itemId);
-  const [createdId, setCreatedId] = React.useState(''),
+  const [orderNumber, setOrderNumber] = React.useState(''),
+    [createdId, setCreatedId] = React.useState(''),
     [pictures, setPictures] = React.useState([]),
     [uploading, setUploading] = React.useState(false),
     [submitError, setSubmitError] = React.useState(''),
@@ -56,7 +57,7 @@ function CreateOrderPage() {
   }, h('div', {
     className: 'order-created-check',
     'aria-hidden': true
-  }, '✓'), h('h2', null, 'Order created'), item && h('p', null, item.name), h('small', null, createdId), h('p', {
+  }, '✓'), h('h2', null, 'Order created'), item && h('p', null, item.name), orderNumber.trim() && h('p', null, 'Order number: ' + orderNumber.trim()), h('small', null, 'System ID: ' + createdId), h('p', {
     className: 'quiet'
   }, 'Opening your order…')));
   return h(React.Fragment, null, h('button', {
@@ -78,6 +79,7 @@ function CreateOrderPage() {
       const id = await create({
         ...Object.fromEntries(new FormData(event.currentTarget)),
         title: item.name, customer: client.name, catalogItemId: item.id,
+        orderNumber: orderNumber.trim(),
         quantity,
         perPack,
         packCount,
@@ -98,7 +100,7 @@ function CreateOrderPage() {
     role: 'status',
     'aria-live': 'polite',
     'aria-atomic': true
-  }, createdId ? '✓ Order has been created. Reference: ' + createdId : ''), h('div', {
+  }, createdId ? '✓ Order has been created. System ID: ' + createdId : ''), h('div', {
     className: 'sample-form-toolbar'
   }, h('button', {
     type: 'button',
@@ -122,6 +124,13 @@ function CreateOrderPage() {
       h('select',{required:true,value:itemId,disabled:!client?.items.length,onChange:event=>setItemId(event.target.value)},
         h('option',{value:''},client && !client.items.length ? 'No items registered for this client' : 'Select an item'),
         ...(client?.items || []).map(row=>h('option',{key:row.id,value:row.id},row.code+' · '+row.name)))),
+    field('Order number', {
+      value: orderNumber,
+      onChange: event => setOrderNumber(event.target.value)
+    }, 'Optional customer or purchase order number.'), field('System ID', {
+      readOnly: true,
+      value: 'Assigned when saved'
+    }),
     (!customerCatalog.length || (client && !client.items.length)) && h('button',{
       type:'button',className:'text-link',onClick:()=>setView('customers')
     },'Open client registration'), h(ManufacturingOrderPictureUpload, {
