@@ -11,6 +11,7 @@ export function PlanPage() {
   const [date, setDate] = React.useState(manufacturingToday);
   const [jobId, setJobId] = React.useState("");
   const [target, setTarget] = React.useState(null);
+  const [personalQr, setPersonalQr] = React.useState(false);
   const [selected, setSelected] = React.useState([]);
   const [labels, setLabels] = React.useState([]);
   const [loadedDate, setLoadedDate] = React.useState("");
@@ -33,6 +34,7 @@ export function PlanPage() {
     setJobId(id);
     const planId = plan ? plan.planId ?? null : id ? crypto.randomUUID() : null;
     setTarget(id ? { planId, key: dayPlanKey({ jobId: id, planId }) } : null);
+    setPersonalQr(plan ? plan.personalQr ?? null : false);
     setSelected(plan?.labels.map(label => label.personId) ?? []);
     setSearch("");
     setNotice("");
@@ -77,6 +79,7 @@ export function PlanPage() {
         p_plan: plan.planId,
         p_people: [...people].sort(),
         p_expected: [...expected].sort(),
+        p_personal: plan.personalQr ?? null,
       });
       setLabels(rows);
       if (!people.length && target?.key === plan.key) selectPlan(jobId);
@@ -92,7 +95,7 @@ export function PlanPage() {
   function move(event) {
     event.preventDefault();
     if (!current || !target || !selected.length || !changed) return;
-    return savePlan({ ...target, jobId }, selected, savedPeople, "Plan updated. Approve it when ready to print.");
+    return savePlan({ ...target, jobId, personalQr }, selected, savedPeople, "Plan updated. Approve it when ready for Shop Floor.");
   }
 
   function deletePlan(plan) {
@@ -142,7 +145,9 @@ export function PlanPage() {
         p_expected: dayPlanLabelIds(plan),
       });
       setLabels(rows);
-      setNotice("Approved. This plan is ready in Shop Floor Print.");
+      setNotice(plan.personalQr
+        ? "Approved. Individuals can scan their own Job QR on the planned date."
+        : "Approved. This plan is ready in Shop Floor Print.");
     } catch (e) {
       setError(e.message);
     } finally {
@@ -157,7 +162,7 @@ export function PlanPage() {
     <header className="plan-heading">
       <div>
         <h2>Plan</h2>
-        <p className="quiet">Approve the plan to activate each individual’s Job QR for that date.</p>
+        <p className="quiet">Choose personal Job QR cards or printed job stickers before saving a plan.</p>
       </div>
       <button type="button" disabled={busy} onClick={load}>Refresh</button>
     </header>
@@ -200,6 +205,18 @@ export function PlanPage() {
               {savedPlan ? "Update plan" : "Move →"}
             </button>
           </div>
+          <label className="plan-person plan-qr-option">
+            <input type="checkbox" checked={personalQr === true} disabled={!editable || !current || Boolean(savedPlan)}
+              onChange={e => setPersonalQr(e.target.checked)} />
+            <span className="plan-person-name">
+              <strong>Use long-term Job QR cards</strong>
+              <small className="quiet">{savedPlan?.personalQr === true
+                ? savedPlan.batchQuantity + " planned pieces per scan"
+                : savedPlan && personalQr === null
+                  ? "Existing plan keeps its current QR options."
+                  : "Selected individuals use their own QR cards. No job stickers to print."}</small>
+            </span>
+          </label>
           {savedPlan && <details className="plan-release">
             <summary>Release someone for another job</summary>
             <ul>{savedPlan.labels.map(label => <li key={label.id}>
@@ -241,6 +258,7 @@ export function PlanPage() {
                   <strong>{orderDisplayTitle(orders.find(order => order.id === plan.orderId) ?? { title: plan.orderTitle })}</strong>
                   <small className="quiet">{plan.jobName || plan.jobId} · {dayPlanName(plan)} · {plan.labels.length} individuals</small>
                   <small className="quiet">{plan.labels.map(label => label.personName).join(", ")}</small>
+                  {plan.personalQr === true && <small className="quiet">Long-term Job QR · {plan.batchQuantity} pieces per scan</small>}
                   {plan.hasScans && <small className="quiet">Scans recorded · deletion locked</small>}
                 </div>
                 <div className="plan-row-actions">

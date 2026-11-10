@@ -56,3 +56,5 @@
 .plan-release summary{cursor:pointer;font-size:13px}
 .plan-release ul{margin:6px 0 0;padding:0;list-style:none}
 .plan-release li{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0}
+
+.plan-person.plan-qr-option{grid-template-columns:auto minmax(0,1fr);border:1px solid #d6dfe9;border-radius:6px;margin-bottom:8px}

@@ -43,7 +43,9 @@ export function DumpingScanner({ code, onDone }) {
     setError("");
     try {
       if (!pending.current) {
-        const quantity = completedLoadPieces(assignment.batchQuantity, multiplier, pieces);
+        const quantity = assignment.personalQr
+          ? assignment.scanQuantity
+          : completedLoadPieces(assignment.batchQuantity, multiplier, pieces);
         pending.current = { id: request.current, pieces: quantity, expectedLoad: assignment.batchQuantity, assignmentId: assignment.id };
         try { sessionStorage.setItem(key, JSON.stringify(pending.current)); } catch {}
       }
@@ -140,6 +142,8 @@ export function DumpingScanner({ code, onDone }) {
           {assignment && <>
           {personal && <p><strong>{assignment.orderTitle}</strong> · {assignment.jobName || "Sub-job"} · {assignment.orderId}</p>}
           <p>{workforce.people.find(p => p.id === assignment.personId)?.name || "Team member"} · {assignment.batchQuantity} pieces per load{assignment.workDate && " · Plan date " + assignment.workDate}</p>
+          {assignment.personalQr ? <p><strong>{assignment.scanQuantity} pieces to record</strong>
+            {assignment.scanQuantity < assignment.batchQuantity && " · Remaining pieces"}</p> : <>
           <label className="field">Load size
             <select value={multiplier} disabled={submitted} onChange={e => { setMultiplier(Number(e.target.value)); setPieces(""); }}>
               <option value={1}>1× · {assignment.batchQuantity} pieces</option>
@@ -160,7 +164,8 @@ export function DumpingScanner({ code, onDone }) {
               placeholder="Use assigned batch quantity"
             />
           </label>
-          <button className="primary" onClick={record}>
+          </>}
+          <button className="primary" onClick={record} disabled={!submitted && assignment.personalQr && !assignment.scanQuantity}>
             {submitted ? "Retry same scan" : "Confirm completed pieces"}
           </button>
           </>}

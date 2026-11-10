@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Individuals now have editable service, payroll method, and average billable working hours."
+    "Plans can use each individual’s long-term Job QR and keep the planned pieces per scan."
   ]
 }
