@@ -3,13 +3,13 @@ import { manufacturingQrPath } from "../../domain/boxLabels.js";
 import { React } from "../../vendor/react-runtime.js";
 
 function ManufacturingBoxQr({
-  value
+  value, label = "QR code for box"
 }) {
   return React.createElement('svg', {
     viewBox: '0 0 33 33',
     className: 'box-qr',
     role: 'img',
-    'aria-label': 'QR code for box ' + value,
+    'aria-label': label + " " + value,
     shapeRendering: 'crispEdges'
   }, React.createElement('rect', {
     width: 33,

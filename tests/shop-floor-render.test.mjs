@@ -16,7 +16,7 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.equal(rows[0].decision,'');assert.equal(rows[0].matches[0].id,'P1');
  assert.equal(rows[1].decision,'skip');assert.equal(rows[2].decision,'add');
  const individuals=await render('/src/features/individuals/IndividualsPage.js','ManufacturingIndividuals');
- assert.match(individuals,/Import Excel/);assert.match(individuals,/Disable/);assert.match(individuals,/aria-label="Edit Alex" aria-haspopup="dialog"/);
+ assert.match(individuals,/Import Excel/);assert.match(individuals,/Disable/);assert.match(individuals,/aria-label="Edit Alex" aria-haspopup="dialog"/);assert.match(individuals,/aria-label="Job QR for Alex"/);
  const create=await render('/src/features/orders/CreateOrderPage.js','CreateOrderPage');
  assert.match(create,/Select a client/);assert.match(create,/Select an item/);assert.doesNotMatch(create,/<input[^>]+name="title"/);
  const editRequest=await render('/src/features/orders/CreateOrderPage.js','CreateOrderPage','admin','detail',{existingOrder:orders[1]});

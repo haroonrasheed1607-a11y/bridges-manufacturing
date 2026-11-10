@@ -1,8 +1,9 @@
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
-import { SUCCESS_DISPLAY_MS, scanRequestKey, completedLoadPieces } from "./model.js";
+import { SUCCESS_DISPLAY_MS, scanRequestKey, completedLoadPieces, isIndividualJobCode } from "./model.js";
 export function DumpingScanner({ code, onDone }) {
+  const personal = isIndividualJobCode(code);
   const { workforce, refresh, profile } = useManufacturing();
   const [result, setResult] = React.useState(null),
     [error, setError] = React.useState(""),
@@ -28,6 +29,12 @@ export function DumpingScanner({ code, onDone }) {
       } catch {}
     }
   }
+  function lookup() {
+    return personal
+      ? manufacturingApi.rpc("app_individual_job_qr", { p_code: code })
+      : manufacturingApi.rpc("app_reusable_barcode", { p_id: code });
+  }
+
   async function record() {
     if (lock.current) return;
     lock.current = true;
@@ -37,15 +44,18 @@ export function DumpingScanner({ code, onDone }) {
     try {
       if (!pending.current) {
         const quantity = completedLoadPieces(assignment.batchQuantity, multiplier, pieces);
-        pending.current = { id: request.current, pieces: quantity, expectedLoad: assignment.batchQuantity };
+        pending.current = { id: request.current, pieces: quantity, expectedLoad: assignment.batchQuantity, assignmentId: assignment.id };
         try { sessionStorage.setItem(key, JSON.stringify(pending.current)); } catch {}
       }
-      const r = await manufacturingApi.rpc("app_scan_reusable_configured", {
-        p_id: code,
-        p_request: request.current,
-        p_pieces: pending.current.pieces,
+      const scan = {
+        p_request: request.current, p_pieces: pending.current.pieces,
         p_expected_load: pending.current.expectedLoad ?? null,
-      });
+      };
+      const r = personal
+        ? await manufacturingApi.rpc("app_scan_individual_job_qr", {
+          ...scan, p_code: code, p_assignment: pending.current.assignmentId,
+        })
+        : await manufacturingApi.rpc("app_scan_reusable_configured", { ...scan, p_id: code });
       setResult(r);
       try {
         sessionStorage.removeItem(key);
@@ -58,11 +68,13 @@ export function DumpingScanner({ code, onDone }) {
         setSubmitted(false);
         try { sessionStorage.removeItem(key); } catch {}
       }
-      if (e.code === "40001" && e.message.startsWith("Pieces per scan changed")) {
+      if (e.code === "40001" || (personal && e.message.includes("no approved, unfinished plan"))) {
         try {
-          setAssignment(await manufacturingApi.rpc("app_reusable_barcode", { p_id: code }));
+          setAssignment(await lookup());
           setPieces("");
-        } catch {}
+        } catch {
+          setAssignment(null);
+        }
       }
       setError(e.message);
     } finally {
@@ -72,7 +84,7 @@ export function DumpingScanner({ code, onDone }) {
   }
   React.useEffect(() => {
     let cancelled = false;
-    manufacturingApi.rpc("app_reusable_barcode", {p_id: code}).then(found => {
+    lookup().then(found => {
       if (cancelled) return;
       if (!found) throw new Error("Reusable QR not found. Ask Box Setup to check this label.");
       setAssignment(found);
@@ -124,7 +136,9 @@ export function DumpingScanner({ code, onDone }) {
       )}
       {!busy && (
         <>
+          {personal && !assignment && pending.current && <button className="primary" onClick={record}>Retry same scan</button>}
           {assignment && <>
+          {personal && <p><strong>{assignment.orderTitle}</strong> · {assignment.jobName || "Sub-job"} · {assignment.orderId}</p>}
           <p>{workforce.people.find(p => p.id === assignment.personId)?.name || "Team member"} · {assignment.batchQuantity} pieces per load{assignment.workDate && " · Plan date " + assignment.workDate}</p>
           <label className="field">Load size
             <select value={multiplier} disabled={submitted} onChange={e => { setMultiplier(Number(e.target.value)); setPieces(""); }}>

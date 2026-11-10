@@ -51,3 +51,8 @@
 .plan-row-icons button{display:grid;place-items:center;width:38px;min-height:38px;padding:0}
 .plan-row-status{display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
 .plan-row-status svg{width:14px;height:14px}
+
+.plan-release{margin-bottom:8px}
+.plan-release summary{cursor:pointer;font-size:13px}
+.plan-release ul{margin:6px 0 0;padding:0;list-style:none}
+.plan-release li{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0}

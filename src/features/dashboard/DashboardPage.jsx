@@ -6,28 +6,6 @@ import { formatDate, formatTimestamp, manufacturingDayOffset, manufacturingToday
 import { React } from "../../vendor/react-runtime.js";
 
 const number = value => Number(value).toLocaleString();
-const shortDate = date => new Intl.DateTimeFormat("en-US", {
-  month: "short", day: "numeric", timeZone: "UTC",
-}).format(new Date(date + "T12:00:00Z"));
-
-function ScanTrend({ daily }) {
-  const peak = Math.max(1, ...daily.map(day => day.pieces));
-  return <section className="panel dashboard-trend" aria-labelledby="dashboard-trend-heading">
-    <h3 id="dashboard-trend-heading">Pieces scanned by day</h3>
-    <p className="quiet">{shortDate(daily[0].date)}–{shortDate(daily.at(-1).date)} · Tulsa time</p>
-    <div className="dashboard-chart-scroll" tabIndex={0} role="region" aria-label="Daily pieces scanned">
-      <ol className="dashboard-bars" style={{ "--chart-width": Math.max(0, daily.length * 42) + "px" }}>
-        {daily.map(day => <li key={day.date} title={shortDate(day.date) + " · " + number(day.pieces) + " pieces"}>
-          <span className="sr-only">{shortDate(day.date)}: {number(day.pieces)} pieces</span>
-          <span className="dashboard-bar-track" aria-hidden="true">
-            <span className="dashboard-bar" style={{ height: day.pieces / peak * 100 + "%" }} />
-          </span>
-          <small aria-hidden="true">{shortDate(day.date)}</small>
-        </li>)}
-      </ol>
-    </div>
-  </section>;
-}
 
 function TopPerformers({ performers }) {
   return <section className="panel" aria-labelledby="dashboard-performers-heading">
@@ -108,16 +86,13 @@ function ManufacturingDashboard() {
       {busy && <p role="status" className="quiet">Loading scan activity…</p>}
       {error && <p role="alert" className="alert">{error}</p>}
       {!busy && result && <>
-        <div className="metrics dashboard-metrics dashboard-scan-metrics">
-          {[["QR scans", result.scans], ["Individuals who scanned", result.individuals],
+        <div className="metrics dashboard-metrics">
+          {[["Total pieces done", Number(result.pieces) + Number(result.approvedPieces)], ["QR scans", result.scans], ["Individuals who scanned", result.individuals],
             ["Pieces from admin approvals", result.approvedPieces]].map(([label, value]) =>
             <div key={label}><span>{label}</span><strong>{number(value)}</strong></div>)}
         </div>
         {result.latestScan && <p className="quiet dashboard-last-scan">Latest scan {formatTimestamp(result.latestScan)}</p>}
-        <div className="dashboard-grid">
-          <ScanTrend daily={result.daily} />
-          <TopPerformers performers={result.performers} />
-        </div>
+        <TopPerformers performers={result.performers} />
       </>}
     </section>
     <section aria-label="Current order status">

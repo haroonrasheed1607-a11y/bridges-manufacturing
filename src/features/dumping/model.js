@@ -2,6 +2,9 @@ export const SUCCESS_DISPLAY_MS = 5000;
 export function isDumpingCode(value) {
   return /^(?:DUMP|REUSE)-[A-F0-9]{16}$/i.test(String(value || "").trim());
 }
+export function isIndividualJobCode(value) {
+  return /^IND-[A-F0-9]{16}$/i.test(String(value || "").trim());
+}
 export function dumpingLabel(assignment, orders, people) {
   const order = orders.find((o) => o.id === assignment.orderId),
     work = order?.workOrders.find((w) => w.id === assignment.workId),

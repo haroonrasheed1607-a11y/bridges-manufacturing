@@ -1,3 +1,4 @@
+import { IndividualJobQrDialog } from "./IndividualJobQrDialog.jsx";
 import { IndividualImport } from './IndividualImport.jsx';
 import { WeeklyHours } from './WeeklyHours.jsx';
 import {useScreenMemory} from '../../state/useScreenMemory.js';
@@ -29,6 +30,7 @@ function ManufacturingIndividuals() {
     [statusChange, setStatusChange] = React.useState(null),
     [statusBusy, setStatusBusy] = React.useState(false),
     [personForm, setPersonForm] = React.useState(null),
+    [qrPerson, setQrPerson] = React.useState(null),
     [personError, setPersonError] = React.useState(''),
     [personSaving, setPersonSaving] = React.useState(false),
     [bookingForm, setBookingForm] = React.useState(null),
@@ -255,7 +257,7 @@ function ManufacturingIndividuals() {
   }, message), error && h('p', {
     role: 'alert',
     className: 'alert'
-  }, error), importOpen && h(IndividualImport, {
+  }, error), qrPerson && h(IndividualJobQrDialog, {person: qrPerson, onClose: () => setQrPerson(null)}), importOpen && h(IndividualImport, {
     people: workforce.people,
     onClose: () => setImportOpen(false),
     onImport: async rows => {
@@ -447,7 +449,13 @@ function ManufacturingIndividuals() {
       'aria-label': 'Edit ' + person.name,
       'aria-haspopup': 'dialog',
       onClick: () => editPerson(person)
-    }, 'Edit'), h('small', {
+    }, 'Edit'), person.kind === 'individual' && person.active !== false && h('button', {
+      type: 'button',
+      className: 'text-link individual-edit-trigger',
+      'aria-label': 'Job QR for ' + person.name,
+      'aria-haspopup': 'dialog',
+      onClick: () => setQrPerson(person)
+    }, 'Job QR'), h('small', {
       className: 'block quiet'
     }, person.role || 'No role set'), h('small', {
       className: 'block quiet'

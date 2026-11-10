@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Removed the standalone pieces scanned card from the dashboard."
+    "Individuals can print a permanent Job QR that follows their approved daily plan. The dashboard shows a Total pieces done card in place of the daily scan graph."
   ]
 }

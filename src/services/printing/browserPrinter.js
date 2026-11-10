@@ -63,14 +63,12 @@ export function printBrowser(labels, { preview = false } = {}) {
     section.appendChild(svg);
     const text = node("div", undefined, section);
     text.className = "text";
-    [
-      label.person,
-      label.orderTitle,
-      label.job + " · " + label.quantity + " pcs",
-      label.boxId,
-    ].forEach((value, i) => {
+    const lines = [label.person, label.orderTitle];
+    if (label.quantity != null) lines.push(label.job + " · " + label.quantity + " pcs");
+    lines.push(label.boxId);
+    lines.forEach((value, i) => {
       const line = node("div", undefined, text);
-      line.className = i === 3 ? "line code" : "line";
+      line.className = i === lines.length - 1 ? "line code" : "line";
       node(i === 0 ? "strong" : "span", value, line);
     });
   }

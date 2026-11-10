@@ -1,6 +1,6 @@
 import { ScannerDailyWork } from './ScannerDailyWork.jsx';
 import {DumpingScanner} from '../dumping/DumpingScanner.jsx';
-import {isDumpingCode} from '../dumping/model.js';
+import {isDumpingCode, isIndividualJobCode} from '../dumping/model.js';
 import { QrCamera } from './QrCamera.jsx';
 // features/production/ScanComplete.js
 import { FormField } from "../../components/common/FormField.js";
@@ -56,7 +56,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
   }
   function scan(value, preview = false) {
     if(dumpLock.current || saving.current)return;
-    if(isDumpingCode(value)){
+    if(isDumpingCode(value) || isIndividualJobCode(value)){
       dumpLock.current=true;setDumpCode(String(value).trim().toUpperCase());setCode('');setSelectedCode('');setError('');return;
     }
     setMessage('');
@@ -109,7 +109,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     className: 'eyebrow'
   }, 'SCAN & COMPLETE WORK'), h('h2', null, 'Scan & complete work'), h('p', {
     className: 'quiet'
-  }, 'Scan a box QR label with your phone camera, use a connected scanner, or enter the code. A single-use scan completes the assigned box. Reusable barcodes prompt for load size.')), h('button', {
+  }, 'Scan a box or Individual Job QR with your phone camera, use a connected scanner, or enter the code. A single-use scan completes the assigned box. Reusable barcodes prompt for load size.')), h('button', {
     type: 'button',
     onClick: focusScanner
   }, 'Focus scanner')), !minimal && h('section', {

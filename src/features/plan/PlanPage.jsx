@@ -102,6 +102,32 @@ export function PlanPage() {
       plan.labels.map(label => label.personId), "Plan deleted.");
   }
 
+  async function release(label) {
+    if (!editable || saving.current) return;
+    if (!window.confirm("Release " + label.personName + " for another job? Recorded pieces stay on this job.")) return;
+    saving.current = true;
+    setBusy(true);
+    setError("");
+    setNotice("");
+    try {
+      const rows = await manufacturingApi.rpc("app_release_job_qr_assignment", {
+        p_date: date, p_assignment: label.id,
+      });
+      setLabels(rows);
+      if (rows.some(row => dayPlanKey(row) === target?.key)) {
+        setSelected(ids => ids.filter(id => id !== label.personId));
+      } else {
+        selectPlan(jobId);
+      }
+      setNotice(label.personName + " is available for another plan.");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      saving.current = false;
+      setBusy(false);
+    }
+  }
+
   async function approve(plan) {
     if (!editable || saving.current) return;
     saving.current = true;
@@ -131,7 +157,7 @@ export function PlanPage() {
     <header className="plan-heading">
       <div>
         <h2>Plan</h2>
-        <p className="quiet">Create multiple plans for a sub-job, or add people to a saved plan before approving it.</p>
+        <p className="quiet">Approve the plan to activate each individual’s Job QR for that date.</p>
       </div>
       <button type="button" disabled={busy} onClick={load}>Refresh</button>
     </header>
@@ -174,6 +200,13 @@ export function PlanPage() {
               {savedPlan ? "Update plan" : "Move →"}
             </button>
           </div>
+          {savedPlan && <details className="plan-release">
+            <summary>Release someone for another job</summary>
+            <ul>{savedPlan.labels.map(label => <li key={label.id}>
+              <span>{label.personName}</span>
+              <button type="button" disabled={!editable} onClick={() => release(label)}>Release</button>
+            </li>)}</ul>
+          </details>}
           <label className="field plan-search">Search individuals
             <input type="search" value={search} disabled={!current || !editable} onChange={e => setSearch(e.target.value)} />
           </label>

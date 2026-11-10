@@ -1,8 +1,10 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {isDumpingCode,dumpingLabel,scanRequestKey} from '../src/features/dumping/model.js';
+import {isDumpingCode,isIndividualJobCode,dumpingLabel,scanRequestKey} from '../src/features/dumping/model.js';
 import {availabilityDates,availabilitySummary} from '../src/features/availability/model.js';
 test('reusable identifiers are distinct from one-time boxes and preserve person/job identity',()=>{
  assert.equal(isDumpingCode('dump-0123456789abcdef'),true);assert.equal(isDumpingCode('BOX-0123456789ABCDEF'),false);
+ assert.equal(isIndividualJobCode(' ind-0123456789abcdef '),true);assert.equal(isDumpingCode('IND-0123456789ABCDEF'),false);
+ assert.equal(isIndividualJobCode('REUSE-0123456789ABCDEF'),false);
  const a={id:'DUMP-0123456789ABCDEF',orderId:'O',workId:'W',jobId:'J',personId:'P',batchQuantity:100};
  const label=dumpingLabel(a,[{id:'O',workOrders:[{id:'W',jobs:[{id:'J',name:'Assembly'}]}]}],[{id:'P',name:'Alex'}]);assert.equal(label.box.id,a.id);assert.equal(label.box.quantity,100);assert.match(label.job.name,/REUSE/);assert.notEqual(scanRequestKey('user1',a.id),scanRequestKey('user2',a.id));
 });
