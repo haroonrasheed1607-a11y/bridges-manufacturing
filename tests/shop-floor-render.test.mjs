@@ -33,7 +33,12 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(panel,/A new barcode cannot be created/);assert.match(panel,/BOX-0123456789ABCDEF/);assert.match(panel,/Reprint current barcode/);
  const configurations=await render('/src/features/configurations/ConfigurationsPage.jsx','ConfigurationsPage');
  assert.match(configurations,/Seconds between scans for 1× load/);
- assert.match(configurations,/Pieces per scan/);assert.match(configurations,/Scan history/);assert.match(configurations,/Apply filters/);
+ assert.match(configurations,/Pieces per scan/);
+ assert.match(configurations,/role="tablist"/);assert.match(configurations,/id="config-tab-history"/);
+ assert.match(configurations,/id="config-tab-approvals"/);assert.match(configurations,/id="config-tab-windows"/);
+ assert.doesNotMatch(configurations,/Apply filters/);
+ const history=await render('/src/features/configurations/ScanHistory.jsx','ScanHistory');
+ assert.match(history,/Apply filters/);
  const restrictedConfig=await render('/src/features/configurations/ConfigurationsPage.jsx','ConfigurationsPage','box_scanner');
  assert.doesNotMatch(restrictedConfig,/Scan history|Save scan settings/);
  const adminApprovals=await render('/src/features/admin-approvals/BarcodeApprovals.jsx','BarcodeApprovals');assert.match(adminApprovals,/QR code approvals/);

@@ -1,15 +1,15 @@
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
-export function BarcodeApprovals() {
+export function BarcodeApprovals({ embedded = false } = {}) {
   const { profile } = useManufacturing();
   return profile?.role === "admin" ? (
-    <ApprovalQueue />
+    <ApprovalQueue embedded={embedded} />
   ) : (
     <p role="alert">Administrator access required.</p>
   );
 }
-function ApprovalQueue() {
+function ApprovalQueue({ embedded }) {
   const { refresh, setView, orders, orderDisplayTitle } = useManufacturing();
   const [kind, setKind] = React.useState("box"),
     [start, setStart] = React.useState(""),
@@ -117,7 +117,7 @@ function ApprovalQueue() {
       kind === "box" ? chosen.reduce((n, r) => n + Number(r.quantity), 0) : 0;
   return (
     <div>
-      <button className="back" onClick={() => setView("configurations")}>
+      {!embedded && <><button className="back" onClick={() => setView("configurations")}>
         ← Configurations
       </button>
       <div className="page-heading">
@@ -128,8 +128,9 @@ function ApprovalQueue() {
             or in bulk.
           </p>
         </div>
-      </div>
+      </div></>}
       <section className="panel">
+        {embedded && <><h3>QR code approvals</h3><p className="quiet">Process previous outstanding codes individually or in bulk.</p></>}
         <fieldset disabled={busy} className="workspace-controls">
           <div className="form-grid">
             <label className="field">

@@ -4,6 +4,7 @@ import { formatTimestamp, manufacturingToday } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
 
 const pageSize = 50;
+const maxOffset = 1000000;
 const empty = { total: 0, pieces: 0, rows: [] };
 
 export function ScanHistory() {
@@ -29,7 +30,11 @@ export function ScanHistory() {
         p_person: query.person || null, p_order: query.order || null,
         p_search: query.search.trim(), p_offset: offset,
       });
-      if (ticket === generation.current) setHistory(result);
+      if (ticket === generation.current) {
+        setHistory(result);
+        const last = Math.floor(Math.max(0, result.total - 1) / pageSize) * pageSize;
+        if (offset > last) setOffset(last);
+      }
     } catch (e) {
       if (ticket === generation.current) {
         setHistory(empty);
@@ -48,6 +53,10 @@ export function ScanHistory() {
   function change(key, value) {
     setFilters(current => ({ ...current, [key]: value }));
   }
+
+  const page = offset / pageSize + 1;
+  const pageCount = Math.ceil(history.total / pageSize);
+  const lastOffset = Math.min(maxOffset, Math.max(0, (pageCount - 1) * pageSize));
 
   return <section className="panel" aria-labelledby="scan-history-heading">
     <h3 id="scan-history-heading">Scan history</h3>
@@ -104,9 +113,16 @@ export function ScanHistory() {
       </table>
     </div>}
     {!busy && !error && !history.total && <p className="quiet">No scan records match these filters.</p>}
-    {(offset > 0 || history.total > pageSize) && <div className="form-actions">
-      <button type="button" disabled={busy || offset === 0} onClick={() => setOffset(offset - pageSize)}>Previous</button>
-      <button type="button" disabled={busy || offset + pageSize >= history.total} onClick={() => setOffset(offset + pageSize)}>Next</button>
-    </div>}
+    {history.total > 0 && <nav className="scan-history-pagination" aria-label="Scan history pagination">
+      <p className="quiet" aria-live="polite">
+        {busy ? "Loading page…" : `Page ${page} of ${pageCount} · Showing ${offset + 1}–${offset + history.rows.length} of ${history.total.toLocaleString()} records`}
+      </p>
+      <div>
+        <button type="button" disabled={busy || offset === 0} onClick={() => setOffset(0)}>First</button>
+        <button type="button" disabled={busy || offset === 0} onClick={() => setOffset(offset - pageSize)}>Previous</button>
+        <button type="button" disabled={busy || offset >= lastOffset} onClick={() => setOffset(offset + pageSize)}>Next</button>
+        <button type="button" disabled={busy || offset >= lastOffset} onClick={() => setOffset(lastOffset)}>Last</button>
+      </div>
+    </nav>}
   </section>;
 }
