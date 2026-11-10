@@ -21,14 +21,15 @@ Deno.serve(async(req:Request)=>{
  const input=await req.json();
  if(input.action==='reset'){
   if(typeof input.userId!=='string'||! /^[0-9a-f-]{36}$/i.test(input.userId))return reply({message:'Select a valid user'},400);
-  if(typeof input.password!=='string'||input.password.length<8||input.password.length>72||new TextEncoder().encode(input.password).length>72)return reply({message:'Use a password of 8–72 bytes.'},400);
+  const minimum=profiles.some((p:any)=>p.id===input.userId&&p.role==='accounts')?6:8;
+  if(typeof input.password!=='string'||input.password.length<minimum||input.password.length>72||new TextEncoder().encode(input.password).length>72)return reply({message:'Use at least '+minimum+' characters and at most 72 bytes.'},400);
   await request('/auth/v1/admin/users/'+encodeURIComponent(input.userId),'PUT',{password:input.password});
   return reply({success:true});
  }
  if(input.action==='create_accounts'){
   const username=typeof input.username==='string'?input.username.trim().toLowerCase():'';
   if(!/^[a-z][a-z0-9_-]{2,31}$/.test(username))return reply({message:'Use 3–32 letters, numbers, hyphens or underscores, starting with a letter.'},400);
-  if(typeof input.password!=='string'||input.password.length<12||new TextEncoder().encode(input.password).length>72)return reply({message:'Use a password of at least 12 characters and at most 72 bytes.'},400);
+  if(typeof input.password!=='string'||input.password.length<6||new TextEncoder().encode(input.password).length>72)return reply({message:'Use a password of at least 6 characters and at most 72 bytes.'},400);
   const email=username+'@bridges-accounts.local';
   const user=await request('/auth/v1/admin/users','POST',{email,password:input.password,email_confirm:true});
   try {

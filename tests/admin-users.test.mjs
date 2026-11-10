@@ -13,9 +13,9 @@ test('account API restricts access and never returns password data',async()=>{
  assert.equal((await call('admin',{action:'reset',userId:id,password:'short'})).status,400);
  const saved=await call('admin',{action:'reset',userId:id,password:'Secret-Test-123'});assert.deepEqual(await saved.json(),{success:true});assert.equal(writes.length,1);assert.deepEqual(writes[0],{password:'Secret-Test-123'});
  assert.equal((await call('scanner',{action:'create_accounts',username:'payroll',password:'Secret-Test-123'})).status,403);
- const account=await call('admin',{action:'create_accounts',username:' Payroll ',password:'Secret-Test-123'});
+ const account=await call('admin',{action:'create_accounts',username:' Payroll ',password:'Test123'});
  assert.deepEqual(await account.json(),{username:'payroll'});
- assert.deepEqual(created,[{email:'payroll@bridges-accounts.local',password:'Secret-Test-123',email_confirm:true},
+ assert.deepEqual(created,[{email:'payroll@bridges-accounts.local',password:'Test123',email_confirm:true},
  {id:'new-account-id',display_name:'payroll',role:'accounts',active:true}]);
  }finally{globalThis.fetch=oldFetch;if(oldDeno===undefined)delete globalThis.Deno;else globalThis.Deno=oldDeno;}
 });
