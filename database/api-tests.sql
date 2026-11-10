@@ -3,11 +3,14 @@ insert into auth.users(id,email) values('00000000-0000-4000-8000-000000000001','
 insert into public.staff_profiles(id,display_name,role) values('00000000-0000-4000-8000-000000000001','Database test','admin');
 select set_config('request.jwt.claim.sub','00000000-0000-4000-8000-000000000001',true);
 set local role authenticated;
-do $$declare data jsonb;o jsonb;rev bigint;begin
+do $$declare data jsonb;o jsonb;rev bigint;item jsonb;begin
  data:=public.app_get_workspace();if jsonb_array_length(data->'orders')<10 then raise exception 'Expected at least ten demo orders';end if;
  perform public.app_save_customer('API Test Customer');
+ select value into item from jsonb_array_elements(public.app_get_workspace()->'customerCatalog') where value->>'name'='API Test Customer';
+ perform public.app_register_customer_item(item->>'id','API-KIT','API roundtrip',0.0125);
+ select value->'items'->0 into item from jsonb_array_elements(public.app_get_workspace()->'customerCatalog') where value->>'name'='API Test Customer';
  perform public.app_save_person('{"id":"API-TEST-PERSON","name":"API Test Person","kind":"individual","role":"Assembly","hoursPerDay":6}');
- perform public.app_save_order('{"id":"API-TEST-ORDER","title":"API roundtrip","customer":"API Test Customer","quantity":100,"perPack":25,"stage":0,"workOrders":[],"required":"2026-12-01"}',0,'Order created by test');
+ perform public.app_save_order('{"id":"API-TEST-ORDER","title":"API roundtrip","customer":"API Test Customer","quantity":100,"perPack":25,"stage":0,"workOrders":[],"required":"2026-12-01"}'::jsonb||jsonb_build_object('catalogItemId',item->>'id'),0,'Order created by test');
  data:=public.app_get_workspace();select value into o from jsonb_array_elements(data->'orders') where value->>'id'='API-TEST-ORDER';
  rev:=(o->>'_revision')::bigint;
  perform public.app_save_order(o||'{"title":"API title updated"}',rev,'Title updated');

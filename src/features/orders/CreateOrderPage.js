@@ -4,18 +4,18 @@ import { manufacturingRepeatDays } from "../../domain/orders.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { manufacturingFinish, manufacturingToday } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
-import { ManufacturingCustomerSelect } from "../customers/CustomerSelect.js";
 import { ManufacturingOrderPictureUpload } from "./OrderPictureUpload.js";
 
 function CreateOrderPage() {
   const {
       create,
       setView,
-      open
+      open, customerCatalog = []
     } = useManufacturing(),
     h = React.createElement;
-  const [title, setTitle] = React.useState(''),
-    [sampleKey, setSampleKey] = React.useState(0);
+  const [clientId, setClientId] = React.useState(''), [itemId, setItemId] = React.useState('');
+  const client = customerCatalog.find(row => row.id === clientId);
+  const item = client?.items.find(row => row.id === itemId);
   const [createdId, setCreatedId] = React.useState(''),
     [pictures, setPictures] = React.useState([]),
     [uploading, setUploading] = React.useState(false),
@@ -72,11 +72,12 @@ function CreateOrderPage() {
     className: 'panel form-panel order-details-form',
     onSubmit: async event => {
       event.preventDefault();
-      if (submitting.current || uploading) return;
+      if (submitting.current || uploading || !item) return;
       submitting.current = true;
       setSubmitError('');
       const id = await create({
         ...Object.fromEntries(new FormData(event.currentTarget)),
+        title: item.name, customer: client.name, catalogItemId: item.id,
         quantity,
         perPack,
         packCount,
@@ -103,26 +104,27 @@ function CreateOrderPage() {
     type: 'button',
     className: 'sample-data-button',
     onClick: () => {
-      setTitle('Demo order — Component assembly');
+      const sampleClient = customerCatalog.find(row => row.items.length);
+      setClientId(sampleClient?.id || '');
+      setItemId(sampleClient?.items[0]?.id || '');
       setQuantity(1200);
       setPerPack(25);
       setFrequency('custom');
       setCustomDays(10);
       setRequired(manufacturingFinish(manufacturingToday(), 6));
-      setSampleKey(value => value + 1);
       setCreatedId('');
     }
-  }, 'Fill sample data'), h('small', null, 'Fills this form for testing. Review before creating the order.')), section('01', 'Order Title', 'Identify the order and customer.', field('Order title', {
-    name: 'title',
-    required: true,
-    maxLength: 180,
-    placeholder: 'What are we making or packing?',
-    value: title,
-    onChange: event => setTitle(event.target.value)
-  }), h(ManufacturingCustomerSelect, {
-    sampleCustomer: sampleKey ? 'Demo Customer — Bridges Testing' : '',
-    sampleKey
-  }), h(ManufacturingOrderPictureUpload, {
+  }, 'Fill sample data'), h('small', null, 'Fills this form for testing. Review before creating the order.')), section('01', 'Client and item', 'Choose an item from the registered client’s catalog.', h(FormField, {label:'Client'},
+    h('select', {required:true,value:clientId,onChange:event=>{setClientId(event.target.value);setItemId('');}},
+      h('option',{value:''},'Select a client'),
+      ...customerCatalog.map(row=>h('option',{key:row.id,value:row.id},row.name)))),
+    h(FormField,{label:'Item',hint:item?.rate == null ? undefined : 'Catalog rate: ' + item.rate},
+      h('select',{required:true,value:itemId,disabled:!client?.items.length,onChange:event=>setItemId(event.target.value)},
+        h('option',{value:''},client && !client.items.length ? 'No items registered for this client' : 'Select an item'),
+        ...(client?.items || []).map(row=>h('option',{key:row.id,value:row.id},row.code+' · '+row.name)))),
+    (!customerCatalog.length || (client && !client.items.length)) && h('button',{
+      type:'button',className:'text-link',onClick:()=>setView('customers')
+    },'Open client registration'), h(ManufacturingOrderPictureUpload, {
     pictures,
     onChange: setPictures,
     onBusy: setUploading
@@ -189,7 +191,7 @@ function CreateOrderPage() {
     onClick: () => setView('orders')
   }, 'Cancel'), h('button', {
     className: 'primary',
-    disabled: !!createdId || uploading
+    disabled: !!createdId || uploading || !item
   }, uploading ? 'Preparing pictures…' : 'Create order'))));
 }
 

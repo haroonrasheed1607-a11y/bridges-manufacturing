@@ -1,6 +1,7 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Plan\u2019s Individuals picker now shows a compact list with available hours beside each name."
+    "Register clients and their items in the customer directory.",
+    "New orders select a registered client and item from the catalog."
   ]
 }

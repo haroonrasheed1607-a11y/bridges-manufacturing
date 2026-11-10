@@ -1,3 +1,4 @@
+import { ClientCatalog } from "./ClientCatalog.jsx";
 // features/customers/CustomersPage.js
 import { FormField } from "../../components/common/FormField.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
@@ -9,7 +10,7 @@ function ManufacturingCustomers() {
       orders,
       open,
       customers,
-      addCustomer
+      addCustomer, customerCatalog = [], registerCustomerItem
     } = useManufacturing(),
     h = React.createElement;
   const [adding, setAdding] = React.useState(false),
@@ -19,16 +20,16 @@ function ManufacturingCustomers() {
     className: 'page-heading'
   }, h('div', null, h('div', {
     className: 'eyebrow'
-  }, 'OPERATIONS / CUSTOMERS'), h('h2', null, 'Customers'), h('p', {
+  }, 'OPERATIONS / CLIENTS'), h('h2', null, 'Clients'), h('p', {
     className: 'quiet'
-  }, 'Customers and their orders.')), h('button', {
+  }, 'Register clients and manage the items available for orders.')), h('button', {
     className: 'primary',
     onClick: () => {
       setAdding(true);
       setError('');
       setMessage('');
     }
-  }, '＋ Add customer')), adding && h('form', {
+  }, '＋ Register client')), adding && h('form', {
     className: 'panel form-panel',
     onSubmit: async event => {
       event.preventDefault();
@@ -39,11 +40,11 @@ function ManufacturingCustomers() {
         return;
       }
       setAdding(false);
-      setMessage('Customer added.');
+      setMessage('Client registered.');
     }
   }, h('div', {
     className: 'section-heading'
-  }, h('h3', null, 'Add customer'), h('button', {
+  }, h('h3', null, 'Register client'), h('button', {
     type: 'button',
     className: 'sample-data-button',
     onClick: event => {
@@ -73,7 +74,7 @@ function ManufacturingCustomers() {
   }, 'Cancel'), h('button', {
     className: 'primary',
     type: 'submit'
-  }, 'Save customer'))), h('p', {
+  }, 'Save client'))), h('p', {
     role: 'status',
     className: 'quiet'
   }, message), h('section', {
@@ -96,7 +97,7 @@ function ManufacturingCustomers() {
     }, order.id)) : '—'));
   })))) : h('p', {
     className: 'empty'
-  }, 'No customers yet. Add your first customer to get started.')));
+  }, 'No clients yet. Register your first client to get started.')), h(ClientCatalog, {clients:customerCatalog,onRegisterItem:registerCustomerItem}));
 }
 
 export { ManufacturingCustomers };

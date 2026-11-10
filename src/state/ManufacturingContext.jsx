@@ -206,6 +206,12 @@ function ManufacturingProvider({ children }) {
       return e.message;
     }
   }
+  async function registerCustomerItem(item) {
+    try {
+      await mutate("app_register_customer_item", item, "Client item registered.");
+      return "";
+    } catch (e) { return e.message; }
+  }
   async function saveIndividual(value) {
     const person = {
       id: value.id || createId("PERSON"),
@@ -341,6 +347,7 @@ function ManufacturingProvider({ children }) {
     completeProductionBox,
     createProductionBox,
     addCustomer,
+    registerCustomerItem,
     saveIndividual,
     importIndividuals,
     setIndividualActive,
