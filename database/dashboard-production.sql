@@ -41,6 +41,15 @@ begin
    'individuals',count(distinct person_id) filter(where not approved),
    'approvedPieces',coalesce(sum(pieces) filter(where approved),0),
    'latestScan',max(completed_at) filter(where not approved),
+   'plannedDate',p_end,
+   'plannedOrderIds',coalesce((
+     select jsonb_agg(distinct w.order_id order by w.order_id)
+     from public.dumping_assignments a join public.sub_jobs j on j.id=a.sub_job_id
+     join public.work_orders w on w.id=j.work_order_id
+     where a.work_date=p_end and (a.active or exists(
+       select 1 from public.dumping_completions c where c.assignment_id=a.id
+     ))
+   ),'[]'),
    'performers',coalesce((select jsonb_agg(to_jsonb(p) order by p.pieces desc,p.scans desc,p.name,p.id) from performers p),'[]'),
    'daily',(select jsonb_agg(jsonb_build_object('date',trend_start+i,'pieces',coalesce(d.pieces,0)) order by i)
      from generate_series(0,p_end-trend_start) i left join daily d on d.scan_date=trend_start+i)

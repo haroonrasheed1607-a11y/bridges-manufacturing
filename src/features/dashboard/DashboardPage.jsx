@@ -54,9 +54,9 @@ function ManufacturingDashboard() {
   const request = React.useRef(0);
   const active = orders.filter(order => order.stage < 6);
   const overdue = active.filter(order => order.required && order.required < today);
-  const upcoming = manufacturingDayOffset(today, 7);
-  const watch = active.filter(order => order.required && order.required <= upcoming)
-    .sort((a, b) => a.required.localeCompare(b.required) || a.id.localeCompare(b.id));
+  const plannedIds = new Set(result?.plannedDate === end ? result.plannedOrderIds : []);
+  const watch = orders.filter(order => plannedIds.has(order.id))
+    .sort((a, b) => (a.required || "9999").localeCompare(b.required || "9999") || a.id.localeCompare(b.id));
   const stages = manufacturingBoardStages.map((label, index) => ({
     label, count: orders.filter(order => manufacturingBoardStage(order) === index).length,
   }));
@@ -86,7 +86,7 @@ function ManufacturingDashboard() {
 
   return <div className="manufacturing-dashboard">
     <header className="page-heading">
-      <div><h2>Production dashboard</h2><p className="quiet">QR output, individual performance, and upcoming deadlines.</p></div>
+      <div><h2>Production dashboard</h2><p className="quiet">QR output, individual performance, and planned orders.</p></div>
       <button type="button" onClick={() => setView("board")}>Open Job Board</button>
     </header>
     <div className="panel dashboard-filters">
@@ -129,20 +129,20 @@ function ManufacturingDashboard() {
       </div>
       <div className="dashboard-grid">
         <section className="panel">
-          <h3>Orders to watch</h3><p className="quiet">Overdue or due within the next 7 days.</p>
-          {watch.length ? <div className="table-wrap"><table>
+          <h3>Orders to watch</h3><p className="quiet">Planned for {formatDate(end)}.</p>
+          {busy ? <p className="quiet">Loading planned orders…</p> :
+            error ? <p className="quiet">Could not load planned orders.</p> : watch.length ? <div className="table-wrap"><table>
             <thead><tr><th scope="col">Order</th><th scope="col">Stage</th><th scope="col">Due date</th><th scope="col">Pieces remaining</th></tr></thead>
-            <tbody>{watch.slice(0, 8).map(order => {
+            <tbody>{watch.map(order => {
               const { total, completed } = jobCompletion(order);
               return <tr key={order.id}>
                 <td><button className="text-link" type="button" onClick={() => open(order.id)}>{orderDisplayTitle(order)}</button></td>
                 <td>{manufacturingBoardStages[manufacturingBoardStage(order)]}</td>
-                <td>{formatDate(order.required)}{order.required < today && <span className="badge red dashboard-overdue">Overdue</span>}</td>
+                <td>{formatDate(order.required)}{order.stage < 6 && order.required && order.required < today && <span className="badge red dashboard-overdue">Overdue</span>}</td>
                 <td>{number(Math.max(Number(order.quantity) || 0, total) - completed)}</td>
               </tr>;
             })}</tbody>
-          </table></div> : <p className="quiet">No active orders due in this window.</p>}
-          {watch.length > 8 && <button className="text-link" type="button" onClick={() => setView("board")}>View all {watch.length} on Job Board</button>}
+          </table></div> : <p className="quiet">No orders are planned for this date.</p>}
         </section>
         <section className="panel">
           <h3>Orders by stage</h3>

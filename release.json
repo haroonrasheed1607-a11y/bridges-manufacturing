@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "The dashboard now shows pieces scanned, top performers, production trends, and approaching order deadlines."
+    "Orders to watch now lists only orders planned for the selected dashboard date."
   ]
 }

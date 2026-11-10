@@ -27,8 +27,11 @@ begin
  values(oid,(select id from public.customers limit 1),1,'{"title":"Rollback dashboard test"}');
  insert into public.work_orders(id,order_id,quantity,pieces_per_pack) values(wid,oid,300,25);
  insert into public.sub_jobs(id,work_order_id,quantity) values(jid,wid,300);
- insert into public.dumping_assignments(id,sub_job_id,person_id,batch_quantity,created_by)
- values(reusable_a,jid,a,100,actor),(reusable_b,jid,b,50,actor);
+ insert into public.dumping_assignments(id,sub_job_id,person_id,batch_quantity,created_by,work_date)
+ values(reusable_a,jid,a,100,actor,d),(reusable_b,jid,b,50,actor,d-1);
+ insert into public.orders(id,customer_id,stage,data)
+ values(oid||'-UNPLANNED',(select id from public.customers limit 1),1,
+   jsonb_build_object('title','Rollback unplanned dashboard fixture','required',d));
  insert into public.dumping_completions(id,assignment_id,pieces,actor_id,completed_at)
  values(gen_random_uuid(),reusable_a,100,actor,day_start),
        (gen_random_uuid(),reusable_b,50,actor,day_start-interval '1 second');
@@ -42,6 +45,13 @@ begin
  values(gen_random_uuid(),actor,'box',array[box_approved],'Rollback dashboard fixture','{}',day_start+interval '2 hours');
 
  result:=public.app_dashboard_production(d,1);
+ if result->>'plannedDate' is distinct from d::text
+   or (select count(*) from jsonb_array_elements_text(result->'plannedOrderIds') id where id=oid)<>1
+   or (result->'plannedOrderIds') ? (oid||'-UNPLANNED')
+ then raise exception 'Dashboard watch list must only include planned orders for the selected date'; end if;
+ if (public.app_dashboard_production(d+1,1)->'plannedOrderIds') ? oid then
+   raise exception 'A plan for a different date appeared in the watch list';
+ end if;
  if (result->>'pieces')::bigint-(fixture_before->>'pieces')::bigint<>125
    or (result->>'scans')::bigint-(fixture_before->>'scans')::bigint<>2
    or (result->>'individuals')::bigint-(fixture_before->>'individuals')::bigint<>2
