@@ -32,7 +32,7 @@ function OrdersPage() {
       }), (0, jsxRuntime.jsx)(`button`, {
         className: `primary`,
         onClick: () => n(`new`),
-        children: `＋ New order`
+        children: `＋ New order request`
       })]
     }), (0, jsxRuntime.jsxs)(`section`, {
       className: `panel`,
@@ -112,7 +112,7 @@ function OrdersPage() {
                   className: `mini-progress`,
                   children: (0, jsxRuntime.jsx)(`span`, {
                     style: {
-                      width: `${manufacturingBoardStage(e) / 9 * 100}%`
+                      width: `${manufacturingBoardStage(e) / (manufacturingBoardStages.length - 1) * 100}%`
                     }
                   })
                 })]

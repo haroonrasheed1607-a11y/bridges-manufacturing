@@ -2,7 +2,7 @@ import {JobCompletion} from "../../components/common/JobCompletion.js";
 // features/job-board/JobBoardPage.js
 import { manufacturingColumnProgress } from "../../domain/boardProgress.js";
 import { manufacturingOrderPlan, manufacturingRepeatDays } from "../../domain/orders.js";
-import { manufacturingBoardStage, manufacturingBoardStages, manufacturingNextOrderState, manufacturingTransitionLabel, manufacturingWorkflowBlock } from "../../domain/workflow.js";
+import { manufacturingBoardStage, manufacturingBoardStages, manufacturingNextOrderState, manufacturingOrderStep, manufacturingTransitionLabel, manufacturingWorkflowBlock } from "../../domain/workflow.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate, manufacturingToday } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
@@ -31,7 +31,7 @@ function ManufacturingJobBoard() {
   }).sort((a, b) => (a.required || '9999').localeCompare(b.required || '9999'));
   async function advance(order) {
     if (manufacturingWorkflowBlock(order, workforce)) return;
-    return change(order.id, manufacturingNextOrderState, manufacturingTransitionLabel(order) + '.');
+    return change(order.id, manufacturingNextOrderState, manufacturingOrderStep, manufacturingTransitionLabel(order) + '.');
   }
   function card(order) {
     const plan = manufacturingOrderPlan(order),
@@ -86,7 +86,7 @@ function ManufacturingJobBoard() {
     }, h('span', null, manufacturingRepeatDays(order.frequency, order.repeatEveryDays) ? '↻ Every ' + manufacturingRepeatDays(order.frequency, order.repeatEveryDays) + ' days' : 'One time'), h('span', {
       className: blocked ? 'compact-job-held' : 'compact-job-ready',
       title: order.stage === 6 ? 'Order completed' : blocked || manufacturingTransitionLabel(order)
-    }, order.stage === 6 ? 'Complete' : blocked ? 'Action needed' : 'Ready ···')));
+    }, order.stage === 6 ? 'Complete' : blocked ? manufacturingOrderStep(order) : 'Ready ···')));
   }
   return h('div', {
     className: 'job-board-page'
@@ -99,7 +99,7 @@ function ManufacturingJobBoard() {
   }, 'Every order, from customer request to signed delivery.')), manager && h('button', {
     className: 'primary',
     onClick: () => setView('new')
-  }, '＋ New order')), h('div', {
+  }, '＋ New order request')), h('div', {
     className: 'job-board-toolbar'
   }, h('label', {
     className: 'field job-board-search'
@@ -134,7 +134,7 @@ function ManufacturingJobBoard() {
     className: 'job-board-scroll',
     tabIndex: 0,
     role: 'region',
-    'aria-label': 'Job board. Scroll horizontally through the ten stages.'
+    'aria-label': 'Job board. Scroll horizontally through the six stages.'
   }, h('div', {
     className: 'job-board-columns'
   }, manufacturingBoardStages.map((label, index) => {

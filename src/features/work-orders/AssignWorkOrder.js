@@ -42,7 +42,7 @@ function ManufacturingAssignWorkOrder() {
   }
   return h('section', null, h('div', {
     className: 'section-heading'
-  }, h('div', null, h('h3', null, order.assignmentConfirmedAt ? 'Start Production' : 'Assign Work Order'), h('p', {
+  }, h('div', null, h('h3', null, order.assignmentConfirmedAt ? 'Start production' : 'Assign Job Coaches'), h('p', {
     className: 'quiet'
   }, 'Assign each work order to a Job Coach. Boxes are assigned to individuals during production.')), h('button', {
     onClick: () => setView('individuals')
@@ -92,7 +92,7 @@ function ManufacturingAssignWorkOrder() {
     onClick: confirm
   }, 'Confirm Job Coach assignments')), order.assignmentConfirmedAt && h('p', {
     className: 'callout'
-  }, 'Job Coaches confirmed. Use Start Production to begin.'), error && h('p', {
+  }, 'Job Coaches confirmed. Use Start production to begin.'), error && h('p', {
     className: 'alert',
     role: 'alert'
   }, error));

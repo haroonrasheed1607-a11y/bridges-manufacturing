@@ -66,7 +66,7 @@ function CreateOrderPage() {
     className: 'page-heading'
   }, h('div', null, h('div', {
     className: 'eyebrow'
-  }, '01 / NEW ORDER'), h('h2', null, 'Order details'), h('p', {
+  }, '01 / ORDER REQUESTS'), h('h2', null, 'Order details'), h('p', {
     className: 'quiet'
   }, 'Define the order, quantities, and customer deadline.'))), h('form', {
     className: 'panel form-panel order-details-form',
@@ -192,7 +192,7 @@ function CreateOrderPage() {
   }, 'Cancel'), h('button', {
     className: 'primary',
     disabled: !!createdId || uploading || !item
-  }, uploading ? 'Preparing pictures…' : 'Create order'))));
+  }, uploading ? 'Preparing pictures…' : 'Create order request'))));
 }
 
 export { CreateOrderPage };

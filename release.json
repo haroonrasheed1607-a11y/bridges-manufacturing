@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Fixed a blank screen after saving a new catalog order."
+    "Grouped the manufacturing workflow into six stages from Order Requests to Mark Complete."
   ]
 }

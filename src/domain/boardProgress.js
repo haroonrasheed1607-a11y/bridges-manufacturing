@@ -18,7 +18,10 @@ function manufacturingColumnProgress(orders, column) {
   for (const order of orders) {
     const stage = manufacturingBoardStage(order);
     if (stage < column) continue;
-    if (stage > column || column === manufacturingBoardStages.length - 1 || stage === column && column >= 4 && !getStageBlocker(order)) acted++;else pending++;
+    const readyToLeave = order.stage > 0 && stage === column &&
+      manufacturingBoardStage({ stage: order.stage + 1 }) > column && !getStageBlocker(order);
+    if (stage > column || column === manufacturingBoardStages.length - 1 || readyToLeave) acted++;
+    else pending++;
   }
   const total = pending + acted;
   return {

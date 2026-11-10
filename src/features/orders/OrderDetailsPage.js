@@ -3,11 +3,12 @@ import {JobCompletion} from "../../components/common/JobCompletion.js";
 import { Badge } from "../../components/common/Badge.js";
 import { manufacturingFrequencyLabel, manufacturingOrderPlan } from "../../domain/orders.js";
 import { getOrderPackRecords } from "../../domain/validation.js";
-import { manufacturingBoardStage, manufacturingBoardStages, manufacturingTransitionLabel, manufacturingWorkflowBlock } from "../../domain/workflow.js";
+import { manufacturingBoardStage, manufacturingBoardStages, manufacturingOrderStep, manufacturingTransitionLabel, manufacturingWorkflowBlock } from "../../domain/workflow.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate, formatTimestamp } from "../../utils/dates.js";
 import { jsxRuntime } from "../../vendor/jsx-runtime.js";
 import { React } from "../../vendor/react-runtime.js";
+import { canUsePlan } from "../auth/permissions.js";
 import { ManufacturingDeliveryChallan } from "../delivery/DeliveryChallan.js";
 import { DeliveryPage } from "../delivery/DeliveryPage.js";
 import { PackingPage } from "../packing/PackingPage.js";
@@ -23,7 +24,8 @@ function OrderDetailsPage() {
       setView: setView,
       advance: advance,
       notice: notice,
-      workforce
+      workforce,
+      profile
     } = useManufacturing(),
     [activeTab, setActiveTab] = (0, React.useState)(`current`),
     blocker = manufacturingWorkflowBlock(order, workforce),
@@ -76,7 +78,7 @@ function OrderDetailsPage() {
           children: [(0, jsxRuntime.jsx)(`button`, {
             className: activeTab === `current` ? `selected` : ``,
             onClick: () => setActiveTab(`current`),
-            children: order.stage === 6 ? `Completion` : manufacturingBoardStages[boardStage]
+            children: manufacturingOrderStep(order)
           }), (order.stage > 1 || order.workOrderApprovedAt) && (0, jsxRuntime.jsx)(`button`, {
             className: activeTab === `work` ? `selected` : ``,
             onClick: () => setActiveTab(`work`),
@@ -197,11 +199,8 @@ function OrderDetailsPage() {
           })]
         }), order.stage < 6 && (0, jsxRuntime.jsxs)(`section`, {
           className: `panel next-step`,
-          children: [(0, jsxRuntime.jsx)(`div`, {
-            className: `eyebrow`,
-            children: `NEXT STEP`
-          }), (0, jsxRuntime.jsx)(`h3`, {
-            children: manufacturingBoardStages[boardStage + 1]
+          children: [(0, jsxRuntime.jsx)(`h3`, {
+            children: `Next action`
           }), (0, jsxRuntime.jsx)(`p`, {
             className: `quiet`,
             children: blocker || `All checks for this stage are ready.`
@@ -212,6 +211,10 @@ function OrderDetailsPage() {
               advance(), setActiveTab(`current`);
             },
             children: manufacturingTransitionLabel(order)
+          }), order.stage === 1 && canUsePlan(profile?.role) && (0, jsxRuntime.jsx)(`button`, {
+            type: `button`,
+            onClick: () => setView(`plan`),
+            children: `Open Plan`
           })]
         }), (0, jsxRuntime.jsx)(`p`, {
           className: `sidebar-note`,

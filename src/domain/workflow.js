@@ -2,10 +2,21 @@
 import { getStageBlocker } from "./validation.js";
 import { manufacturingIsCoach } from "./workforce.js";
 
-var legacyStageLabels = [`New Order`, `Work Order`, `Quality Check`, `Packing`, `Warehouse`, `Delivery`, `Order Completion`];
-var manufacturingBoardStages = ['New Orders', 'Work Orders', 'Assign Work Order', 'Start Production', 'In Production', 'Quality Check', 'Packing', 'Warehouse', 'Delivery', 'Order Completion'];
+const manufacturingBoardStages = ['Order Requests', 'Work Orders', 'Plan Production', 'Quality Check & Packing', 'Warehouse & Ready for Delivery', 'Mark Complete'];
+const boardStageByOrderStage = [0, 2, 3, 3, 4, 4, 5];
+const orderSteps = ['', 'In production', 'Quality check', 'Packing', 'Warehouse', 'Ready for delivery', 'Completion'];
+
 function manufacturingBoardStage(order) {
-  return order.stage === 0 ? order.assignmentConfirmedAt ? 3 : order.workOrderApprovedAt ? 2 : order.workOrders.length ? 1 : 0 : order.stage + 3;
+  if (order.stage !== 0) return boardStageByOrderStage[order.stage];
+  if (order.assignmentConfirmedAt) return 2;
+  return order.workOrderApprovedAt || order.workOrders.length ? 1 : 0;
+}
+
+function manufacturingOrderStep(order) {
+  if (order.stage !== 0) return orderSteps[order.stage];
+  if (order.assignmentConfirmedAt) return 'Start production';
+  if (order.workOrderApprovedAt) return 'Assign Job Coaches';
+  return order.workOrders.length ? 'Prepare work orders' : 'Order request';
 }
 function manufacturingNextOrderState(order) {
   return order.stage === 0 && !order.workOrderApprovedAt ? {
@@ -20,7 +31,11 @@ function manufacturingNextOrderState(order) {
   };
 }
 function manufacturingTransitionLabel(order) {
-  return order.stage === 0 ? !order.workOrderApprovedAt ? 'Assign Work Order' : !order.assignmentConfirmedAt ? 'Confirm assignments' : 'Start Production' : order.stage === 5 ? 'Complete order' : 'Move to ' + manufacturingBoardStages[manufacturingBoardStage(order) + 1];
+  if (order.stage === 0) {
+    if (!order.workOrderApprovedAt) return 'Approve work orders';
+    return order.assignmentConfirmedAt ? 'Start production' : 'Confirm assignments';
+  }
+  return ['', 'Move to quality check', 'Move to packing', 'Move to warehouse', 'Move to ready for delivery', 'Mark complete'][order.stage];
 }
 function manufacturingWorkflowBlock(order, workforce) {
   const rule = getStageBlocker(order);
@@ -29,4 +44,4 @@ function manufacturingWorkflowBlock(order, workforce) {
   return '';
 }
 
-export { legacyStageLabels, manufacturingBoardStages, manufacturingBoardStage, manufacturingNextOrderState, manufacturingTransitionLabel, manufacturingWorkflowBlock };
+export { manufacturingBoardStages, manufacturingBoardStage, manufacturingOrderStep, manufacturingNextOrderState, manufacturingTransitionLabel, manufacturingWorkflowBlock };

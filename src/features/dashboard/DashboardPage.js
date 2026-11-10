@@ -1,5 +1,5 @@
 // features/dashboard/DashboardPage.js
-import { legacyStageLabels } from "../../domain/workflow.js";
+import { manufacturingBoardStage, manufacturingBoardStages } from "../../domain/workflow.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { React } from "../../vendor/react-runtime.js";
 
@@ -27,9 +27,9 @@ function ManufacturingDashboard() {
     className: 'panel'
   }, h('h3', null, 'Orders by stage'), h('div', {
     className: 'table-wrap'
-  }, h('table', null, h('thead', null, h('tr', null, h('th', null, 'Stage'), h('th', null, 'Orders'))), h('tbody', null, legacyStageLabels.map((label, index) => h('tr', {
+  }, h('table', null, h('thead', null, h('tr', null, h('th', null, 'Stage'), h('th', null, 'Orders'))), h('tbody', null, manufacturingBoardStages.map((label, index) => h('tr', {
     key: label
-  }, h('td', null, label), h('td', null, orders.filter(o => o.stage === index).length))))))));
+  }, h('td', null, label), h('td', null, orders.filter(o => manufacturingBoardStage(o) === index).length))))))));
 }
 
 export { ManufacturingDashboard };
