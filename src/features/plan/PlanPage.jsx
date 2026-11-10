@@ -3,13 +3,14 @@ import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate, manufacturingToday } from "../../utils/dates.js";
 import { availableHoursOn } from "../../domain/workforce.js";
-import { dayPlanLabelIds, groupDayPlans } from "./dayPlan.js";
+import { dayPlanKey, dayPlanLabelIds, dayPlanName, groupDayPlans } from "./dayPlan.js";
 
 export function PlanPage() {
   const { orders, workforce, orderDisplayTitle } = useManufacturing();
   const today = manufacturingToday();
   const [date, setDate] = React.useState(manufacturingToday);
   const [jobId, setJobId] = React.useState("");
+  const [target, setTarget] = React.useState(null);
   const [selected, setSelected] = React.useState([]);
   const [labels, setLabels] = React.useState([]);
   const [loadedDate, setLoadedDate] = React.useState("");
@@ -24,8 +25,18 @@ export function PlanPage() {
       .map(job => ({ order, work, job }))));
   const plans = groupDayPlans(labels);
   const current = jobs.find(item => item.job.id === jobId);
-  const savedPeople = labels.filter(label => label.jobId === jobId).map(label => label.personId);
-  const otherPeople = new Set(labels.filter(label => label.jobId !== jobId).map(label => label.personId));
+  const savedPlan = target && plans.find(plan => plan.key === target.key);
+  const savedPeople = savedPlan?.labels.map(label => label.personId) ?? [];
+  const otherPeople = new Set(labels.filter(label => dayPlanKey(label) !== target?.key).map(label => label.personId));
+
+  function selectPlan(id, plan = null) {
+    setJobId(id);
+    const planId = plan ? plan.planId ?? null : id ? crypto.randomUUID() : null;
+    setTarget(id ? { planId, key: dayPlanKey({ jobId: id, planId }) } : null);
+    setSelected(plan?.labels.map(label => label.personId) ?? []);
+    setSearch("");
+    setNotice("");
+  }
   const people = workforce.people.filter(person =>
     person.kind === "individual" && (person.active !== false || savedPeople.includes(person.id))
     && person.name.toLowerCase().includes(search.trim().toLowerCase()));
@@ -40,8 +51,7 @@ export function PlanPage() {
       if (ticket !== request.current) return;
       setLabels(rows);
       setLoadedDate(date);
-      setSelected([]);
-      setJobId("");
+      selectPlan("");
     } catch (e) {
       if (ticket === request.current) setError(e.message);
     } finally {
@@ -56,20 +66,22 @@ export function PlanPage() {
 
   async function move(event) {
     event.preventDefault();
-    if (!current || loadedDate !== date || saving.current || busy) return;
+    if (!current || !target || loadedDate !== date || saving.current || busy) return;
     saving.current = true;
     setBusy(true);
     setError("");
     setNotice("");
     try {
-      const rows = await manufacturingApi.rpc("app_day_plan", {
+      const rows = await manufacturingApi.rpc("app_move_day_plan", {
         p_date: date,
         p_job: current.job.id,
+        p_plan: target.planId,
         p_people: [...selected].sort(),
         p_expected: [...savedPeople].sort(),
       });
       setLabels(rows);
-      setNotice(selected.length ? "Moved to the approval list." : "People removed from this sub-job plan.");
+      if (!selected.length) selectPlan(jobId);
+      setNotice(selected.length ? "Plan updated. Approve it when ready to print." : "Plan cleared.");
     } catch (e) {
       setError(e.message);
     } finally {
@@ -85,13 +97,14 @@ export function PlanPage() {
     setError("");
     setNotice("");
     try {
-      const rows = await manufacturingApi.rpc("app_approve_day_plan", {
+      const rows = await manufacturingApi.rpc("app_approve_day_plan_group", {
         p_date: date,
         p_job: plan.jobId,
+        p_plan: plan.planId ?? null,
         p_expected: dayPlanLabelIds(plan),
       });
       setLabels(rows);
-      setNotice("Approved. This plan is ready in desktop Print.");
+      setNotice("Approved. This plan is ready in Shop Floor Print.");
     } catch (e) {
       setError(e.message);
     } finally {
@@ -106,7 +119,7 @@ export function PlanPage() {
     <header className="plan-heading">
       <div>
         <h2>Plan</h2>
-        <p className="quiet">Move selected individuals to the plan, then approve it for desktop printing.</p>
+        <p className="quiet">Create multiple plans for a sub-job, or add people to a saved plan before approving it.</p>
       </div>
       <button type="button" disabled={busy} onClick={load}>Refresh</button>
     </header>
@@ -118,19 +131,12 @@ export function PlanPage() {
               if (!e.target.value) return;
               setLabels([]);
               setLoadedDate("");
-              setSelected([]);
-              setJobId("");
+              selectPlan("");
               setDate(e.target.value);
             }} />
         </label>
         <label className="field">Sub-job
-          <select required value={jobId} disabled={!editable} onChange={e => {
-            const id = e.target.value;
-            setJobId(id);
-            setSelected(labels.filter(label => label.jobId === id).map(label => label.personId));
-            setSearch("");
-            setNotice("");
-          }}>
+          <select required value={jobId} disabled={!editable} onChange={e => selectPlan(e.target.value)}>
             <option value="">{jobs.length ? "Select a sub-job" : "No unfinished sub-jobs in production"}</option>
             {jobs.map(({order, work, job}) => <option key={job.id} value={job.id}>
               {orderDisplayTitle(order)} · {work.description} · {job.name} ({job.quantity - job.completed} remaining)
@@ -147,9 +153,13 @@ export function PlanPage() {
       <div className="plan-columns">
         <section className="panel plan-pane" aria-labelledby="plan-people-heading">
           <div className="plan-pane-heading">
-            <div><h3 id="plan-people-heading">Individuals</h3><small className="quiet">{selected.length} selected</small></div>
+            <div>
+              <h3 id="plan-people-heading">{savedPlan ? "Edit " + dayPlanName(savedPlan) : "Individuals · New plan"}</h3>
+              <small className="quiet">{selected.length} selected</small>
+            </div>
+            {savedPlan && <button type="button" disabled={!editable} onClick={() => selectPlan(jobId)}>New plan</button>}
             <button className="primary" disabled={!editable || !current || !changed}>
-              {selected.length || !savedPeople.length ? "Move →" : "Clear plan"}
+              {!selected.length && savedPlan ? "Clear plan" : savedPlan ? "Update plan" : "Move →"}
             </button>
           </div>
           <label className="field plan-search">Search individuals
@@ -181,14 +191,17 @@ export function PlanPage() {
           <div className="plan-list plan-stickers" role="region" aria-label="Plans for approval" tabIndex={0}>
             {plans.length ? <ul>{plans.map(plan => {
               const approved = plan.labels.every(label => label.approvedAt);
-              return <li key={plan.jobId} className="plan-approval-row">
+              return <li key={plan.key} className="plan-approval-row">
                 <div>
                   <strong>{orderDisplayTitle(orders.find(order => order.id === plan.orderId) ?? { title: plan.orderTitle })}</strong>
-                  <small className="quiet">{plan.jobName || plan.jobId} · {plan.labels.length} individuals</small>
+                  <small className="quiet">{plan.jobName || plan.jobId} · {dayPlanName(plan)} · {plan.labels.length} individuals</small>
                   <small className="quiet">{plan.labels.map(label => label.personName).join(", ")}</small>
                 </div>
-                {approved ? <span className="badge green">Approved</span> :
-                  <button type="button" className="primary" disabled={!editable} onClick={() => approve(plan)}>Approve</button>}
+                <div className="plan-print-actions">
+                  <button type="button" disabled={!editable} onClick={() => selectPlan(plan.jobId, plan)}>Edit plan</button>
+                  {approved ? <span className="badge green">Approved</span> :
+                    <button type="button" className="primary" disabled={!editable} onClick={() => approve(plan)}>Approve</button>}
+                </div>
               </li>;
             })}</ul> : !busy && <p className="quiet">Move selected individuals here to approve their plan.</p>}
           </div>

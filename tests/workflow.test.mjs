@@ -1,3 +1,4 @@
+import { groupDayPlans } from '../src/features/plan/dayPlan.js';
 import { manufacturingCanEditOrderRequest } from '../src/domain/orders.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -129,6 +130,17 @@ test('replacing a split generates new labels and keeps the work order quantity',
   assert.deepEqual(work.jobs.map(job => job.quantity), [25, 25, 1]);
   assert.ok(work.jobs.every(job => job.id.startsWith('WO-1-FRESH-SJ-')));
   assert.equal(manufacturingCanEditWorkOrder(order, { ...existingWork, hasScans: true }), false);
+});
+
+test('printing groups multiple plans for a single sub-job separately', () => {
+  const plans = groupDayPlans([
+    { id: 'legacy', jobId: 'job', planId: null },
+    { id: 'a1', jobId: 'job', planId: 'first' },
+    { id: 'a2', jobId: 'job', planId: 'first' },
+    { id: 'b1', jobId: 'job', planId: 'second' },
+  ]);
+  assert.deepEqual(plans.map(plan => plan.labels.map(label => label.id)), [['legacy'], ['a1', 'a2'], ['b1']]);
+  assert.equal(new Set(plans.map(plan => plan.key)).size, 3);
 });
 
 test('box completion updates pieces once and rejects a second completion', () => {

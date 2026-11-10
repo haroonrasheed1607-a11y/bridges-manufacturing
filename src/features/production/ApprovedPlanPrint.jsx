@@ -4,19 +4,19 @@ import { hasDesktopPrinter } from "../../services/printing/desktopPrinter.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate, manufacturingToday } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
-import { dayPlanLabelIds, groupDayPlans } from "../plan/dayPlan.js";
+import { dayPlanKey, dayPlanLabelIds, dayPlanName, groupDayPlans } from "../plan/dayPlan.js";
 
 export function ApprovedPlanPrint() {
   const { orders, orderDisplayTitle } = useManufacturing();
   const [date, setDate] = React.useState(manufacturingToday);
-  const [jobId, setJobId] = React.useState("");
+  const [planKey, setPlanKey] = React.useState("");
   const [labels, setLabels] = React.useState([]);
   const [busy, setBusy] = React.useState(true);
   const [error, setError] = React.useState("");
   const [notice, setNotice] = React.useState("");
   const request = React.useRef(0);
   const plans = groupDayPlans(labels);
-  const selected = plans.find(plan => plan.jobId === jobId);
+  const selected = plans.find(plan => plan.key === planKey);
 
   function title(plan) {
     return orderDisplayTitle(orders.find(order => order.id === plan.orderId) ?? { title: plan.orderTitle });
@@ -33,9 +33,9 @@ export function ApprovedPlanPrint() {
       const rows = await manufacturingApi.rpc("app_approved_day_plans", { p_date: date });
       if (ticket !== request.current) return;
       setLabels(rows);
-      setJobId(current => rows.some(label => label.jobId === current) ? current : "");
+      setPlanKey(current => rows.some(label => dayPlanKey(label) === current) ? current : "");
       if (!planToPrint) return;
-      const updated = groupDayPlans(rows).find(plan => plan.jobId === planToPrint.jobId);
+      const updated = groupDayPlans(rows).find(plan => plan.key === planToPrint.key);
       if (!updated || JSON.stringify(dayPlanLabelIds(updated)) !== JSON.stringify(dayPlanLabelIds(planToPrint))) {
         setError("This plan changed. Review the updated list before printing.");
         return;
@@ -81,19 +81,19 @@ export function ApprovedPlanPrint() {
         <input type="date" min={manufacturingToday()} value={date} disabled={busy} onChange={event => {
           if (!event.target.value) return;
           setLabels([]);
-          setJobId("");
+          setPlanKey("");
           setBusy(true);
           setDate(event.target.value);
         }} />
       </label>
       <label className="field">Plan
-        <select value={jobId} disabled={busy || !plans.length} onChange={event => {
-          setJobId(event.target.value);
+        <select value={planKey} disabled={busy || !plans.length} onChange={event => {
+          setPlanKey(event.target.value);
           setNotice("");
         }}>
           <option value="">{plans.length ? "Select an approved plan" : "No approved plans"}</option>
-          {plans.map(plan => <option key={plan.jobId} value={plan.jobId}>
-            {title(plan)} · {plan.jobName || plan.jobId} · {plan.labels.length} labels
+          {plans.map(plan => <option key={plan.key} value={plan.key}>
+            {title(plan)} · {plan.jobName || plan.jobId} · {dayPlanName(plan)} · {plan.labels.length} labels
           </option>)}
         </select>
       </label>
