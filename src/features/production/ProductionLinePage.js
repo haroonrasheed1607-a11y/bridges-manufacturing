@@ -1,92 +1,32 @@
-import {ShopFloorSetup} from './ShopFloorSetup.jsx';
-import {DumpingSetup} from '../dumping/DumpingSetup.jsx';
-import {BulkBoxSetup} from './BulkBoxSetup.jsx';
-import {SimpleBoxSetup} from './SimpleBoxSetup.jsx';
-import {useScreenMemory} from '../../state/useScreenMemory.js';
-import { productionTabs } from '../auth/permissions.js';
-// features/production/ProductionLinePage.js
-import { FormField } from "../../components/common/FormField.js";
+import { hasDesktopPrinter } from "../../services/printing/desktopPrinter.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
+import { useScreenMemory } from "../../state/useScreenMemory.js";
 import { React } from "../../vendor/react-runtime.js";
-import { ManufacturingProductionBoxes } from "./BoxAssignment.js";
+import { productionTabs } from "../auth/permissions.js";
+import { ApprovedPlanPrint } from "./ApprovedPlanPrint.jsx";
 import { ManufacturingScanComplete } from "./ScanComplete.js";
 
 function ManufacturingProductionLine() {
-  const {
-      orders, profile, orderDisplayTitle,
-      change
-    } = useManufacturing(),
-    h = React.createElement,
-    [selectedTab, setTab] = useScreenMemory('shop-floor-tab',() => productionTabs(profile?.role)[0]?.[0] || 'scan'),
-    [orderId, setOrderId] = useScreenMemory('shop-floor-order','');
-  const activeOrders = orders.filter(order => order.stage === 1 && order.workOrders.length),
-    order = activeOrders.find(item => item.id === orderId) || activeOrders[0];
-  const tabs = productionTabs(profile?.role);
-  if(tabs.some(([value])=>value==='print')) tabs.push(['dumping','Reusable barcode']);
-  if (!tabs.length) return h('p', {role:'alert'}, 'Production access required.');
-  const tab = tabs.some(([value]) => value === selectedTab) ? selectedTab : tabs[0][0];
-  function selectTab(value) {
-    setTab(value);
-  }
-  if(profile?.role === 'box_scanner') return h(ManufacturingScanComplete,{minimal:true});
-  if(profile?.role === 'box_setup') return h(ShopFloorSetup);
-  return h('div', {
-    className: 'production-line-workspace'
-  }, h('div', {
-    className: 'page-heading'
-  }, h('div', null, h('div', {
-    className: 'eyebrow'
-  }, 'SHOP FLOOR'), h('h2', null, profile?.role === 'box_setup' ? 'Box setup' : profile?.role === 'box_scanner' ? 'Scan & complete work' : 'Shop Floor'), h('p', {
-    className: 'quiet'
-  }, profile?.role === 'box_setup' ? 'Assign individuals and print labels for new boxes.' : profile?.role === 'box_scanner' ? 'Scan a box, confirm the completed pieces and mark it complete.' : 'Complete finished work or prepare and print box labels.'))), h('div', {
-    className: 'production-mode-tabs',
-    role: 'tablist',
-    'aria-label': 'Shop Floor tasks'
-  }, tabs.map(([value, label], index) => h('button', {
-    key: value,
-    id: 'production-tab-' + value,
-    type: 'button',
-    role: 'tab',
-    'aria-selected': tab === value,
-    'aria-controls': 'production-panel-' + value,
-    tabIndex: tab === value ? 0 : -1,
-    className: tab === value ? 'is-selected' : '',
-    onClick: () => selectTab(value),
-    onKeyDown: event => {
-      const key = event.key;
-      if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(key)) return;
-      event.preventDefault();
-      const next = key === 'Home' ? 0 : key === 'End' ? tabs.length - 1 : key === 'ArrowRight' ? (index + 1) % tabs.length : (index - 1 + tabs.length) % tabs.length;
-      selectTab(tabs[next][0]);
-      event.currentTarget.parentElement.querySelector('#production-tab-' + tabs[next][0])?.focus();
-    }
-  }, label))), h('div', {
-    id: 'production-panel-' + tab,
-    role: 'tabpanel',
-    'aria-labelledby': 'production-tab-' + tab,
-    key: tab
-  }, tab === 'scan' ? h(ManufacturingScanComplete) : tab === 'dumping' ? h(DumpingSetup) : h(React.Fragment, null, h('section', {
-    className: 'panel'
-  }, h('h3', null, 'Generate printouts for boxes'), h('p', {
-    className: 'quiet'
-  }, 'Choose an order in production, then select a work order and sub-job, assign an individual and print the box label. Existing labels can also be reprinted.'), activeOrders.length ? h(FormField, {
-    label: 'Production order'
-  }, h('select', {
-    value: order.id,
-    onChange: event => setOrderId(event.target.value)
-  }, activeOrders.map(item => h('option', {
-    key: item.id,
-    value: item.id
-  }, orderDisplayTitle(item) + ' · ' + item.customer + ' · ' + item.id)))) : h('p', {
-    className: 'empty'
-  }, 'No orders are in production. Start production on a work order to create box labels.')), order && h(ManufacturingProductionBoxes, {
-    key: order.id,
-    productionOrder: order,
-    onUpdateWork: (workId, updater, message) => change(order.id, current => ({
-      ...current,
-      workOrders: current.workOrders.map(work => work.id === workId ? updater(work) : work)
-    }), message)
-  }),h(BulkBoxSetup))));
+  const { profile } = useManufacturing();
+  const tasks = productionTabs(profile?.role).map(([task]) => task);
+  const [saved, setTask] = useScreenMemory(hasDesktopPrinter() ? "desktop-shop-floor" : "shop-floor-tab", tasks[0]);
+  const current = tasks.includes(saved) ? saved : tasks[0];
+  const h = React.createElement;
+  if (!current) return h("p", { role: "alert" }, "Shop Floor access required.");
+
+  return h("section", { className: "shop-floor-tasks" },
+    h("div", { className: "production-mode-tabs", role: "group", "aria-label": "Shop Floor tasks" },
+      [["scan", "Scan"], ["print", "Print"]].map(([task, label]) => h("button", {
+        key: task,
+        type: "button",
+        className: current === task ? "is-selected" : "",
+        "aria-pressed": current === task,
+        disabled: !tasks.includes(task),
+        onClick: () => setTask(task),
+      }, label))),
+    current === "scan"
+      ? h(ManufacturingScanComplete, { minimal: profile?.role === "box_scanner" })
+      : h(ApprovedPlanPrint));
 }
 
 export { ManufacturingProductionLine };

@@ -19,16 +19,14 @@ const pageNames = {
 };
 
 export function WorkspaceBreadcrumbs() {
-  const { view, setView, order, orderDisplayTitle, profile, manager } = useManufacturing();
+  const { view, setView, order, orderDisplayTitle, manager } = useManufacturing();
   if (hasDesktopPrinter()) return null;
   const parents = [];
   if (["orders", "new", "detail"].includes(view)) parents.push(["board", pageNames.board]);
   if (view === "detail" && manager) parents.push(["orders", pageNames.orders]);
   if (view === "barcodeapprovals") parents.push(["configurations", pageNames.configurations]);
 
-  const shopFloorTitle = { box_setup: "Box Setup", box_scanner: "Scan & Complete" }[profile?.role];
   const title = view === "detail" && order ? orderDisplayTitle(order)
-    : view === "productionline" && shopFloorTitle ? shopFloorTitle
     : pageNames[view] || pageNames.board;
 
   return <nav className="draft-banner workspace-breadcrumbs" aria-label="Breadcrumb">

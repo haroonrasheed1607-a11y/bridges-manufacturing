@@ -29,7 +29,6 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(await render('/src/features/availability/AvailabilityPage.jsx','AvailabilityPage'),/Individual availability/);
  assert.match(await render('/src/features/attendance/AttendancePage.jsx','AttendancePage'),/Daily attendance roster/);
  assert.match(await render('/src/features/dumping/DumpingSetup.jsx','DumpingSetup'),/100/);
- const setup=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_setup');assert.match(setup,/Reusable barcode/);assert.match(setup,/Bulk box labels/);
  const nav=await render('/src/components/Navbar.jsx','Navbar','box_setup');assert.match(nav,/href="#plan"/);
  const board=await render('/src/features/job-board/JobBoardPage.js','ManufacturingJobBoard');
  assert.match(board,/List view/);assert.match(board,/Approve Work Order/);
@@ -45,11 +44,13 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(adminNav,/href="#board"/);assert.doesNotMatch(adminNav,/nav-menu-orders/);
  const scannerNav=await render('/src/components/Navbar.jsx','Navbar','box_scanner');assert.doesNotMatch(scannerNav,/href="#plan"/);
  const plan=await render('/src/features/plan/PlanPage.jsx','PlanPage','box_setup');assert.match(plan,/Sub-job 1/);assert.match(plan,/Move →/);assert.match(plan,/Plans for approval/);assert.doesNotMatch(plan,/Print all|>Preview</);
- const desktop=await render('/src/features/production/DesktopShopFloor.jsx','DesktopShopFloor','box_setup');
- assert.match(desktop,/>Scan</);assert.match(desktop,/>Print</);assert.match(desktop,/Approved plans/);
- assert.doesNotMatch(desktop,/Bulk box labels|Single box|Reusable barcode/);
- const desktopScanner=await render('/src/features/production/DesktopShopFloor.jsx','DesktopShopFloor','box_scanner');
- assert.match(desktopScanner,/Scan QR code/);assert.doesNotMatch(desktopScanner,/Approved plans/);
- const scanner=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_scanner');assert.match(scanner,/Completed work/);assert.match(scanner,/type="date"/);assert.match(scanner,/Scan QR code/);assert.doesNotMatch(scanner,/production-box-scan|Box ID/);assert.doesNotMatch(scanner,/Create reusable QR/);
+ const setup=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_setup');
+ assert.match(setup,/<button[^>]+disabled[^>]*>Scan<\/button>/);
+ assert.match(setup,/>Print</);assert.match(setup,/Approved plans/);
+ assert.doesNotMatch(setup,/Bulk box labels|Single box|Reusable barcode/);
+ const scanner=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_scanner');
+ assert.match(scanner,/<button[^>]+disabled[^>]*>Print<\/button>/);
+ assert.match(scanner,/Completed work/);assert.match(scanner,/type="date"/);assert.match(scanner,/Scan QR code/);
+ assert.doesNotMatch(scanner,/Approved plans|production-box-scan|Box ID|Create reusable QR/);
  }finally{await server.close();}
 });

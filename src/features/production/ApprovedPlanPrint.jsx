@@ -1,5 +1,6 @@
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { manufacturingPrintBoxBatch } from "../../domain/boxLabels.js";
+import { hasDesktopPrinter } from "../../services/printing/desktopPrinter.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate, manufacturingToday } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
@@ -47,7 +48,9 @@ export function ApprovedPlanPrint() {
         person: { name: label.personName },
       })));
       if (problem) setError(problem);
-      else setNotice("Sent " + updated.labels.length + " labels to the printer.");
+      else setNotice(hasDesktopPrinter()
+        ? "Sent " + updated.labels.length + " labels to the printer."
+        : "Confirm the label printout in your browser’s print dialog.");
     } catch (e) {
       if (!background && ticket === request.current) setError(e.message);
     } finally {
@@ -68,9 +71,9 @@ export function ApprovedPlanPrint() {
     return () => clearInterval(timer);
   }, [date, busy]);
 
-  return <section className="panel desktop-plan-print" aria-labelledby="desktop-plan-print-heading">
+  return <section className="panel approved-plan-print" aria-labelledby="approved-plan-print-heading">
     <div className="section-heading">
-      <h2 id="desktop-plan-print-heading">Approved plans</h2>
+      <h2 id="approved-plan-print-heading">Approved plans</h2>
       <button type="button" disabled={busy} onClick={() => load()}>Refresh</button>
     </div>
     <div className="plan-toolbar">

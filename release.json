@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Plan now moves assignments to approval. The Windows Shop Floor has Scan and Print, with printing limited to approved plans."
+    "Web and Windows Shop Floor now share Scan and Print. Print lists approved plans only."
   ]
 }
