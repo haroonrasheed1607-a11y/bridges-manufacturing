@@ -3,11 +3,11 @@ import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { useScreenMemory } from "../../state/useScreenMemory.js";
 import { React } from "../../vendor/react-runtime.js";
 import { ScanSettings } from "./ScanSettings.jsx";
-import { ScanHistory } from "./ScanHistory.jsx";
+import { History } from "./History.jsx";
 
 const sections = [
   ["settings", "Scan settings", ScanSettings],
-  ["history", "Scan history", ScanHistory],
+  ["history", "History", History],
   ["approvals", "QR approvals", BarcodeApprovals],
   ["windows", "Windows app", WindowsApp],
 ];

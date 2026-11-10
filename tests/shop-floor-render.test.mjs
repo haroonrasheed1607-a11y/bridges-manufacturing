@@ -37,8 +37,8 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(configurations,/role="tablist"/);assert.match(configurations,/id="config-tab-history"/);
  assert.match(configurations,/id="config-tab-approvals"/);assert.match(configurations,/id="config-tab-windows"/);
  assert.doesNotMatch(configurations,/Apply filters/);
- const history=await render('/src/features/configurations/ScanHistory.jsx','ScanHistory');
- assert.match(history,/Apply filters/);
+ const history=await render('/src/features/configurations/History.jsx','History');
+ assert.match(history,/Apply filters/);assert.match(history,/All QR scans/);assert.match(history,/Individual availability/);assert.match(history,/Calendar settings/);
  const restrictedConfig=await render('/src/features/configurations/ConfigurationsPage.jsx','ConfigurationsPage','box_scanner');
  assert.doesNotMatch(restrictedConfig,/Scan history|Save scan settings/);
  const adminApprovals=await render('/src/features/admin-approvals/BarcodeApprovals.jsx','BarcodeApprovals');assert.match(adminApprovals,/QR code approvals/);

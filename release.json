@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Configurations is organized into tabs. Scan history shows numbered pages and record ranges."
+    "The History tab lets admins browse scans and application records with date filters, search, and pagination."
   ]
 }
