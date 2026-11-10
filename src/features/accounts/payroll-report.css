@@ -1,0 +1,39 @@
+.accounts-nav, .payroll-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px 12px;
+  margin-bottom: 14px;
+}
+.accounts-nav [aria-pressed="true"] { background: #203653; color: white; }
+.payroll-controls label { display: grid; gap: 4px; font-weight: 600; }
+.payroll-paper { padding: 16px; background: white; border: 1px solid #d8e0eb; border-radius: 8px; }
+.payroll-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 18px; }
+.payroll-heading img { width: 104px; filter: grayscale(1); }
+.payroll-heading h2 { margin: 0 0 4px; }
+.payroll-heading p { margin: 0; }
+.payroll-heading span { display: inline-block; margin-inline-start: 12px; }
+.payroll-note { color: #46566b; margin: 12px 0; }
+.payroll-scroll { overflow-x: auto; }
+.payroll-paper table { width: 100%; min-width: 980px; border-collapse: collapse; font-size: 12px; }
+.payroll-paper :is(th, td) { padding: 7px; border: 1px solid #b6c0ce; }
+.payroll-paper thead, .payroll-paper tfoot { background: #edf1f6; }
+.payroll-paper tbody th, .payroll-paper tfoot th { text-align: left; }
+.payroll-paper td { text-align: right; font-variant-numeric: tabular-nums; }
+@page accounts-payroll { size: letter landscape; margin: 9mm; }
+@media print {
+  #manufacturing-app:has(.payroll-report) { page: accounts-payroll; }
+  #manufacturing-app:has(.payroll-report) > .top,
+  .payroll-report .payroll-controls,
+  #manufacturing-app:has(.payroll-report) .accounts-nav,
+  body.printing-timesheet .accounts-nav { display: none !important; }
+  #manufacturing-app:has(.payroll-report) .work,
+  .payroll-paper { margin: 0; padding: 0; border: 0; max-width: none; }
+  .payroll-paper { color: black; }
+  .payroll-scroll { overflow: visible; }
+  .payroll-paper table { min-width: 0; font-size: 8pt; }
+  .payroll-paper :is(th, td) { padding: 3px; border-color: #777; }
+  .payroll-paper tr, .payroll-heading { break-inside: avoid; }
+  .payroll-paper thead { display: table-header-group; }
+  .payroll-paper tfoot { display: table-row-group; }
+}

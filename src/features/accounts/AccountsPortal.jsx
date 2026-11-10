@@ -3,6 +3,7 @@ import { createApiClient } from "../../api/supabaseClient.js";
 import { manufacturingWorkLogo } from "../../assets/workLogo.js";
 import { AuthGate, ManufacturingSession, SessionActions } from "../auth/AuthGate.js";
 import { TimesheetsPage } from "../timesheets/TimesheetsPage.jsx";
+import { PayrollReport } from "./PayrollReport.jsx";
 import { ManufacturingContext } from "../../state/ManufacturingContext.jsx";
 
 function accountsLogin(value) {
@@ -16,9 +17,8 @@ const accountsApi = createApiClient({
   loginEmail: accountsLogin,
 });
 
-function AccountsWorkspace() {
+function AccountsTimesheets() {
   const profile = React.useContext(ManufacturingSession);
-  const { signOut } = React.useContext(SessionActions);
   const [people, setPeople] = React.useState(null);
   const [error, setError] = React.useState("");
   React.useEffect(() => {
@@ -31,15 +31,28 @@ function AccountsWorkspace() {
     return () => { live = false; };
   }, []);
 
+  if (error) return <p role="alert" className="alert">{error}</p>;
+  if (!people) return <p role="status">Loading individuals…</p>;
+  if (!people.length) return <p>No individuals are available for timesheets.</p>;
+  return <ManufacturingContext.Provider value={{ profile, workforce: { people } }}>
+    <TimesheetsPage api={accountsApi} />
+  </ManufacturingContext.Provider>;
+}
+
+function AccountsWorkspace() {
+  const { signOut } = React.useContext(SessionActions);
+  const [view, setView] = React.useState("payroll");
+
   return <div id="manufacturing-app">
     <header className="top"><img className="brand-logo" src={manufacturingWorkLogo} alt="Bridges" />
       <h1>Accounts</h1><button className="header-sign-out" type="button" onClick={signOut}>Sign out</button>
     </header>
     <main className="work">
-      {error ? <p role="alert" className="alert">{error}</p> : !people ? <p role="status">Loading Accounts…</p>
-        : people.length ? <ManufacturingContext.Provider value={{ profile, workforce: { people } }}>
-          <TimesheetsPage api={accountsApi} />
-        </ManufacturingContext.Provider> : <p>No individuals are available for timesheets.</p>}
+      <nav className="accounts-nav" aria-label="Accounts views">
+        <button type="button" aria-pressed={view === "payroll"} onClick={() => setView("payroll")}>Payroll report</button>
+        <button type="button" aria-pressed={view === "timesheets"} onClick={() => setView("timesheets")}>Weekly timesheets</button>
+      </nav>
+      {view === "payroll" ? <PayrollReport api={accountsApi} /> : <AccountsTimesheets />}
     </main>
   </div>;
 }

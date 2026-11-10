@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Accounts logins accept passwords with at least six characters."
+    "Accounts includes a printable two-week payroll report based on QR completions and recorded work hours."
   ]
 }
