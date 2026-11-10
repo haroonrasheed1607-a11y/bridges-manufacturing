@@ -25,9 +25,11 @@
 }
 .plan-list > p { margin: 12px; }
 .plan-person, .plan-stickers li { padding: 7px 10px; border-bottom: 1px solid #e5ebf0; }
-.plan-person { display: flex; align-items: center; gap: 9px; cursor: pointer; }
+.plan-person { display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: 10px; min-height: 42px; cursor: pointer; }
 .plan-person:has(input:checked) { background: #eaf5f0; }
-.plan-person input { flex: none; }
+.plan-person-name { min-width: 0; overflow-wrap: anywhere; }
+.plan-person-hours { white-space: nowrap; font-size: 13px; color: #40576e; font-variant-numeric: tabular-nums; }
+#manufacturing-app .plan-person input[type="checkbox"] { width: 18px; height: 18px; min-height: 0; margin: 0; padding: 0; }
 .plan-person small, .plan-stickers small { display: block; overflow-wrap: anywhere; }
 .plan-stickers ul { list-style: none; padding: 0; margin: 0; }
 .plan-person:last-child, .plan-stickers li:last-child { border-bottom: 0; }
@@ -38,10 +40,4 @@
 }
 @media (min-width: 701px) {
   .work:has(.plan-page) { padding-block: 18px 24px; }
-}
-@media (min-width: 1100px) {
-  .plan-people { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-content: start; }
-  .plan-people > p { grid-column: 1 / -1; }
-  .plan-person:nth-child(odd) { border-right: 1px solid #e5ebf0; }
-  .plan-person:last-child { border-bottom: 1px solid #e5ebf0; }
 }

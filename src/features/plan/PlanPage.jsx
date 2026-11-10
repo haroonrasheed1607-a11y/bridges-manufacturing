@@ -153,9 +153,12 @@ export function PlanPage() {
                 <input type="checkbox" checked={checked}
                   disabled={!editable || alreadyPlanned || (person.active === false && !checked)}
                   onChange={e => setSelected(ids => e.target.checked ? [...ids, person.id] : ids.filter(id => id !== person.id))} />
-                <span><strong>{person.name}</strong>
-                  <small className="quiet">{alreadyPlanned ? "On another plan" : person.active === false ? "Disabled" : hours + " h scheduled"}</small>
+                <span className="plan-person-name">
+                  <strong>{person.name}</strong>
+                  {(alreadyPlanned || person.active === false) &&
+                    <small className="quiet">{person.active === false ? "Disabled" : "On another plan"}</small>}
                 </span>
+                <span className="plan-person-hours">{hours.toLocaleString()} h available</span>
               </label>;
             }) : <p className="quiet">No matching individuals.</p>}
           </div>

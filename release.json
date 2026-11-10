@@ -1,7 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Plan now has its own main navigation tab.",
-    "The Plan screen puts people selection and the day\u2019s stickers side by side with Save and Print controls."
+    "Plan\u2019s Individuals picker now shows a compact list with available hours beside each name."
   ]
 }
