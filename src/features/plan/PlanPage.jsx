@@ -64,9 +64,8 @@ export function PlanPage() {
     return () => { request.current++; };
   }, [date]);
 
-  async function move(event) {
-    event.preventDefault();
-    if (!current || !target || loadedDate !== date || saving.current || busy) return;
+  async function savePlan(plan, people, expected, message) {
+    if (!editable || saving.current) return;
     saving.current = true;
     setBusy(true);
     setError("");
@@ -74,20 +73,33 @@ export function PlanPage() {
     try {
       const rows = await manufacturingApi.rpc("app_move_day_plan", {
         p_date: date,
-        p_job: current.job.id,
-        p_plan: target.planId,
-        p_people: [...selected].sort(),
-        p_expected: [...savedPeople].sort(),
+        p_job: plan.jobId,
+        p_plan: plan.planId,
+        p_people: [...people].sort(),
+        p_expected: [...expected].sort(),
       });
       setLabels(rows);
-      if (!selected.length) selectPlan(jobId);
-      setNotice(selected.length ? "Plan updated. Approve it when ready to print." : "Plan cleared.");
+      if (!people.length && target?.key === plan.key) selectPlan(jobId);
+      setNotice(message);
     } catch (e) {
       setError(e.message);
     } finally {
       saving.current = false;
       setBusy(false);
     }
+  }
+
+  function move(event) {
+    event.preventDefault();
+    if (!current || !target || !selected.length || !changed) return;
+    return savePlan({ ...target, jobId }, selected, savedPeople, "Plan updated. Approve it when ready to print.");
+  }
+
+  function deletePlan(plan) {
+    if (!editable || saving.current || plan.hasScans) return;
+    if (!window.confirm("Delete this plan? Printed QR labels for this plan will stop working.")) return;
+    return savePlan({ ...plan, planId: plan.planId ?? null }, [],
+      plan.labels.map(label => label.personId), "Plan deleted.");
   }
 
   async function approve(plan) {
@@ -158,8 +170,8 @@ export function PlanPage() {
               <small className="quiet">{selected.length} selected</small>
             </div>
             {savedPlan && <button type="button" disabled={!editable} onClick={() => selectPlan(jobId)}>New plan</button>}
-            <button className="primary" disabled={!editable || !current || !changed}>
-              {!selected.length && savedPlan ? "Clear plan" : savedPlan ? "Update plan" : "Move →"}
+            <button className="primary" disabled={!editable || !current || !selected.length || !changed}>
+              {savedPlan ? "Update plan" : "Move →"}
             </button>
           </div>
           <label className="field plan-search">Search individuals
@@ -196,9 +208,11 @@ export function PlanPage() {
                   <strong>{orderDisplayTitle(orders.find(order => order.id === plan.orderId) ?? { title: plan.orderTitle })}</strong>
                   <small className="quiet">{plan.jobName || plan.jobId} · {dayPlanName(plan)} · {plan.labels.length} individuals</small>
                   <small className="quiet">{plan.labels.map(label => label.personName).join(", ")}</small>
+                  {plan.hasScans && <small className="quiet">Scans recorded · deletion locked</small>}
                 </div>
                 <div className="plan-print-actions">
                   <button type="button" disabled={!editable} onClick={() => selectPlan(plan.jobId, plan)}>Edit plan</button>
+                  <button type="button" disabled={!editable || plan.hasScans} onClick={() => deletePlan(plan)}>Delete plan</button>
                   {approved ? <span className="badge green">Approved</span> :
                     <button type="button" className="primary" disabled={!editable} onClick={() => approve(plan)}>Approve</button>}
                 </div>
