@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Orders to watch now lists only orders planned for the selected dashboard date."
+    "Removed the standalone pieces scanned card from the dashboard."
   ]
 }

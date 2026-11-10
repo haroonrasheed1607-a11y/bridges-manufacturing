@@ -108,8 +108,8 @@ function ManufacturingDashboard() {
       {busy && <p role="status" className="quiet">Loading scan activity…</p>}
       {error && <p role="alert" className="alert">{error}</p>}
       {!busy && result && <>
-        <div className="metrics dashboard-metrics">
-          {[["Pieces scanned", result.pieces], ["QR scans", result.scans], ["Individuals who scanned", result.individuals],
+        <div className="metrics dashboard-metrics dashboard-scan-metrics">
+          {[["QR scans", result.scans], ["Individuals who scanned", result.individuals],
             ["Pieces from admin approvals", result.approvedPieces]].map(([label, value]) =>
             <div key={label}><span>{label}</span><strong>{number(value)}</strong></div>)}
         </div>
