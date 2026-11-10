@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Individuals can print a permanent Job QR that follows their approved daily plan. The dashboard shows a Total pieces done card in place of the daily scan graph."
+    "Accounts has a separate sign-in and read-only weekly timesheets. Administrators can create Accounts usernames and passwords from Users."
   ]
 }

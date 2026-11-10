@@ -25,6 +25,20 @@ Deno.serve(async(req:Request)=>{
   await request('/auth/v1/admin/users/'+encodeURIComponent(input.userId),'PUT',{password:input.password});
   return reply({success:true});
  }
+ if(input.action==='create_accounts'){
+  const username=typeof input.username==='string'?input.username.trim().toLowerCase():'';
+  if(!/^[a-z][a-z0-9_-]{2,31}$/.test(username))return reply({message:'Use 3–32 letters, numbers, hyphens or underscores, starting with a letter.'},400);
+  if(typeof input.password!=='string'||input.password.length<12||new TextEncoder().encode(input.password).length>72)return reply({message:'Use a password of at least 12 characters and at most 72 bytes.'},400);
+  const email=username+'@bridges-accounts.local';
+  const user=await request('/auth/v1/admin/users','POST',{email,password:input.password,email_confirm:true});
+  try {
+   await request('/rest/v1/staff_profiles','POST',{id:user.id,display_name:username,role:'accounts',active:true});
+  }catch{
+   try{await request('/auth/v1/admin/users/'+encodeURIComponent(user.id),'DELETE');}catch{}
+   return reply({message:'Could not activate this Accounts login.'},400);
+  }
+  return reply({username});
+ }
  if(input.action!=='list')return reply({message:'Unknown action'},400);
  const page=Number(input.page||1);if(!Number.isInteger(page)||page<1)return reply({message:'Invalid page'},400);
  const result=await request('/auth/v1/admin/users?page='+page+'&per_page=50');

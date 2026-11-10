@@ -37,3 +37,17 @@ test('administrator username resolves to its auth identity without embedding a p
  await client.login(' ADMIN ','test-secret');assert.equal(payload.email,'admin@bridges-manufacturing.local');assert.equal(payload.password,'test-secret');
  await assert.rejects(client.login('unknown-user','test-secret'),/staff email/);
 });
+
+test('Accounts sessions are kept separate from manufacturing sign-in', async () => {
+ const storage=memory(), calls=[];
+ const transport=async (url, options)=>{
+  calls.push(JSON.parse(options.body));
+  return new Response(JSON.stringify({access_token:'account-token',refresh_token:'account-refresh',expires_in:3600}));
+ };
+ const accounts=createApiClient({url:'https://example.invalid',key:'public-test-key',storage,transport,
+   sessionKey:'bridges-accounts-session-v1',loginEmail:value=>value+'@bridges-accounts.local'});
+ await accounts.login('payroll','test-only-password');
+ assert.equal(calls[0].email,'payroll@bridges-accounts.local');
+ assert.equal(accounts.hasSession(),true);
+ assert.equal(createApiClient({storage}).hasSession(),false);
+});

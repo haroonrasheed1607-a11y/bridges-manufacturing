@@ -2,9 +2,8 @@ import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../config/supabase.js';
 
 function normalizeLogin(value){const login=String(value||'').trim();if(['admin','boxsetup','boxscan'].includes(login.toLowerCase()))return login.toLowerCase()+'@bridges-manufacturing.local';if(!login.includes('@'))throw new Error('Enter your staff username or staff email address.');return login;}
 
-function createApiClient({ url=SUPABASE_URL, key=SUPABASE_PUBLISHABLE_KEY, transport=(...args)=>fetch(...args), storage }={}) {
+function createApiClient({ url=SUPABASE_URL, key=SUPABASE_PUBLISHABLE_KEY, transport=(...args)=>fetch(...args), storage, sessionKey='bridges-manufacturing-session-v1', loginEmail=normalizeLogin }={}) {
   if(storage===undefined){try{storage=globalThis.localStorage;}catch{storage=null;}}
-  const sessionKey='bridges-manufacturing-session-v1';
   let session=null,refreshing=null;
   try {session=JSON.parse(storage?.getItem(sessionKey)||'null');}catch{}
   function remember(value){session=value?{...value,expires_at:value.expires_at||Math.floor(Date.now()/1000)+value.expires_in}:null;try{if(session)storage?.setItem(sessionKey,JSON.stringify(session));else storage?.removeItem(sessionKey);}catch{}return session;}
@@ -16,7 +15,7 @@ function createApiClient({ url=SUPABASE_URL, key=SUPABASE_PUBLISHABLE_KEY, trans
   }
   async function accessToken(){if(!session?.access_token)throw new Error('Sign in to use shared data.');if(session.expires_at<Date.now()/1000+60){if(!refreshing)refreshing=send('/auth/v1/token?grant_type=refresh_token',{body:{refresh_token:session.refresh_token}}).then(remember).catch(error=>{remember(null);throw error;}).finally(()=>refreshing=null);await refreshing;}return session.access_token;}
   async function rpc(name,args={}){return send('/rest/v1/rpc/'+name,{body:args,token:await accessToken()});}
-  async function login(email,password){return remember(await send('/auth/v1/token?grant_type=password',{body:{email:normalizeLogin(email),password}}));}
+  async function login(email,password){return remember(await send('/auth/v1/token?grant_type=password',{body:{email:loginEmail(email),password}}));}
   async function shopFloorLogin(mode){return remember(await send('/functions/v1/shop-floor-login',{body:{mode}}));}
   async function logout(){try{if(session)await send('/auth/v1/logout',{token:await accessToken()});}finally{remember(null);references.clear();fileCache.clear();}}
   const references=new Map(),fileCache=new Map();
