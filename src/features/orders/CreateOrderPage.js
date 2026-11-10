@@ -56,7 +56,7 @@ function CreateOrderPage() {
   }, h('div', {
     className: 'order-created-check',
     'aria-hidden': true
-  }, '✓'), h('h2', null, 'Order created'), h('p', null, title), h('small', null, createdId), h('p', {
+  }, '✓'), h('h2', null, 'Order created'), item && h('p', null, item.name), h('small', null, createdId), h('p', {
     className: 'quiet'
   }, 'Opening your order…')));
   return h(React.Fragment, null, h('button', {

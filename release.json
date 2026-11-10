@@ -1,7 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Register clients and their items in the customer directory.",
-    "New orders select a registered client and item from the catalog."
+    "Fixed a blank screen after saving a new catalog order."
   ]
 }
