@@ -39,7 +39,7 @@ function manufacturingAutoSubJobs(work) {
   for (let remaining = quantity, index = 1; remaining > 0; index++) {
     const pieces = Math.min(piecesPerJob, remaining);
     jobs.push({
-      id: work.id + '-SJ-' + String(index).padStart(3, '0'),
+      id: (work.subJobPrefix ?? work.id) + '-SJ-' + String(index).padStart(3, '0'),
       name: 'Sub-job ' + String(index).padStart(2, '0'),
       quantity: pieces,
       completed: 0,
@@ -55,7 +55,7 @@ function manufacturingAutoSubJobs(work) {
   return jobs;
 }
 function manufacturingCanEditWorkOrder(order, work) {
-  return order.stage < 2 &&
+  return order.stage < 2 && !work.hasScans &&
     !work.jobs.some(job => Number(job.completed) > 0) &&
     !(work.boxes || []).some(box => box.completedAt || box.status === 'completed');
 }
@@ -65,7 +65,7 @@ function manufacturingBuildWorkOrder(order, {
   seconds = Number(order.seconds ?? 30), packSeconds = 20,
   hoursPerDay = Number(order.hoursPerDay ?? 6),
   startDate = order.startDate || manufacturingToday(),
-  required = order.required, existingWork, assignedPeople = '', packsOverride = null,
+  required = order.required, existingWork, replacementPrefix, assignedPeople = '', packsOverride = null,
 }) {
   const { quantity, perPack, packCount } = manufacturingOrderPlan(existingWork ?? order);
   const totalSeconds = manufacturingWorkSeconds({
@@ -87,7 +87,8 @@ function manufacturingBuildWorkOrder(order, {
     audits: existingWork?.audits ?? [], packing: existingWork?.packing ?? [],
   };
   const suggestedPacks = manufacturingSuggestedPacks(work);
-  const packsPerSubJob = existingWork
+  const preserveSplit = existingWork && !replacementPrefix;
+  const packsPerSubJob = preserveSplit
     ? existingWork.packsPerSubJob
     : packsOverride === null ? suggestedPacks : Number(packsOverride);
   return {
@@ -95,13 +96,14 @@ function manufacturingBuildWorkOrder(order, {
     work: {
       ...work,
       packsPerSubJob,
-      jobs: existingWork
+      ...(replacementPrefix ? { boxes: [], replaceSubJobs: true } : {}),
+      jobs: preserveSplit
         ? existingWork.jobs.map(job => ({
           ...job,
           targetSeconds: hoursPerDay * 1800,
           estimatedSeconds: manufacturingWorkSeconds({ ...work, quantity: job.quantity }),
         }))
-        : manufacturingAutoSubJobs({ ...work, packsPerSubJob }),
+        : manufacturingAutoSubJobs({ ...work, packsPerSubJob, subJobPrefix: replacementPrefix }),
     },
   };
 }

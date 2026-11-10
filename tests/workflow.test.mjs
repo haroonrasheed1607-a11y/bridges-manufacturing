@@ -102,6 +102,27 @@ test('pre-scan edits preserve sub-job and box references and lock after progress
   assert.equal(manufacturingCanEditWorkOrder({ ...order, stage: 2 }, work), false);
 });
 
+test('replacing a split generates new labels and keeps the work order quantity', () => {
+  const order = { stage: 1, required: '2026-11-16' };
+  const existingWork = {
+    id: 'WO-1', quantity: 51, perPack: 25, coachId: 'coach-1',
+    jobs: [{ id: 'WO-1-SJ-001', quantity: 51, completed: 0 }],
+    boxes: [{ id: 'old-box', jobId: 'WO-1-SJ-001' }],
+  };
+  const { work } = manufacturingBuildWorkOrder(order, {
+    existingWork, id: existingWork.id, type: 'Packaging', description: 'Pack',
+    instructions: 'Seal each box.', replacementPrefix: 'WO-1-FRESH', packsOverride: '1',
+  });
+  assert.equal(validateWorkOrder(work), '');
+  assert.equal(work.replaceSubJobs, true);
+  assert.equal(work.id, existingWork.id);
+  assert.equal(work.coachId, existingWork.coachId);
+  assert.deepEqual(work.boxes, []);
+  assert.deepEqual(work.jobs.map(job => job.quantity), [25, 25, 1]);
+  assert.ok(work.jobs.every(job => job.id.startsWith('WO-1-FRESH-SJ-')));
+  assert.equal(manufacturingCanEditWorkOrder(order, { ...existingWork, hasScans: true }), false);
+});
+
 test('box completion updates pieces once and rejects a second completion', () => {
   const { orders } = manufacturingDemoData();
   const found = manufacturingFindBox(orders, 'demo-box-001');

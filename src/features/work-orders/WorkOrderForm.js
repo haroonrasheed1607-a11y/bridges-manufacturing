@@ -36,10 +36,12 @@ function WorkOrderForm({
     [required, setRequired] = React.useState(existingWork?.required || order.required),
     [assignedPeople, setAssignedPeople] = React.useState(existingWork?.assignedPeople ?? (existingWork?.recommendedPeople ? '' : existingWork?.people ?? '')),
     [error, setError] = React.useState(''),
-    [packsOverride, setPacksOverride] = React.useState(null);
+    [packsOverride, setPacksOverride] = React.useState(null),
+    [replacementPrefix, setReplacementPrefix] = React.useState(null);
+  const replacingSubJobs = !!replacementPrefix;
   const { work, suggestedPacks } = manufacturingBuildWorkOrder(order, {
     id, type, description, instructions, parts, seconds, packSeconds,
-    hoursPerDay, startDate, required, assignedPeople, packsOverride, existingWork,
+    hoursPerDay, startDate, required, assignedPeople, packsOverride, existingWork, replacementPrefix,
   });
   const { quantity, perPack, packageSeconds, recommendedPeople, packsPerSubJob } = work;
   const field = (label, props, hint) => h(FormField, {
@@ -166,7 +168,18 @@ function WorkOrderForm({
     value: instructions,
     onChange: event => setInstructions(event.target.value),
     placeholder: 'Describe the steps and quality requirements.'
-  }))), section('04', 'SUB-JOBS', !existingWork && h('div', {
+  }))), section('04', 'SUB-JOBS', existingWork && h('label', {
+    className: 'check-label'
+  }, h('input', {
+    type: 'checkbox',
+    checked: replacingSubJobs,
+    onChange: event => {
+      setReplacementPrefix(event.target.checked ? createId(id) : null);
+      setPacksOverride(null);
+    }
+  }), 'Replace sub-jobs'), replacingSubJobs && h('p', {
+    className: 'callout'
+  }, 'Saving will invalidate existing labels and clear planned assignments for this split. Replan the new sub-jobs and print fresh labels.'), (!existingWork || replacingSubJobs) && h('div', {
     className: 'work-plan-people'
   }, field('Packs per sub-job', {
     type: 'number',
@@ -181,7 +194,7 @@ function WorkOrderForm({
     onClick: () => setPacksOverride(null)
   }, 'Use suggestion')), h('p', {
     className: 'paper-section-note'
-  }, existingWork
+  }, existingWork && !replacingSubJobs
     ? work.jobs.length + ' existing sub-jobs. Their quantities and barcodes are kept when you save.'
     : work.jobs.length + ' sub-jobs · ' + (packsPerSubJob || 0) + ' packs per sub-job. The final sub-job takes the remaining packs.'), h('details', {
     className: 'subjob-generated-preview'
