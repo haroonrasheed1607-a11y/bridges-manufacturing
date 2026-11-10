@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Attendance supports shared Time In and Time Out for selected individuals. Plan rows use aligned edit, delete, and approval controls."
+    "Unstarted work orders can be discarded. Discarding retires their labels and bookings and reopens the order for planning."
   ]
 }

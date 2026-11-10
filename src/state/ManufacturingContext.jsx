@@ -162,6 +162,17 @@ function ManufacturingProvider({ children }) {
     }
   }
   const order = data.orders.find((o) => o.id === selectedOrderId);
+  async function discardWorkOrder(workId) {
+    if (!order) return false;
+    try {
+      await mutate("app_discard_work_order", {
+        p_order: order.id, p_work: workId, p_revision: order._revision,
+      }, "Work order discarded.");
+      return true;
+    } catch {
+      return false;
+    }
+  }
   function updateWork(id, updater, message) {
     if (!order) return Promise.resolve(false);
     return change(
@@ -351,6 +362,7 @@ function ManufacturingProvider({ children }) {
     create,
     change,
     updateWork,
+    discardWorkOrder,
     advance,
     completeProductionBox,
     createProductionBox,

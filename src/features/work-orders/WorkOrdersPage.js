@@ -1,5 +1,6 @@
 // features/work-orders/WorkOrdersPage.js
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
+import { manufacturingOrderPlan } from "../../domain/orders.js";
 import { manufacturingCanEditWorkOrder } from "../../domain/workOrders.js";
 import { React } from "../../vendor/react-runtime.js";
 import { ManufacturingProductionBoxes } from "../production/BoxAssignment.js";
@@ -11,13 +12,16 @@ function WorkOrdersPage() {
   const {
       order, manager,
       change,
-      updateWork,
+      updateWork, discardWorkOrder,
       setView
     } = useManufacturing(),
     h = React.createElement,
     [adding, setAdding] = React.useState(null),
     [editing, setEditing] = React.useState(null);
 
+  const unallocated = manufacturingOrderPlan(order).quantity -
+    order.workOrders.reduce((total, work) => total + work.quantity, 0);
+  const canReopenAllocation = order.workOrders.every(work => manufacturingCanEditWorkOrder(order, work));
   const editingWork = editing && order.workOrders.find(work => work.id === editing.id);
   React.useEffect(() => {
     if (editing && (!editingWork || !manufacturingCanEditWorkOrder(order, editingWork))) setEditing(null);
@@ -46,12 +50,12 @@ function WorkOrdersPage() {
     className: 'paper-editor-buttons'
   }, manager && order.stage < 2 && order.workOrders.length > 0 && h('button', {
     onClick: () => setView('individuals')
-  }, 'Book individuals'), manager && order.stage === 0 && !order.workOrderApprovedAt && !adding && !editing && h('button', {
+  }, 'Book individuals'), manager && order.stage === 0 && !order.workOrderApprovedAt && unallocated > 0 && !adding && !editing && h('button', {
     onClick: () => setAdding({ revision: order._revision })
   }, '＋ Add work order'))), order.stage === 1 && h(ManufacturingProductionBoxes, {
     orderKey: order.id
   }), adding && h(WorkOrderForm, {
-    order,
+    order: { ...order, quantity: unallocated },
     onCancel: () => setAdding(null),
     onSave: async work => {
       const saved = await change(order.id, current => {
@@ -80,7 +84,17 @@ function WorkOrdersPage() {
       type: 'button',
       disabled: adding || !!editing,
       onClick: () => setEditing({ id: work.id, revision: order._revision })
-    }, 'Edit work order'), manager && !canEdit && h('p', {
+    }, 'Edit work order'), canEdit && h('button', {
+      type: 'button',
+      disabled: adding || !!editing || !canReopenAllocation,
+      title: canReopenAllocation ? 'Discard unstarted work order' : 'Other work on this order has started',
+      onClick: () => {
+        const destination = order.workOrders.length === 1 ? 'Order Requests' : 'Work Orders for reapproval';
+        if (window.confirm('Discard this work order? Its labels, plans, and bookings will be removed. The order will return to ' + destination + '.')) {
+          discardWorkOrder(work.id);
+        }
+      }
+    }, 'Discard work order'), manager && !canEdit && h('p', {
       className: 'quiet'
     }, 'Editing locked after production progress is recorded.'), h(ManufacturingWorkPaper, {
     order,

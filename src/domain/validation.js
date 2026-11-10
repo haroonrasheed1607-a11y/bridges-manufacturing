@@ -26,7 +26,11 @@ function getStageBlocker(e) {
   let t = e.workOrders;
   switch (e.stage) {
     case 0:
-      return !t.length ? `Add at least one work order.` : t.map(validateWorkOrder).find(Boolean) || (e.workOrderApprovedAt && !e.assignmentConfirmedAt ? `Assign Job Coaches to every work order and confirm assignments.` : ``);
+      if (!t.length) return `Add at least one work order.`;
+      if (e.quantity != null && t.reduce((total, work) => total + work.quantity, 0) !== Number(e.quantity)) {
+        return `Allocate the full order quantity across the work orders before approval.`;
+      }
+      return t.map(validateWorkOrder).find(Boolean) || (e.workOrderApprovedAt && !e.assignmentConfirmedAt ? `Assign Job Coaches to every work order and confirm assignments.` : ``);
     case 1:
       return t.some(e => e.jobs.some(e => e.completed !== e.quantity)) ? `Complete every sub-job before quality checking.` : ``;
     case 2:
