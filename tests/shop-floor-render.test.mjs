@@ -31,6 +31,11 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const {CurrentWorkPanel}=await server.ssrLoadModule('/src/features/production/CurrentWorkPanel.jsx');
  const panel=renderToStaticMarkup(React.createElement(CurrentWorkPanel,{person:workforce.people[0],current:{busy:true,items:[{id:'BOX-0123456789ABCDEF',orderId:'O1',orderTitle:'Assembly order',workId:'W1',description:'Parts assembly',jobName:'Sub-job 1',quantity:25}]},onError(){}}));
  assert.match(panel,/A new barcode cannot be created/);assert.match(panel,/BOX-0123456789ABCDEF/);assert.match(panel,/Reprint current barcode/);
+ const configurations=await render('/src/features/configurations/ConfigurationsPage.jsx','ConfigurationsPage');
+ assert.match(configurations,/Seconds between scans for 1× load/);
+ assert.match(configurations,/Pieces per scan/);assert.match(configurations,/Scan history/);assert.match(configurations,/Apply filters/);
+ const restrictedConfig=await render('/src/features/configurations/ConfigurationsPage.jsx','ConfigurationsPage','box_scanner');
+ assert.doesNotMatch(restrictedConfig,/Scan history|Save scan settings/);
  const adminApprovals=await render('/src/features/admin-approvals/BarcodeApprovals.jsx','BarcodeApprovals');assert.match(adminApprovals,/QR code approvals/);
  const managerApprovals=await render('/src/features/admin-approvals/BarcodeApprovals.jsx','BarcodeApprovals','manager');assert.match(managerApprovals,/Administrator access required/);assert.doesNotMatch(managerApprovals,/Approval reason/);
  assert.match(await render('/src/features/availability/AvailabilityPage.jsx','AvailabilityPage'),/Individual availability/);

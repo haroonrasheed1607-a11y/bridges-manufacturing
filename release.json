@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Add people to an existing plan or create multiple plans for the same sub-job and date. Each plan is approved and printed separately."
+    "Configurations now includes reusable QR timing and load settings for work orders in production, plus filterable scan history."
   ]
 }

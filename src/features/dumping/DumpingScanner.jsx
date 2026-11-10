@@ -37,13 +37,14 @@ export function DumpingScanner({ code, onDone }) {
     try {
       if (!pending.current) {
         const quantity = completedLoadPieces(assignment.batchQuantity, multiplier, pieces);
-        pending.current = { id: request.current, pieces: quantity };
+        pending.current = { id: request.current, pieces: quantity, expectedLoad: assignment.batchQuantity };
         try { sessionStorage.setItem(key, JSON.stringify(pending.current)); } catch {}
       }
-      const r = await manufacturingApi.rpc("app_dumping_scan", {
+      const r = await manufacturingApi.rpc("app_scan_reusable_configured", {
         p_id: code,
         p_request: request.current,
         p_pieces: pending.current.pieces,
+        p_expected_load: pending.current.expectedLoad ?? null,
       });
       setResult(r);
       try {
@@ -56,6 +57,12 @@ export function DumpingScanner({ code, onDone }) {
         request.current = crypto.randomUUID();
         setSubmitted(false);
         try { sessionStorage.removeItem(key); } catch {}
+      }
+      if (e.code === "40001" && e.message.startsWith("Pieces per scan changed")) {
+        try {
+          setAssignment(await manufacturingApi.rpc("app_reusable_barcode", { p_id: code }));
+          setPieces("");
+        } catch {}
       }
       setError(e.message);
     } finally {
