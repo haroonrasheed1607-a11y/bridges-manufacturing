@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Unstarted work orders can be discarded. Discarding retires their labels and bookings and reopens the order for planning."
+    "The dashboard now shows pieces scanned, top performers, production trends, and approaching order deadlines."
   ]
 }

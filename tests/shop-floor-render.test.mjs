@@ -31,6 +31,9 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const {CurrentWorkPanel}=await server.ssrLoadModule('/src/features/production/CurrentWorkPanel.jsx');
  const panel=renderToStaticMarkup(React.createElement(CurrentWorkPanel,{person:workforce.people[0],current:{busy:true,items:[{id:'BOX-0123456789ABCDEF',orderId:'O1',orderTitle:'Assembly order',workId:'W1',description:'Parts assembly',jobName:'Sub-job 1',quantity:25}]},onError(){}}));
  assert.match(panel,/A new barcode cannot be created/);assert.match(panel,/BOX-0123456789ABCDEF/);assert.match(panel,/Reprint current barcode/);
+ const dashboard=await render('/src/features/dashboard/DashboardPage.jsx','ManufacturingDashboard');
+ assert.match(dashboard,/Production dashboard/);assert.match(dashboard,/Scan period/);
+ assert.match(dashboard,/Orders to watch/);assert.match(dashboard,/Overdue orders/);
  const configurations=await render('/src/features/configurations/ConfigurationsPage.jsx','ConfigurationsPage');
  assert.match(configurations,/Seconds between scans for 1× load/);
  assert.match(configurations,/Pieces per scan/);

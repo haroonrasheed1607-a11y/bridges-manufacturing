@@ -11,7 +11,7 @@ import { WorkOrdersPage } from './features/work-orders/WorkOrdersPage.js';
 // app/App.js
 import { AppLayout } from "./components/MainLayout.jsx";
 import { ManufacturingCustomers } from "./features/customers/CustomersPage.js";
-import { ManufacturingDashboard } from "./features/dashboard/DashboardPage.js";
+import { ManufacturingDashboard } from "./features/dashboard/DashboardPage.jsx";
 import { ManufacturingIndividuals } from "./features/individuals/IndividualsPage.js";
 import { ManufacturingJobBoard } from "./features/job-board/JobBoardPage.js";
 import { CreateOrderPage } from "./features/orders/CreateOrderPage.js";
