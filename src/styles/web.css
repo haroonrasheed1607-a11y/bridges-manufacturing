@@ -33,3 +33,33 @@
 
 .job-completion{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px;font-weight:600;color:#244d40}.job-completion progress{width:90px;height:7px;accent-color:#27825d}.compact-job-card .job-completion{margin:4px 0;font-size:12px}
 
+
+.workspace-breadcrumbs ol{display:flex;align-items:center;flex-wrap:wrap;gap:2px 8px;margin:0;padding:0;list-style:none}
+.workspace-breadcrumbs li{display:flex;align-items:center;gap:8px;overflow-wrap:anywhere;min-width:0}
+.workspace-breadcrumbs li+li::before{content:"/";opacity:.65}
+.workspace-breadcrumbs button{min-height:28px;padding:0;border:0;background:transparent;color:inherit;font:inherit;text-decoration:underline;text-underline-offset:3px}
+.workspace-breadcrumbs [aria-current]{font-weight:650}
+.job-board-heading-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.job-board-page .page-heading{margin-bottom:12px}
+.job-board-page .job-board-toolbar{gap:10px;padding:12px}
+.job-board-page .job-board-caption{margin:9px 0}
+.order-summary{padding:12px 16px;margin:0 0 12px}
+.order-summary-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 12px}
+.order-summary-heading h2{margin:0;font-size:21px;overflow-wrap:anywhere}
+.order-summary-facts{display:flex;flex-wrap:wrap;gap:6px 16px;margin:8px 0}
+.order-summary-facts>div{min-width:0}
+.order-summary-facts dt{font-size:11px;color:#657a9c}
+.order-summary-facts dd{margin:0;font-size:12px;font-weight:600;overflow-wrap:anywhere}
+.order-summary .stage-strip{margin:8px 0 0}
+.order-summary .stage-strip li{padding:8px 10px;gap:3px}
+.order-summary+.detail-layout{gap:12px}
+.order-summary+.detail-layout .stage-content{padding:14px}
+.order-summary+.detail-layout .tabs button{min-height:42px;padding-block:7px}
+.order-summary+.detail-layout .order-sidebar .panel{padding:14px}
+@media(max-width:760px){
+  .job-board-page .page-heading{flex-wrap:wrap}
+  .order-summary{padding:10px 12px}
+  .order-summary+.detail-layout .order-sidebar{display:flex;flex-direction:column}
+}
+.compact-order-workspace{padding-top:16px}
+.compact-order-workspace>.workspace-controls>.page-heading{margin-bottom:12px}

@@ -57,19 +57,12 @@ function CreateOrderPage() {
   }, h('div', {
     className: 'order-created-check',
     'aria-hidden': true
-  }, '✓'), h('h2', null, 'Order created'), item && h('p', null, item.name), orderNumber.trim() && h('p', null, 'Order number: ' + orderNumber.trim()), h('small', null, 'System ID: ' + createdId), h('p', {
+  }, '✓'), h('h2', null, 'Order created'), item && h('p', null, item.name + ' · ' + item.code), orderNumber.trim() && h('p', null, 'Order number: ' + orderNumber.trim()), h('small', null, 'System ID: ' + createdId), h('p', {
     className: 'quiet'
   }, 'Opening your order…')));
-  return h(React.Fragment, null, h('button', {
-    className: 'back',
-    onClick: () => setView('orders')
-  }, '← All orders'), h('div', {
+  return h(React.Fragment, null, h('div', {
     className: 'page-heading'
-  }, h('div', null, h('div', {
-    className: 'eyebrow'
-  }, '01 / ORDER REQUESTS'), h('h2', null, 'Order details'), h('p', {
-    className: 'quiet'
-  }, 'Define the order, quantities, and customer deadline.'))), h('form', {
+  }, h('h2', null, 'Order details')), h('form', {
     className: 'panel form-panel order-details-form',
     onSubmit: async event => {
       event.preventDefault();
@@ -123,7 +116,7 @@ function CreateOrderPage() {
     h(FormField,{label:'Item',hint:item?.rate == null ? undefined : 'Catalog rate: ' + item.rate},
       h('select',{required:true,value:itemId,disabled:!client?.items.length,onChange:event=>setItemId(event.target.value)},
         h('option',{value:''},client && !client.items.length ? 'No items registered for this client' : 'Select an item'),
-        ...(client?.items || []).map(row=>h('option',{key:row.id,value:row.id},row.code+' · '+row.name)))),
+        ...(client?.items || []).map(row=>h('option',{key:row.id,value:row.id},row.name + ' · ' + row.code)))),
     field('Order number', {
       value: orderNumber,
       onChange: event => setOrderNumber(event.target.value)

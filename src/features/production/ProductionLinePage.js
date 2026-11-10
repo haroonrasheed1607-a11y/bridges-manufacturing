@@ -13,7 +13,7 @@ import { ManufacturingScanComplete } from "./ScanComplete.js";
 
 function ManufacturingProductionLine() {
   const {
-      orders, profile,
+      orders, profile, orderDisplayTitle,
       change
     } = useManufacturing(),
     h = React.createElement,
@@ -77,7 +77,7 @@ function ManufacturingProductionLine() {
   }, activeOrders.map(item => h('option', {
     key: item.id,
     value: item.id
-  }, item.title + ' · ' + item.customer + ' · ' + item.id)))) : h('p', {
+  }, orderDisplayTitle(item) + ' · ' + item.customer + ' · ' + item.id)))) : h('p', {
     className: 'empty'
   }, 'No orders are in production. Start production on a work order to create box labels.')), order && h(ManufacturingProductionBoxes, {
     key: order.id,

@@ -4,11 +4,11 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const server=await createServer({configFile:false,server:{middlewareMode:true},appType:'custom',logLevel:'error'});
  try{
  const {ManufacturingContext}=await server.ssrLoadModule('/src/state/ManufacturingContext.jsx');
- const orders=[{id:'O1',title:'Assembly order',stage:1,workOrders:[{id:'W1',description:'Parts assembly',quantity:250,perPack:25,jobs:[{id:'J1',name:'Sub-job 1',quantity:250,completed:0}],boxes:[]}]}];
+ const orders=[{id:'O1',title:'Assembly order',catalogCode:'PART-42',customer:'Client',required:'2026-11-15',history:[],stage:1,workOrders:[{id:'W1',description:'Parts assembly',quantity:250,perPack:25,jobs:[{id:'J1',name:'Sub-job 1',quantity:250,completed:0}],boxes:[]}]}];
  const workforce={people:[{id:'P1',name:'Alex',kind:'individual',hoursPerDay:6}],bookings:[]};
- const base={orders,workforce,customers:[],profile:{id:'u1',role:'admin'},change(){},refresh(){}};
- async function render(file,name,role='admin'){
- const mod=await server.ssrLoadModule(file);return renderToStaticMarkup(React.createElement(ManufacturingContext.Provider,{value:{...base,profile:{id:'u1',role}}},React.createElement(mod[name])));
+ const base={orders,order:orders[0],manager:true,orderDisplayTitle:order=>order.catalogCode?order.title+' · '+order.catalogCode:order.title,workforce,customers:[],profile:{id:'u1',role:'admin'},change(){},refresh(){}};
+ async function render(file,name,role='admin',view){
+ const mod=await server.ssrLoadModule(file);return renderToStaticMarkup(React.createElement(ManufacturingContext.Provider,{value:{...base,view,manager:role==='admin',profile:{id:'u1',role}}},React.createElement(mod[name])));
  }
  const {prepareIndividualRows}=await server.ssrLoadModule('/src/features/individuals/IndividualImport.jsx');
  const rows=prepareIndividualRows([['Name','Role','Hours per day'],[' alex ','Assembly',4],['Alex','Packing',5],['Jordan','Packing',6]],workforce.people);
@@ -30,6 +30,14 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(await render('/src/features/dumping/DumpingSetup.jsx','DumpingSetup'),/100/);
  const setup=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_setup');assert.match(setup,/Reusable barcode/);assert.match(setup,/Bulk box labels/);
  const nav=await render('/src/components/Navbar.jsx','Navbar','box_setup');assert.match(nav,/href="#plan"/);
+ const board=await render('/src/features/job-board/JobBoardPage.js','ManufacturingJobBoard');
+ assert.match(board,/List view/);assert.match(board,/Assembly order · PART-42/);
+ const summary=await render('/src/features/orders/OrderSummary.jsx','OrderSummary');
+ assert.match(summary,/Assembly order · PART-42/);assert.match(summary,/Required delivery/);
+ const crumbs=await render('/src/components/layout/WorkspaceBreadcrumbs.jsx','WorkspaceBreadcrumbs','admin','detail');
+ assert.match(crumbs,/Job Board.*All orders.*Assembly order · PART-42/);
+ const adminNav=await render('/src/components/Navbar.jsx','Navbar');
+ assert.match(adminNav,/href="#board"/);assert.doesNotMatch(adminNav,/nav-menu-orders/);
  const scannerNav=await render('/src/components/Navbar.jsx','Navbar','box_scanner');assert.doesNotMatch(scannerNav,/href="#plan"/);
  const plan=await render('/src/features/plan/PlanPage.jsx','PlanPage','box_setup');assert.match(plan,/Sub-job 1/);assert.match(plan,/Print all/);
  const scanner=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_scanner');assert.match(scanner,/Completed work/);assert.match(scanner,/type="date"/);assert.match(scanner,/Scan QR code/);assert.doesNotMatch(scanner,/production-box-scan|Box ID/);assert.doesNotMatch(scanner,/Create reusable QR/);

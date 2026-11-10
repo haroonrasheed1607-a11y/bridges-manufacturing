@@ -12,7 +12,7 @@ import { React } from "../../vendor/react-runtime.js";
 
 function ManufacturingIndividuals() {
   const {
-      setView, orders,
+      setView, orders, orderDisplayTitle,
       workforce,
       saveIndividual, importIndividuals, setIndividualActive,
       saveBooking,
@@ -286,7 +286,7 @@ function ManufacturingIndividuals() {
   }) => h('option', {
     key: work.id,
     value: work.id
-  }, order.title + ' · ' + work.description + ' · ' + work.id)))), field('Booking start', {
+  }, orderDisplayTitle(order) + ' · ' + work.description + ' · ' + work.id)))), field('Booking start', {
     type: 'date',
     required: true,
     value: bookingForm.start,
@@ -436,7 +436,7 @@ function ManufacturingIndividuals() {
     return h('article', {
       key: booking.id,
       className: 'person-booking'
-    }, h('div', null, h('strong', null, order?.title || booking.orderId), h('p', null, (work?.description || booking.workId) + ' · ' + formatHours(booking.hours)), h('small', null, formatDate(booking.start) + ' – ' + formatDate(booking.end)), booking.notes && h('p', {
+    }, h('div', null, h('strong', null, order ? orderDisplayTitle(order) : booking.orderId), h('p', null, (work?.description || booking.workId) + ' · ' + formatHours(booking.hours)), h('small', null, formatDate(booking.start) + ' – ' + formatDate(booking.end)), booking.notes && h('p', {
       className: 'quiet'
     }, booking.notes)), h('div', {
       className: 'people-row-actions'

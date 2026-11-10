@@ -3,26 +3,19 @@ import { ResponsiveTables } from './common/ResponsiveTables.js';
 import { useManufacturing } from "../state/ManufacturingContext.jsx";
 import { jsxRuntime } from "../vendor/jsx-runtime.js";
 import { AppFooter } from "./layout/AppFooter.js";
+import { WorkspaceBreadcrumbs } from "./layout/WorkspaceBreadcrumbs.jsx";
 import { AppHeader } from "./layout/AppHeader.js";
 
 function MainLayout({
   children: e
 }) {
   let {
-    storageError: t, refresh, pending, manager, profile
+    storageError: t, refresh, pending, profile, view
   } = useManufacturing();
   return (0, jsxRuntime.jsxs)(`div`, {
     id: `manufacturing-app`,
     className: ['box_setup','box_scanner'].includes(profile?.role) ? 'minimal-shop-floor'+(profile?.role==='box_setup'?' box-setup-workspace':'') : '',
-    children: [(0, jsxRuntime.jsx)(ResponsiveTables, {}), (0, jsxRuntime.jsx)(AppHeader, {}), (0, jsxRuntime.jsxs)(`div`, {
-      className: `draft-banner`,
-      children: [(0, jsxRuntime.jsx)(`span`, {
-        className: `status-dot`
-      }), ` Screen draft `, (0, jsxRuntime.jsx)(`span`, {
-        className: `banner-divider`,
-        children: `/`
-      }), ` Shared Supabase database · updates across devices`]
-    }), t && (0, jsxRuntime.jsx)(`div`, {
+    children: [(0, jsxRuntime.jsx)(ResponsiveTables, {}), (0, jsxRuntime.jsx)(AppHeader, {}), (0, jsxRuntime.jsx)(WorkspaceBreadcrumbs, {}), t && (0, jsxRuntime.jsx)(`div`, {
       role: `alert`,
       className: `alert`,
       children: [t, (0, jsxRuntime.jsx)(`button`, {type:`button`,onClick:refresh,children:`Refresh data`})]
@@ -30,7 +23,7 @@ function MainLayout({
       className: `shell`,
       children: (0, jsxRuntime.jsx)(`main`, {
         id: `main-content`,
-        className: `work`,
+        className: [`board`, `orders`, `new`, `detail`].includes(view) ? `work compact-order-workspace` : `work`,
         children: (0, jsxRuntime.jsx)(`fieldset`, {disabled:pending,className:`workspace-controls`,children:e})
       })
     }), (0, jsxRuntime.jsx)(AppFooter, {})]

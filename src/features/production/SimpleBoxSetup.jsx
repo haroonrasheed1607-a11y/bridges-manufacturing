@@ -13,7 +13,7 @@ import { manufacturingToday } from "../../utils/dates.js";
 import { createId } from "../../utils/ids.js";
 import { nextBoxJob, remainingBoxPieces } from "./boxSetupModel.js";
 export function SimpleBoxSetup({ includeBulk = true } = {}) {
-  const { orders, workforce, createProductionBox } = useManufacturing();
+  const { orders, workforce, orderDisplayTitle, createProductionBox } = useManufacturing();
   const [workId, setWorkId] = useScreenMemory("simple-box-job", "");
   const [personId, setPersonId] = React.useState("");
   const [jobSearch, setJobSearch] = React.useState(""),
@@ -36,7 +36,7 @@ export function SimpleBoxSetup({ includeBulk = true } = {}) {
   const visibleJobs = jobs.filter(
     (x) =>
       x.work.id === selected?.work.id ||
-      [x.order.title, x.work.description, x.work.id]
+      [orderDisplayTitle(x.order), x.work.description, x.work.id]
         .join(" ")
         .toLowerCase()
         .includes(jobSearch.toLowerCase()),
@@ -144,7 +144,7 @@ export function SimpleBoxSetup({ includeBulk = true } = {}) {
                   {!jobs.length && <option value="">No jobs available</option>}
                   {visibleJobs.map(({ order, work }) => (
                     <option key={work.id} value={work.id}>
-                      {order.title} · {work.description || work.id}
+                      {orderDisplayTitle(order)} · {work.description || work.id}
                     </option>
                   ))}
                 </select>
@@ -237,6 +237,7 @@ export function SimpleBoxSetup({ includeBulk = true } = {}) {
           <CurrentWorkPanel
             person={people.find((p) => p.id === personId)}
             current={current}
+            displayTitle={item => orderDisplayTitle(orders.find(order => order.id === item.orderId) ?? { title: item.orderTitle })}
             onError={setError}
           />
         </div>

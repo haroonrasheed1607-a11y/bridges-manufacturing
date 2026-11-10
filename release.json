@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Added an optional order number alongside the automatically assigned System ID."
+    "Added item codes to order titles, clickable breadcrumbs, a compact order summary, and a List view from the Job Board."
   ]
 }

@@ -10,25 +10,20 @@ import { React } from "../../vendor/react-runtime.js";
 function OrdersPage() {
   let {
       orders: e,
+      orderDisplayTitle,
       open: t,
       setView: n
     } = useManufacturing(),
     [r, i] = (0, React.useState)(``),
     [a, o] = (0, React.useState)(`all`),
-    s = e.filter(e => (a === `all` || manufacturingBoardStage(e) === Number(a)) && `${e.id} ${e.orderNumber ?? ""} ${e.customer} ${e.title}`.toLowerCase().includes(r.toLowerCase()));
+    s = e.filter(e => (a === `all` || manufacturingBoardStage(e) === Number(a)) && `${e.id} ${e.orderNumber ?? ""} ${e.customer} ${orderDisplayTitle(e)}`.toLowerCase().includes(r.toLowerCase()));
   return (0, jsxRuntime.jsxs)(jsxRuntime.Fragment, {
     children: [(0, jsxRuntime.jsxs)(`div`, {
       className: `page-heading`,
       children: [(0, jsxRuntime.jsxs)(`div`, {
-        children: [(0, jsxRuntime.jsx)(`div`, {
-          className: `eyebrow`,
-          children: `OPERATIONS / ORDERS`
-        }), (0, jsxRuntime.jsx)(`h2`, {
-          children: `Every order. Every step.`
-        }), (0, jsxRuntime.jsx)(`p`, {
-          className: `quiet`,
-          children: `Follow the work from a new request to a signed delivery.`
-        })]
+        children: (0, jsxRuntime.jsx)(`h2`, {
+          children: `All orders`
+        })
       }), (0, jsxRuntime.jsx)(`button`, {
         className: `primary`,
         onClick: () => n(`new`),
@@ -99,7 +94,7 @@ function OrdersPage() {
                 children: [(0, jsxRuntime.jsx)(`button`, {
                   className: `text-link`,
                   onClick: () => t(e.id),
-                  children: e.title
+                  children: orderDisplayTitle(e)
                 }), (0, jsxRuntime.jsxs)(`div`, {
                   className: `quiet`,
                   children: [`System ID: `, e.id, ` · `, e.customer]

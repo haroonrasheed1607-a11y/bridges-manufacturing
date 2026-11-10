@@ -6,7 +6,7 @@ import { availableHoursOn } from "../../domain/workforce.js";
 import { manufacturingPreviewLabels, manufacturingPrintBoxBatch } from "../../domain/boxLabels.js";
 
 export function PlanPage() {
-  const { orders, workforce } = useManufacturing();
+  const { orders, workforce, orderDisplayTitle } = useManufacturing();
   const today = manufacturingToday();
   const [date, setDate] = React.useState(manufacturingToday);
   const [jobId, setJobId] = React.useState("");
@@ -122,7 +122,7 @@ export function PlanPage() {
           }}>
             <option value="">{jobs.length ? "Select a sub-job" : "No unfinished sub-jobs in production"}</option>
             {jobs.map(({order, work, job}) => <option key={job.id} value={job.id}>
-              {order.title} · {work.description} · {job.name} ({job.quantity - job.completed} remaining)
+              {orderDisplayTitle(order)} · {work.description} · {job.name} ({job.quantity - job.completed} remaining)
             </option>)}
           </select>
         </label>
@@ -174,7 +174,7 @@ export function PlanPage() {
           <div className="plan-list plan-stickers" role="region" aria-label="Saved stickers" tabIndex={0}>
             {labels.length ? <ul>{labels.map(label => <li key={label.id}>
               <strong>{label.personName}</strong>
-              <small className="quiet">{label.orderTitle} · {label.jobName || label.jobId}</small>
+              <small className="quiet">{orderDisplayTitle(orders.find(order => order.id === label.orderId) ?? { title: label.orderTitle })} · {label.jobName || label.jobId}</small>
             </li>)}</ul> : !busy && <p className="quiet">Save a plan to see and print its stickers here.</p>}
           </div>
         </section>

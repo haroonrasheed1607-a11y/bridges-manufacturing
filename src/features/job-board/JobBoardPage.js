@@ -11,6 +11,7 @@ import { ManufacturingBoardActions } from "./JobActionsDialog.js";
 function ManufacturingJobBoard() {
   const {
       orders,
+      orderDisplayTitle,
       open,
       setView,
       change,
@@ -26,7 +27,7 @@ function ManufacturingJobBoard() {
     late = order => order.stage < 6 && !!order.required && order.required < today;
   const customers = [...new Set(orders.map(order => order.customer))].sort();
   const visible = orders.filter(order => {
-    const text = [order.id, order.orderNumber, order.title, order.customer, ...order.workOrders.flatMap(work => [work.id, work.description, work.type])].join(' ').toLowerCase();
+    const text = [order.id, order.orderNumber, orderDisplayTitle(order), order.customer, ...order.workOrders.flatMap(work => [work.id, work.description, work.type])].join(' ').toLowerCase();
     return text.includes(search.toLowerCase()) && (customer === 'all' || order.customer === customer) && (filter === 'all' || filter === 'active' && order.stage < 6 || filter === 'late' && late(order) || filter === 'completed' && order.stage === 6 || filter === 'repeat' && !!manufacturingRepeatDays(order.frequency, order.repeatEveryDays));
   }).sort((a, b) => (a.required || '9999').localeCompare(b.required || '9999'));
   async function advance(order) {
@@ -47,7 +48,7 @@ function ManufacturingJobBoard() {
       className: 'job-card compact-job-card' + (late(order) ? ' job-card-late' : ''),
       role: 'button',
       tabIndex: 0,
-      'aria-label': order.title + ' · ' + order.customer + ' · ' + (manager && order.stage < 6 && !blocked ? 'Show order actions' : 'Open order details'),
+      'aria-label': orderDisplayTitle(order) + ' · ' + order.customer + ' · ' + (manager && order.stage < 6 && !blocked ? 'Show order actions' : 'Open order details'),
       'aria-haspopup': manager && order.stage < 6 && !blocked ? 'dialog' : undefined,
       onClick: activate,
       onKeyDown: event => {
@@ -68,8 +69,8 @@ function ManufacturingJobBoard() {
       className: 'badge amber'
     }, 'Forecast late') : null), h('h4', {
       className: 'compact-job-title',
-      title: order.title
-    }, order.title), h('p', {
+      title: orderDisplayTitle(order)
+    }, orderDisplayTitle(order)), h('p', {
       className: 'job-customer',
       title: order.customer
     }, order.customer), order.orderNumber && h('p', {
@@ -95,14 +96,16 @@ function ManufacturingJobBoard() {
     className: 'job-board-page'
   }, h('div', {
     className: 'page-heading'
-  }, h('div', null, h('div', {
-    className: 'eyebrow'
-  }, 'OPERATIONS / JOB BOARD'), h('h2', null, 'Manufacturing job board'), h('p', {
-    className: 'quiet'
-  }, 'Every order, from customer request to signed delivery.')), manager && h('button', {
+  }, h('h2', null, 'Job Board'), manager && h('div', {
+    className: 'job-board-heading-actions'
+  }, h('button', {
+    type: 'button',
+    onClick: () => setView('orders')
+  }, 'List view'), h('button', {
+    type: 'button',
     className: 'primary',
     onClick: () => setView('new')
-  }, '＋ New order request')), h('div', {
+  }, '＋ New order request'))), h('div', {
     className: 'job-board-toolbar'
   }, h('label', {
     className: 'field job-board-search'

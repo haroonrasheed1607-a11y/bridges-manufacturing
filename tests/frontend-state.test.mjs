@@ -32,7 +32,7 @@ test('sign-in gate hides workspace until the server approves staff access',async
 
 test('shared provider waits for the API and sends the current order revision',async()=>{
  const app=await harness({session:true});app.render(app.provider.ManufacturingProvider,{children:'SCREEN'});await app.runEffects();let tree=app.render(app.provider.ManufacturingProvider,{children:'SCREEN'}),value=tree.props.value;assert.equal(value.orders.length,0);
- const pending=value.create({title:'Shared order',customer:'Customer',quantity:100,perPack:25});assert.equal(value.orders.length,0);const id=await pending;
- tree=app.render(app.provider.ManufacturingProvider,{children:'SCREEN'});value=tree.props.value;assert.equal(value.orders[0].id,id);assert.equal(value.orders[0]._revision,1);
+ const pending=value.create({title:'Shared order',catalogCode:'PART-42',customer:'Customer',quantity:100,perPack:25});assert.equal(value.orders.length,0);const id=await pending;
+ tree=app.render(app.provider.ManufacturingProvider,{children:'SCREEN'});value=tree.props.value;assert.equal(value.orders[0].id,id);assert.equal(value.orders[0]._revision,1);assert.equal(value.orderDisplayTitle(value.orders[0]),'Shared order · PART-42');assert.equal(value.orderDisplayTitle({title:'Legacy order'}),'Legacy order');
  await value.change(id,o=>({...o,title:'Updated'}),'Title changed');const writes=app.requests.filter(r=>r.url.endsWith('app_save_order')).map(r=>JSON.parse(r.options.body));assert.equal(writes[0].p_revision,0);assert.equal(writes[1].p_revision,1);
 });

@@ -12,7 +12,7 @@ function ManufacturingBoardActions({
   const h = React.createElement,
     dialog = React.useRef(null),
     {
-      open,
+      open, orderDisplayTitle,
       workforce
     } = useManufacturing(),
     blocked = manufacturingWorkflowBlock(order, workforce);
@@ -40,7 +40,7 @@ function ManufacturingBoardActions({
     className: 'section-heading'
   }, h('div', null, h('small', null, 'System ID: ' + order.id), h('h3', {
     id: 'job-action-title'
-  }, order.title), h('p', {
+  }, orderDisplayTitle(order)), h('p', {
     className: 'quiet'
   }, order.customer)), h('button', {
     type: 'button',

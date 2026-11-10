@@ -333,10 +333,18 @@ function ManufacturingProvider({ children }) {
     anchor.click();
     setTimeout(() => URL.revokeObjectURL(blob), 1000);
   }
+  const catalogCodes = new Map(
+    (data.customerCatalog ?? []).flatMap(client => client.items.map(item => [item.id, item.code])),
+  );
+  function orderDisplayTitle(order) {
+    const code = order.catalogCode || catalogCodes.get(order.catalogItemId);
+    return code ? order.title + " · " + code : order.title;
+  }
   // 9. Public interface consumed by feature screens.
   const context = {
     ...data,
     order,
+    orderDisplayTitle,
     view,
     setView,
     open,

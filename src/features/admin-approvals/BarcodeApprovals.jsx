@@ -10,7 +10,7 @@ export function BarcodeApprovals() {
   );
 }
 function ApprovalQueue() {
-  const { refresh, setView } = useManufacturing();
+  const { refresh, setView, orders, orderDisplayTitle } = useManufacturing();
   const [kind, setKind] = React.useState("box"),
     [start, setStart] = React.useState(""),
     [end, setEnd] = React.useState(""),
@@ -231,7 +231,7 @@ function ApprovalQueue() {
                   </td>
                   <td>{row.person}</td>
                   <td>
-                    {row.title}
+                    {orderDisplayTitle(orders.find(order => order.id === row.order_id) ?? { title: row.title })}
                     <div>
                       {row.description} · {row.job}
                     </div>

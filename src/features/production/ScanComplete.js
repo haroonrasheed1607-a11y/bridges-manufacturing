@@ -12,7 +12,7 @@ import { ManufacturingBoxQr } from "../work-orders/BoxQr.js";
 
 function ManufacturingScanComplete({minimal=false} = {}) {
   const {
-      orders,
+      orders, orderDisplayTitle,
       workforce,
       completeProductionBox
     } = useManufacturing(),
@@ -91,7 +91,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     setLast({
       ...result,
       individualName: workforce.people.find(person => person.id === selected.box.personId)?.name || selected.box.personId,
-      orderTitle: selected.order.title
+      orderTitle: orderDisplayTitle(selected.order)
     });
     setMessage('Box completed · ' + result.box.completedPieces + ' pieces recorded. Ready for the next scan.');
     setSelectedCode('');
@@ -169,7 +169,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
   }), h('dl', {
     className: 'scanned-box-facts'
   }, ...Object.entries({
-    'Order': selected.order.title,
+    'Order': orderDisplayTitle(selected.order),
     'Work order': selected.work.description,
     'Sub-job': selected.job?.name || selected.box.jobId,
     'Individual': individual?.name || selected.box.personId,
@@ -220,7 +220,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     box
   }) => h('article', {
     key: box.id
-  }, h('div', null, h('strong', null, box.id), h('p', null, order.title + ' · ' + (workforce.people.find(person => person.id === box.personId)?.name || box.personId)), h('small', {
+  }, h('div', null, h('strong', null, box.id), h('p', null, orderDisplayTitle(order) + ' · ' + (workforce.people.find(person => person.id === box.personId)?.name || box.personId)), h('small', {
     className: 'quiet'
   }, box.completedPieces + ' pieces · ' + formatTimestamp(box.completedAt))), h('button', {
     type: 'button',

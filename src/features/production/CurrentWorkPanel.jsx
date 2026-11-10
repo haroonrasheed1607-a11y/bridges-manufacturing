@@ -4,7 +4,7 @@ import {
   manufacturingPrintBox,
   manufacturingPreviewLabels,
 } from "../../domain/boxLabels.js";
-export function CurrentWorkPanel({ person, current, onError }) {
+export function CurrentWorkPanel({ person, current, onError, displayTitle = item => item.orderTitle }) {
   if (!person)
     return (
       <aside className="current-work-panel">
@@ -45,7 +45,7 @@ export function CurrentWorkPanel({ person, current, onError }) {
                 <ManufacturingBoxQr value={item.id} />
                 <strong>{item.id}</strong>
                 <p>
-                  {item.orderTitle}
+                  {displayTitle(item)}
                   <br />
                   {item.description} · {item.jobName}
                   <br />

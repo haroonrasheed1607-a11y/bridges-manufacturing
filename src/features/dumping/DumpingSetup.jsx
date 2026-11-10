@@ -8,7 +8,7 @@ import {
 } from "../../domain/boxLabels.js";
 import { dumpingLabel } from "./model.js";
 export function DumpingSetup() {
-  const { orders, workforce } = useManufacturing();
+  const { orders, workforce, orderDisplayTitle } = useManufacturing();
   const [assignments, setAssignments] = React.useState([]),
     [jobId, setJobId] = React.useState(""),
     [personId, setPersonId] = React.useState(""),
@@ -97,7 +97,7 @@ export function DumpingSetup() {
                 )}
                 {jobs.map((x) => (
                   <option key={x.job.id} value={x.job.id}>
-                    {x.order.title} · {x.work.description} · {x.job.name}
+                    {orderDisplayTitle(x.order)} · {x.work.description} · {x.job.name}
                   </option>
                 ))}
               </select>
@@ -153,7 +153,7 @@ export function DumpingSetup() {
                 {label.person.name} · {a.batchQuantity} pieces per scan
               </strong>
               <p>
-                {label.order.title} · {label.work.description} ·{" "}
+                {orderDisplayTitle(label.order)} · {label.work.description} ·{" "}
                 {label.job.name}
               </p>
               <p>

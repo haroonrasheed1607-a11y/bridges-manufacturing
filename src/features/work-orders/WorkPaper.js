@@ -1,3 +1,4 @@
+import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 // features/work-orders/WorkPaper.js
 import { formatDate } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
@@ -13,6 +14,7 @@ function ManufacturingWorkPaper({
   includeSubJobs = true,
   progressControls
 }) {
+  const { orderDisplayTitle } = useManufacturing();
   const h = React.createElement,
     section = (number, title, ...children) => h('section', {
       className: 'paper-section'
@@ -27,7 +29,7 @@ function ManufacturingWorkPaper({
   }), section('01', 'JOB DETAILS', h('dl', {
     className: 'paper-job-facts'
   }, ...Object.entries({
-    'Order title': order.title,
+    'Order title': orderDisplayTitle(order),
     'Customer': order.customer,
     'Job type': work.type,
     'Description': work.description,

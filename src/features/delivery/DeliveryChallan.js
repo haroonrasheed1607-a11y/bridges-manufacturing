@@ -10,7 +10,7 @@ import { ManufacturingBarcode } from "../work-orders/Barcode.js";
 
 function ManufacturingDeliveryChallan() {
   const {
-      order,
+      order, orderDisplayTitle,
       change
     } = useManufacturing(),
     h = React.createElement,
@@ -120,7 +120,7 @@ function ManufacturingDeliveryChallan() {
     value: number
   }), h('dl', {
     className: 'challan-facts'
-  }, fact('Customer', order.customer), fact('System ID', order.id), order.orderNumber && fact('Order number', order.orderNumber), fact('Order title', order.title), fact('Invoice / PO reference', reference), fact('Delivery method', delivery.method), fact('Vehicle / courier', vehicle), fact('Delivery / pickup details', delivery.details), fact('Dispatch date', delivery.dispatchedAt ? formatDate(delivery.dispatchedAt) : '')), h('table', {
+  }, fact('Customer', order.customer), fact('System ID', order.id), order.orderNumber && fact('Order number', order.orderNumber), fact('Order title', orderDisplayTitle(order)), fact('Invoice / PO reference', reference), fact('Delivery method', delivery.method), fact('Vehicle / courier', vehicle), fact('Delivery / pickup details', delivery.details), fact('Dispatch date', delivery.dispatchedAt ? formatDate(delivery.dispatchedAt) : '')), h('table', {
     className: 'challan-table'
   }, h('thead', null, h('tr', null, ...['#', 'Description / work order', 'Pieces per pack', 'Packs', 'Total pieces'].map(label => h('th', {
     key: label

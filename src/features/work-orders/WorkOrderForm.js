@@ -1,3 +1,4 @@
+import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 // features/work-orders/WorkOrderForm.js
 import { FormField } from "../../components/common/FormField.js";
 import { manufacturingOrderPlan } from "../../domain/orders.js";
@@ -17,6 +18,7 @@ function WorkOrderForm({
   onSave,
   onCancel
 }) {
+  const { orderDisplayTitle } = useManufacturing();
   const h = React.createElement,
     [id] = React.useState(() => createId('WO')),
     [type, setType] = React.useState('Assembly'),
@@ -154,7 +156,7 @@ function WorkOrderForm({
     value: type,
     onChange: event => setType(event.target.value)
   }, h('option', null, 'Assembly'), h('option', null, 'Packaging'))), field('Order title', {
-    value: order.title,
+    value: orderDisplayTitle(order),
     readOnly: true
   }), field('Total pieces / pieces per pack', {
     value: quantity + ' / ' + perPack,

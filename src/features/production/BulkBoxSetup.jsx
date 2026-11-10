@@ -11,7 +11,7 @@ import { createId } from "../../utils/ids.js";
 import { remainingBoxPieces } from "./boxSetupModel.js";
 import { datedBulkBoxPlan } from "./bulkPlan.js";
 export function BulkBoxSetup({expanded=false}={}) {
-  const { orders, workforce, createProductionBox } = useManufacturing();
+  const { orders, workforce, orderDisplayTitle, createProductionBox } = useManufacturing();
   const [date, setDate] = React.useState(manufacturingToday);
   const [workId, setWorkId] = React.useState(""),
     [jobId, setJobId] = React.useState(""),
@@ -194,7 +194,7 @@ export function BulkBoxSetup({expanded=false}={}) {
             {!works.length && <option value="">No jobs available</option>}
             {works.map((x) => (
               <option value={x.work.id} key={x.work.id}>
-                {x.order.title} · {x.work.description || x.work.id}
+                {orderDisplayTitle(x.order)} · {x.work.description || x.work.id}
               </option>
             ))}
           </select>
