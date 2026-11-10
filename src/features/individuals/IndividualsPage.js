@@ -11,6 +11,10 @@ import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate, manufacturingDayOffset, manufacturingFinish, manufacturingToday } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
 
+const billingDefaults = { services: 'waiver', billing: 'piece', averageWorkingHours: 3.5 };
+const serviceLabels = { waiver: 'Waiver', state: 'State' };
+const billingLabels = { hourly: 'Hourly', piece: 'By piece', both: 'Both' };
+
 function ManufacturingIndividuals() {
   const {
       setView, orders, orderDisplayTitle,
@@ -84,6 +88,7 @@ function ManufacturingIndividuals() {
     }));
   }
   const field = (label, props, hint) => h(FormField, {
+    key: label,
     label,
     hint
   }, h('input', props));
@@ -135,7 +140,20 @@ function ManufacturingIndividuals() {
       kind: person.kind,
       hoursPerDay: person.hoursPerDay,
       weeklyHours: person.weeklyHours,
+      services: person.services ?? billingDefaults.services,
+      billing: person.billing ?? billingDefaults.billing,
+      averageWorkingHours: person.averageWorkingHours ?? billingDefaults.averageWorkingHours,
     });
+  }
+  const individualKind = personForm?.kind || (personForm && manufacturingIsCoach(personForm) ? 'coach' : 'individual');
+  function updatePersonField(key, value) {
+    setPersonForm(current => ({ ...current, [key]: value }));
+  }
+  function profileSelect(key, label, options, hint) {
+    return h(FormField, { key, label, hint }, h('select', {
+      value: personForm[key],
+      onChange: event => updatePersonField(key, event.target.value)
+    }, Object.entries(options).map(([value, text]) => h('option', { key: value, value }, text))));
   }
   const individualForm = personForm && h('form', {
     className: editingPersonId ? 'individual-edit-form' : 'panel form-panel',
@@ -185,7 +203,7 @@ function ManufacturingIndividuals() {
   }), h(FormField, {
     label: 'Person type'
   }, h('select', {
-    value: personForm.kind || (manufacturingIsCoach(personForm) ? 'coach' : 'individual'),
+    value: individualKind,
     onChange: event => setPersonForm({
       ...personForm,
       kind: event.target.value,
@@ -214,7 +232,19 @@ function ManufacturingIndividuals() {
       ...personForm,
       hoursPerDay: event.target.value
     })
-  }, 'Default for Monday–Friday if a weekly pattern is not set.')), !manufacturingIsCoach(personForm) && h(WeeklyHours, {
+  }, 'Default for Monday–Friday if a weekly pattern is not set.'), individualKind === 'individual' && [
+    profileSelect('services', 'Services', serviceLabels, 'Used for service billing.'),
+    profileSelect('billing', 'Billing', billingLabels, 'Payroll method.'),
+    field('Average working hours', {
+      type: 'number',
+      min: 0,
+      max: 24,
+      step: .01,
+      required: true,
+      value: personForm.averageWorkingHours,
+      onChange: event => updatePersonField('averageWorkingHours', event.target.value)
+    }, 'Billable hours per day for reporting.')
+  ]), !manufacturingIsCoach(personForm) && h(WeeklyHours, {
     person:personForm,
     onChange:weeklyHours => setPersonForm(current=>({...current,weeklyHours}))
   }), personError && h('p', {role:'alert', className:'alert'}, personError), h('div', {
@@ -243,7 +273,8 @@ function ManufacturingIndividuals() {
     setPersonForm({
       name: '',
       role: '',
-      hoursPerDay: 6
+      hoursPerDay: 6,
+      ...billingDefaults
     });
     setError('');
     setMessage('');
@@ -457,7 +488,11 @@ function ManufacturingIndividuals() {
       onClick: () => setQrPerson(person)
     }, 'Job QR'), h('small', {
       className: 'block quiet'
-    }, person.role || 'No role set'), h('small', {
+    }, person.role || 'No role set'), person.kind === 'individual' && h('small', {
+      className: 'block quiet'
+    }, serviceLabels[person.services ?? billingDefaults.services] + ' · ' +
+      billingLabels[person.billing ?? billingDefaults.billing] + ' · ' +
+      (person.averageWorkingHours ?? billingDefaults.averageWorkingHours) + ' billable h/day'), h('small', {
       className: 'block quiet'
     }, person.active === false ? 'Disabled' : person.weeklyHours ? 'Weekly schedule' : person.hoursPerDay + ' h/day')), ...dates.map(date => {
       const capacity = availableHoursOn(person, date),

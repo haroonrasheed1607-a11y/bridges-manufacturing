@@ -233,6 +233,14 @@ function ManufacturingProvider({ children }) {
       hoursPerDay: Number(value.hoursPerDay),
       ...(value.weeklyHours !== undefined ? {weeklyHours: value.weeklyHours?.map(Number) ?? null} : {}),
     };
+    if (person.kind === "individual" && value.services !== undefined) person.services = value.services;
+    if (person.kind === "individual" && value.billing !== undefined) person.billing = value.billing;
+    if (person.kind === "individual" && value.averageWorkingHours !== undefined) {
+      const hours = Number(value.averageWorkingHours);
+      if (value.averageWorkingHours === "" || !Number.isFinite(hours) || hours < 0 || hours > 24)
+        return "Enter average working hours between 0 and 24.";
+      person.averageWorkingHours = hours;
+    }
     if (!person.name) return "Enter a name.";
     if (
       !Number.isFinite(person.hoursPerDay) ||
