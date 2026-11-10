@@ -6,7 +6,6 @@ import "./payroll-report.css";
 
 const columns = [
   ["number", "Emp. / client no."], ["department", "Dept."], ["name", "Name"],
-  ["week1Pieces", "Week 1 pieces"], ["week2Pieces", "Week 2 pieces"],
   ["week1WsPay", "Week 1 WS pay"], ["week2WsPay", "Week 2 WS pay"],
   ["week1Hours", "Week 1 hours"], ["week1WgPay", "Week 1 WG pay"],
   ["week2Hours", "Week 2 hours"], ["week2WgPay", "Week 2 WG pay"],
@@ -15,13 +14,16 @@ const columns = [
 ];
 
 const hours = new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-const pieces = new Intl.NumberFormat("en-US");
-const totalKeys = ["week1Pieces", "week2Pieces", "week1Hours", "week2Hours"];
+const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+const wsPayKeys = ["week1WsPay", "week2WsPay"];
+const totalKeys = [...wsPayKeys, "week1Hours", "week2Hours"];
+const missingRate = { week1WsPay: "week1MissingRate", week2WsPay: "week2MissingRate" };
 
-function displayCell(key, value) {
-  if (value == null || value === "") return "—";
+function displayCell(key, value, missing) {
+  if (missing) return "Missing rate";
+  if (value == null || value === "" || Number.isNaN(value)) return "—";
   if (key.endsWith("Hours")) return hours.format(value);
-  if (key.endsWith("Pieces")) return pieces.format(value);
+  if (wsPayKeys.includes(key)) return usd.format(value);
   return value;
 }
 
@@ -50,9 +52,13 @@ export function PayrollReport({ api }) {
   const currentReport = validStart && report?.start === start ? report : null;
   const rows = currentReport?.rows;
   const totals = {};
+  const incomplete = {};
   for (const row of rows ?? []) {
     for (const key of totalKeys) {
-      if (row[key] != null) totals[key] = (totals[key] ?? 0) + row[key];
+      if (row[missingRate[key]]) incomplete[key] = true;
+      if (row[key] == null) continue;
+      const amount = wsPayKeys.includes(key) ? Math.round(row[key] * 100) : row[key];
+      totals[key] = (totals[key] ?? 0) + amount;
     }
   }
 
@@ -73,7 +79,7 @@ export function PayrollReport({ api }) {
         </div>
         {checkDate && <p><b>Check date</b> {formatDate(checkDate)}</p>}
       </header>
-      <p className="payroll-note">Pieces reflect recorded QR completions. Hours reflect recorded work hours. Pay, department and payroll job IDs are pending payroll setup.</p>
+      <p className="payroll-note">WS pay uses completed pieces and the item rate saved on each order. Hours reflect recorded work hours. WG pay, other pay, combined pay, hourly rates and payroll codes are pending payroll setup.</p>
       {!validStart ? <p role="alert">Choose a Monday to start the report.</p>
         : currentReport?.error ? <p role="alert">{currentReport.error}</p>
         : !rows ? <p role="status">Loading payroll report…</p>
@@ -83,8 +89,8 @@ export function PayrollReport({ api }) {
             <thead><tr>{columns.map(([key, label]) => <th key={key} scope="col">{label}</th>)}</tr></thead>
             <tbody>{rows.map(row => <tr key={row.id}>{columns.map(([key]) => key === "name"
               ? <th key={key} scope="row">{row.name}</th>
-              : <td key={key}>{displayCell(key, row[key])}</td>)}</tr>)}</tbody>
-            <tfoot><tr><th scope="row" colSpan={3}>Report totals</th>{columns.slice(3).map(([key]) => <td key={key}>{displayCell(key, totals[key])}</td>)}</tr></tfoot>
+              : <td key={key}>{displayCell(key, row[key], row[missingRate[key]])}</td>)}</tr>)}</tbody>
+            <tfoot><tr><th scope="row" colSpan={3}>Report totals</th>{columns.slice(3).map(([key]) => <td key={key}>{incomplete[key] ? "Incomplete" : displayCell(key, wsPayKeys.includes(key) ? totals[key] / 100 : totals[key])}</td>)}</tr></tfoot>
           </table>
         </div>}
     </article>

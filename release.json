@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Accounts includes a printable two-week payroll report based on QR completions and recorded work hours."
+    "The Accounts payroll report shows weekly piece pay using the item rate saved on each order."
   ]
 }
