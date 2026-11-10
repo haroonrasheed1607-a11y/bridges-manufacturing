@@ -44,7 +44,9 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const adminApprovals=await render('/src/features/admin-approvals/BarcodeApprovals.jsx','BarcodeApprovals');assert.match(adminApprovals,/QR code approvals/);
  const managerApprovals=await render('/src/features/admin-approvals/BarcodeApprovals.jsx','BarcodeApprovals','manager');assert.match(managerApprovals,/Administrator access required/);assert.doesNotMatch(managerApprovals,/Approval reason/);
  assert.match(await render('/src/features/availability/AvailabilityPage.jsx','AvailabilityPage'),/Individual availability/);
- assert.match(await render('/src/features/attendance/AttendancePage.jsx','AttendancePage'),/Daily attendance roster/);
+ const attendance=await render('/src/features/attendance/AttendancePage.jsx','AttendancePage');
+ assert.match(attendance,/Daily attendance roster/);assert.match(attendance,/Bulk attendance/);
+ assert.match(attendance,/aria-label="Select Alex"/);assert.match(attendance,/>Time In</);assert.match(attendance,/>Time Out</);
  assert.match(await render('/src/features/dumping/DumpingSetup.jsx','DumpingSetup'),/100/);
  const nav=await render('/src/components/Navbar.jsx','Navbar','box_setup');assert.match(nav,/href="#plan"/);
  const board=await render('/src/features/job-board/JobBoardPage.js','ManufacturingJobBoard');

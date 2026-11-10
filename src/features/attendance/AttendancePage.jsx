@@ -1,8 +1,9 @@
+import { BulkAttendanceDialog } from "./BulkAttendanceDialog.jsx";
 import { React } from "../../vendor/react-runtime.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { manufacturingToday } from "../../utils/dates.js";
-function AttendanceRow({ person, record, onSave, busy }) {
+function AttendanceRow({ person, record, onSave, busy, checked, onSelect }) {
   const [value, setValue] = React.useState(
     record || { status: "", arrival: "", departure: "", workHours: "" },
   );
@@ -24,7 +25,9 @@ function AttendanceRow({ person, record, onSave, busy }) {
   }
   return (
     <tr>
-      <th>{person.name}</th>
+      <td><input type="checkbox" className="attendance-checkbox" aria-label={"Select " + person.name}
+        checked={checked} disabled={busy} onChange={event => onSelect(person.id, event.target.checked)} /></td>
+      <th scope="row">{person.name}</th>
       <td>
         <select
           aria-label={"Attendance for " + person.name}
@@ -81,7 +84,13 @@ export function AttendancePage() {
     [records, setRecords] = React.useState([]),
     [busy, setBusy] = React.useState(false),
     [error, setError] = React.useState(""),
-    [message, setMessage] = React.useState("");
+    [message, setMessage] = React.useState(""),
+    [selected, setSelected] = React.useState([]),
+    [bulkOpen, setBulkOpen] = React.useState(false),
+    [skipped, setSkipped] = React.useState([]);
+  const chosen = people.filter(person => selected.includes(person.id));
+  const byPerson = new Map(records.map(record => [record.personId, record]));
+  const bulkLock = React.useRef(false);
   const generation = React.useRef(0);
   async function load() {
     const n = ++generation.current;
@@ -98,6 +107,8 @@ export function AttendancePage() {
   }
   React.useEffect(() => {
     setRecords([]);
+    setSelected([]);
+    setSkipped([]);
     setMessage("");
     load();
     return () => {
@@ -128,6 +139,35 @@ export function AttendancePage() {
       setBusy(false);
     }
   }
+  function select(id, checked) {
+    setSelected(ids => checked ? [...ids, id] : ids.filter(value => value !== id));
+  }
+
+  async function saveBulk(action, time) {
+    if (bulkLock.current || !chosen.length) return "";
+    bulkLock.current = true;
+    setBusy(true);
+    setSkipped([]);
+    setMessage("");
+    try {
+      const result = await manufacturingApi.rpc("app_bulk_attendance", {
+        p_date: date, p_action: action, p_time: time,
+        p_people: chosen.map(person => ({ id: person.id, revision: byPerson.get(person.id)?.revision ?? 0 })),
+      });
+      setRecords(result.records);
+      setSkipped(result.skipped);
+      setMessage((action === "in" ? "Time In" : "Time Out") +
+        ` marked for ${result.changed} · ${result.skipped.length} skipped.`);
+      setBulkOpen(false);
+      return "";
+    } catch (e) {
+      return e.message;
+    } finally {
+      bulkLock.current = false;
+      setBusy(false);
+    }
+  }
+
   const present = records.filter((r) => r.status === "present").length;
   return (
     <div>
@@ -160,14 +200,24 @@ export function AttendancePage() {
           between arrival and departure includes breaks. Saved attendance
           appears on weekly timesheets.
         </p>
+        <div className="attendance-selection">
+          <button type="button" className="primary" disabled={busy || !chosen.length || chosen.length > 500}
+            onClick={() => setBulkOpen(true)}>Bulk attendance</button>
+          <span className="quiet">{chosen.length} selected{chosen.length > 500 ? " · Select at most 500" : ""}</span>
+        </div>
         <div className="table-wrap">
           <table>
             <thead>
               <tr>
+                <th scope="col"><input type="checkbox" className="attendance-checkbox"
+                  aria-label="Select all individuals" disabled={busy || !people.length}
+                  checked={people.length > 0 && chosen.length === people.length}
+                  ref={input => { if (input) input.indeterminate = chosen.length > 0 && chosen.length < people.length; }}
+                  onChange={event => setSelected(event.target.checked ? people.map(person => person.id) : [])} /></th>
                 <th>Individual</th>
                 <th>Status</th>
-                <th>Arrival</th>
-                <th>Departure</th>
+                <th>Time In</th>
+                <th>Time Out</th>
                 <th>Work hours</th>
                 <th>Action</th>
               </tr>
@@ -177,7 +227,9 @@ export function AttendancePage() {
                 <AttendanceRow
                   key={date + p.id}
                   person={p}
-                  record={records.find((r) => r.personId === p.id)}
+                  record={byPerson.get(p.id)}
+                  checked={selected.includes(p.id)}
+                  onSelect={select}
                   onSave={save}
                   busy={busy}
                 />
@@ -192,6 +244,9 @@ export function AttendancePage() {
         </p>
       )}
       {message && <p role="status">{message}</p>}
+      {skipped.length > 0 && <ul>{skipped.map(item => <li key={item.personId}>{item.name} · {item.reason}</li>)}</ul>}
+      {bulkOpen && <BulkAttendanceDialog count={chosen.length} date={date} busy={busy}
+        onClose={() => setBulkOpen(false)} onSave={saveBulk} />}
     </div>
   );
 }

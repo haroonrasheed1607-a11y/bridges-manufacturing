@@ -41,7 +41,13 @@
 @media (min-width: 701px) {
   .work:has(.plan-page) { padding-block: 18px 24px; }
 }
-.plan-approval-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.plan-approval-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;gap:10px}
 .plan-approval-row button{min-height:36px}
 .shop-floor-tasks{max-width:780px;margin:0 auto}
 .approved-plan-print .plan-toolbar{margin-bottom:12px}
+
+.plan-row-actions{display:grid;justify-items:end;gap:6px}
+.plan-row-icons{display:flex;gap:5px}
+.plan-row-icons button{display:grid;place-items:center;width:38px;min-height:38px;padding:0}
+.plan-row-status{display:inline-flex;align-items:center;justify-content:center;gap:4px;white-space:nowrap}
+.plan-row-status svg{width:14px;height:14px}

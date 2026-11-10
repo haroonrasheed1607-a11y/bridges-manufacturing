@@ -210,11 +210,22 @@ export function PlanPage() {
                   <small className="quiet">{plan.labels.map(label => label.personName).join(", ")}</small>
                   {plan.hasScans && <small className="quiet">Scans recorded · deletion locked</small>}
                 </div>
-                <div className="plan-print-actions">
-                  <button type="button" disabled={!editable} onClick={() => selectPlan(plan.jobId, plan)}>Edit plan</button>
-                  <button type="button" disabled={!editable || plan.hasScans} onClick={() => deletePlan(plan)}>Delete plan</button>
-                  {approved ? <span className="badge green">Approved</span> :
-                    <button type="button" className="primary" disabled={!editable} onClick={() => approve(plan)}>Approve</button>}
+                <div className="plan-row-actions">
+                  <div className="plan-row-icons">
+                    <button type="button" aria-label="Edit plan" title="Edit plan" disabled={!editable}
+                      onClick={() => selectPlan(plan.jobId, plan)}>
+                      <PlanIcon kind="edit" />
+                    </button>
+                    <button type="button" aria-label="Delete plan"
+                      title={plan.hasScans ? "Deletion locked after scanning" : "Delete plan"}
+                      disabled={!editable || plan.hasScans} onClick={() => deletePlan(plan)}>
+                      <PlanIcon kind="delete" />
+                    </button>
+                  </div>
+                  {approved ? <span className="badge green plan-row-status"><PlanIcon kind="check" />Approved</span> :
+                    <button type="button" className="primary plan-row-status" disabled={!editable} onClick={() => approve(plan)}>
+                      <PlanIcon kind="check" />Approve
+                    </button>}
                 </div>
               </li>;
             })}</ul> : !busy && <p className="quiet">Move selected individuals here to approve their plan.</p>}
@@ -223,4 +234,16 @@ export function PlanPage() {
       </div>
     </form>
   </section>;
+}
+
+function PlanIcon({ kind }) {
+  const paths = {
+    edit: "M4 16v4h4L20 8l-4-4L4 16Zm10-10 4 4",
+    delete: "M4 7h16M9 7V4h6v3m3 0-1 13H7L6 7m4 4v5m4-5v5",
+    check: "m5 12 4 4L19 6",
+  };
+  return <svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"
+    fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <path d={paths[kind]} />
+  </svg>;
 }
