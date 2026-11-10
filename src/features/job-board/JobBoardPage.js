@@ -6,6 +6,7 @@ import { manufacturingBoardStage, manufacturingBoardStages, manufacturingNextOrd
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate, manufacturingToday } from "../../utils/dates.js";
 import { React } from "../../vendor/react-runtime.js";
+import { canQuickApproveWorkOrder, QuickApproveWorkOrder } from "../work-orders/QuickApproveWorkOrder.jsx";
 import { ManufacturingBoardActions } from "./JobActionsDialog.js";
 
 function ManufacturingJobBoard() {
@@ -43,7 +44,7 @@ function ManufacturingJobBoard() {
     function activate() {
       if (manager && order.stage < 6 && !blocked) setSelectedOrderId(order.id);else open(order.id);
     }
-    return h('article', {
+    const details = h('article', {
       key: order.id,
       className: 'job-card compact-job-card' + (late(order) ? ' job-card-late' : ''),
       role: 'button',
@@ -91,6 +92,9 @@ function ManufacturingJobBoard() {
       className: blocked ? 'compact-job-held' : 'compact-job-ready',
       title: order.stage === 6 ? 'Order completed' : blocked || manufacturingTransitionLabel(order)
     }, order.stage === 6 ? 'Complete' : blocked ? manufacturingOrderStep(order) : 'Ready ···')));
+    return manager && canQuickApproveWorkOrder(order)
+      ? h('div', { key: order.id, className: 'job-request-card' }, details, h(QuickApproveWorkOrder, { order }))
+      : details;
   }
   return h('div', {
     className: 'job-board-page'

@@ -1,5 +1,6 @@
 // domain/workOrders.js
-
+import { manufacturingOrderPlan } from "./orders.js";
+import { manufacturingToday } from "../utils/dates.js";
 
 function manufacturingWorkSeconds(work) {
   const quantity = Number(work.quantity || 0),
@@ -53,6 +54,41 @@ function manufacturingAutoSubJobs(work) {
   }
   return jobs;
 }
+function manufacturingBuildWorkOrder(order, {
+  id, type, description, instructions, parts = [],
+  seconds = Number(order.seconds ?? 30), packSeconds = 20,
+  hoursPerDay = Number(order.hoursPerDay ?? 6),
+  startDate = order.startDate || manufacturingToday(),
+  required = order.required, assignedPeople = '', packsOverride = null,
+}) {
+  const { quantity, perPack, packCount } = manufacturingOrderPlan(order);
+  const totalSeconds = manufacturingWorkSeconds({
+    quantity, perPack, seconds, packSeconds, timingVersion: 2,
+  });
+  const plan = manufacturingOrderPlan({
+    ...order,
+    seconds: quantity ? totalSeconds / quantity : seconds,
+    hoursPerDay, startDate, required, assignedPeople,
+  });
+  const work = {
+    id, type, description, instructions, parts: type === 'Assembly' ? parts : [],
+    timingVersion: 2, quantity, perPack, packCount, seconds, packSeconds,
+    packageSeconds: seconds * perPack + packSeconds,
+    hoursPerDay, startDate, required, expected: plan.expected,
+    people: plan.people, recommendedPeople: plan.recommendedPeople,
+    assignedPeople: assignedPeople || null, totalSeconds, audits: [], packing: [],
+  };
+  const suggestedPacks = manufacturingSuggestedPacks(work);
+  const packsPerSubJob = packsOverride === null ? suggestedPacks : Number(packsOverride);
+  return {
+    suggestedPacks,
+    work: {
+      ...work,
+      packsPerSubJob,
+      jobs: manufacturingAutoSubJobs({ ...work, packsPerSubJob }),
+    },
+  };
+}
 function manufacturingDefaultParts() {
   return [{
     id: 'bolt',
@@ -72,4 +108,4 @@ function manufacturingDefaultParts() {
   }];
 }
 
-export { manufacturingWorkSeconds, manufacturingWorkDuration, manufacturingSuggestedPacks, manufacturingAutoSubJobs, manufacturingDefaultParts };
+export { manufacturingWorkSeconds, manufacturingWorkDuration, manufacturingSuggestedPacks, manufacturingAutoSubJobs, manufacturingBuildWorkOrder, manufacturingDefaultParts };

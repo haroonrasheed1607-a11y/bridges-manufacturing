@@ -1,9 +1,8 @@
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 // features/work-orders/WorkOrderForm.js
 import { FormField } from "../../components/common/FormField.js";
-import { manufacturingOrderPlan } from "../../domain/orders.js";
 import { validateWorkOrder } from "../../domain/validation.js";
-import { manufacturingAutoSubJobs, manufacturingDefaultParts, manufacturingSuggestedPacks, manufacturingWorkSeconds } from "../../domain/workOrders.js";
+import { manufacturingBuildWorkOrder, manufacturingDefaultParts } from "../../domain/workOrders.js";
 import { manufacturingFinish, manufacturingToday } from "../../utils/dates.js";
 import { createId } from "../../utils/ids.js";
 import { React } from "../../vendor/react-runtime.js";
@@ -33,59 +32,11 @@ function WorkOrderForm({
     [assignedPeople, setAssignedPeople] = React.useState(''),
     [error, setError] = React.useState(''),
     [packsOverride, setPacksOverride] = React.useState(null);
-  const orderPlan = manufacturingOrderPlan(order),
-    quantity = orderPlan.quantity,
-    perPack = orderPlan.perPack,
-    packageSeconds = seconds * perPack + packSeconds,
-    totalSeconds = manufacturingWorkSeconds({
-      quantity,
-      perPack,
-      seconds,
-      packSeconds,
-      timingVersion: 2
-    }),
-    plan = manufacturingOrderPlan({
-      ...order,
-      seconds: quantity ? totalSeconds / quantity : seconds,
-      hoursPerDay,
-      startDate,
-      required,
-      assignedPeople
-    }),
-    base = {
-      id,
-      type,
-      description,
-      instructions,
-      parts: type === 'Assembly' ? parts : [],
-      timingVersion: 2,
-      quantity,
-      perPack,
-      packCount: Math.ceil(quantity / perPack),
-      seconds,
-      packSeconds,
-      packageSeconds,
-      hoursPerDay,
-      startDate,
-      required,
-      expected: plan.expected,
-      people: plan.people,
-      recommendedPeople: plan.recommendedPeople,
-      assignedPeople: assignedPeople || null,
-      totalSeconds,
-      audits: [],
-      packing: []
-    },
-    suggestedPacks = manufacturingSuggestedPacks(base),
-    packsPerSubJob = packsOverride === null ? suggestedPacks : Number(packsOverride),
-    work = {
-      ...base,
-      packsPerSubJob,
-      jobs: manufacturingAutoSubJobs({
-        ...base,
-        packsPerSubJob
-      })
-    };
+  const { work, suggestedPacks } = manufacturingBuildWorkOrder(order, {
+    id, type, description, instructions, parts, seconds, packSeconds,
+    hoursPerDay, startDate, required, assignedPeople, packsOverride,
+  });
+  const { quantity, perPack, packageSeconds, recommendedPeople, packsPerSubJob } = work;
   const field = (label, props, hint) => h(FormField, {
       label,
       hint
@@ -191,10 +142,10 @@ function WorkOrderForm({
     type: 'number',
     min: 1,
     step: 1,
-    value: assignedPeople || plan.recommendedPeople || '',
+    value: assignedPeople || recommendedPeople || '',
     required: true,
     onChange: event => setAssignedPeople(event.target.value)
-  }, 'Calculated: ' + plan.recommendedPeople + ' people needed. Edit to assign a different number.'), assignedPeople && h('button', {
+  }, 'Calculated: ' + recommendedPeople + ' people needed. Edit to assign a different number.'), assignedPeople && h('button', {
     type: 'button',
     onClick: () => setAssignedPeople('')
   }, 'Use calculated number')), h(ManufacturingWorkPlanSummary, {

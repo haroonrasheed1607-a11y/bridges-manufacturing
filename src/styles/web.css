@@ -63,3 +63,10 @@
 }
 .compact-order-workspace{padding-top:16px}
 .compact-order-workspace>.workspace-controls>.page-heading{margin-bottom:12px}
+
+.job-request-card .quick-approve-button{width:100%;margin-top:4px}
+.quick-approve-button{font-size:12px;min-height:36px;padding:6px 10px}
+.quick-approve-form{display:grid;gap:10px}
+.quick-approve-form h3,.quick-approve-form p{margin:0}
+.quick-approve-form textarea{width:100%;resize:vertical}
+.quick-approve-actions{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:8px}

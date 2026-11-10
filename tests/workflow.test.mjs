@@ -2,7 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { manufacturingDemoData } from '../src/state/demoData.js';
 import { manufacturingBoardStage, manufacturingBoardStages, manufacturingNextOrderState, manufacturingTransitionLabel } from '../src/domain/workflow.js';
-import { validateWorkOrder } from '../src/domain/validation.js';
+import { manufacturingBuildWorkOrder } from '../src/domain/workOrders.js';
+import { getStageBlocker, validateWorkOrder } from '../src/domain/validation.js';
 import { manufacturingColumnProgress } from '../src/domain/boardProgress.js';
 import { manufacturingFindBox, manufacturingCompleteBox } from '../src/domain/production.js';
 import { manufacturingChallanRows } from '../src/domain/delivery.js';
@@ -55,6 +56,27 @@ test('quality and packing progress stays pending until the packing check passes'
     ...work, packing: [{ correct: true }],
   })) };
   assert.equal(manufacturingColumnProgress([packed], 3).percent, 100);
+});
+
+test('quick approval builds a valid full-quantity work order and awaits coach assignment', () => {
+  const request = {
+    stage: 0, title: 'Package components', quantity: 301, perPack: 25,
+    startDate: '2026-11-10', required: '2026-11-16', workOrders: [],
+  };
+  const { work } = manufacturingBuildWorkOrder(request, {
+    id: 'WO-1', type: 'Packaging', description: request.title, instructions: 'Count and seal each box.',
+  });
+  assert.equal(validateWorkOrder(work), '');
+  assert.equal(work.quantity, request.quantity);
+  assert.equal(work.perPack, request.perPack);
+  assert.equal(work.required, request.required);
+  assert.equal(work.totalSeconds, 301 * 30 + 13 * 20);
+  assert.equal(work.jobs.reduce((sum, job) => sum + job.quantity, 0), request.quantity);
+
+  const approved = manufacturingNextOrderState({ ...request, workOrders: [work], expected: work.expected });
+  assert.ok(approved.workOrderApprovedAt);
+  assert.equal(manufacturingBoardStage(approved), 1);
+  assert.match(getStageBlocker(approved), /Job Coaches/);
 });
 
 test('box completion updates pieces once and rejects a second completion', () => {

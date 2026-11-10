@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Added item codes to order titles, clickable breadcrumbs, a compact order summary, and a List view from the Job Board."
+    "Added quick work order approval to Order Requests. The popup reuses request details and generates sub-jobs automatically."
   ]
 }

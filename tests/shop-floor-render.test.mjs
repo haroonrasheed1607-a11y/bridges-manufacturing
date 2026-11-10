@@ -5,6 +5,7 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  try{
  const {ManufacturingContext}=await server.ssrLoadModule('/src/state/ManufacturingContext.jsx');
  const orders=[{id:'O1',title:'Assembly order',catalogCode:'PART-42',customer:'Client',required:'2026-11-15',history:[],stage:1,workOrders:[{id:'W1',description:'Parts assembly',quantity:250,perPack:25,jobs:[{id:'J1',name:'Sub-job 1',quantity:250,completed:0}],boxes:[]}]}];
+ orders.push({id:'O2',title:'New request',customer:'Client',quantity:100,perPack:25,required:'2026-11-15',stage:0,workOrders:[]});
  const workforce={people:[{id:'P1',name:'Alex',kind:'individual',hoursPerDay:6}],bookings:[]};
  const base={orders,order:orders[0],manager:true,orderDisplayTitle:order=>order.catalogCode?order.title+' · '+order.catalogCode:order.title,workforce,customers:[],profile:{id:'u1',role:'admin'},change(){},refresh(){}};
  async function render(file,name,role='admin',view){
@@ -31,7 +32,11 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const setup=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_setup');assert.match(setup,/Reusable barcode/);assert.match(setup,/Bulk box labels/);
  const nav=await render('/src/components/Navbar.jsx','Navbar','box_setup');assert.match(nav,/href="#plan"/);
  const board=await render('/src/features/job-board/JobBoardPage.js','ManufacturingJobBoard');
- assert.match(board,/List view/);assert.match(board,/Assembly order · PART-42/);
+ assert.match(board,/List view/);assert.match(board,/Approve Work Order/);
+ const ordersList=await render('/src/features/orders/OrdersPage.js','OrdersPage');
+ assert.match(ordersList,/Approve Work Order/);
+ const coachBoard=await render('/src/features/job-board/JobBoardPage.js','ManufacturingJobBoard','coach');
+ assert.doesNotMatch(coachBoard,/Approve Work Order/);assert.match(board,/Assembly order · PART-42/);
  const summary=await render('/src/features/orders/OrderSummary.jsx','OrderSummary');
  assert.match(summary,/Assembly order · PART-42/);assert.match(summary,/Required delivery/);
  const crumbs=await render('/src/components/layout/WorkspaceBreadcrumbs.jsx','WorkspaceBreadcrumbs','admin','detail');

@@ -5,12 +5,13 @@ import { manufacturingBoardStage, manufacturingBoardStages } from "../../domain/
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { formatDate } from "../../utils/dates.js";
 import { jsxRuntime } from "../../vendor/jsx-runtime.js";
+import { canQuickApproveWorkOrder, QuickApproveWorkOrder } from "../work-orders/QuickApproveWorkOrder.jsx";
 import { React } from "../../vendor/react-runtime.js";
 
 function OrdersPage() {
   let {
       orders: e,
-      orderDisplayTitle,
+      orderDisplayTitle, manager,
       open: t,
       setView: n
     } = useManufacturing(),
@@ -84,7 +85,7 @@ function OrdersPage() {
               }), (0, jsxRuntime.jsx)(`th`, {
                 children: (0, jsxRuntime.jsx)(`span`, {
                   className: `sr-only`,
-                  children: `Open`
+                  children: `Actions`
                 })
               })]
             })
@@ -124,12 +125,14 @@ function OrdersPage() {
                   children: `Forecast beyond deadline`
                 })]
               }), (0, jsxRuntime.jsx)(`td`, {
-                children: (0, jsxRuntime.jsx)(`button`, {
-                  className: `icon-button`,
-                  "aria-label": `Open ` + e.id,
-                  onClick: () => t(e.id),
-                  children: `↗`
-                })
+                children: manager && canQuickApproveWorkOrder(e)
+                  ? (0, jsxRuntime.jsx)(QuickApproveWorkOrder, { order: e })
+                  : (0, jsxRuntime.jsx)(`button`, {
+                    className: `icon-button`,
+                    "aria-label": `Open ` + e.id,
+                    onClick: () => t(e.id),
+                    children: `↗`
+                  })
               })]
             }, e.id))
           })]
