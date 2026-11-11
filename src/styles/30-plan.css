@@ -99,3 +99,6 @@
 .qr-attendance-count>strong{font-size:28px;font-variant-numeric:tabular-nums;line-height:1.2}
 .qr-attendance-count>span{font-size:12px;font-weight:600}
 .qr-attendance-count small{display:block;font-size:10px;font-weight:400}
+
+.routine-admin-total-option{display:flex;align-items:center;gap:10px;padding:12px;margin-bottom:12px;background:#fff7e7;border:1px solid #ead3a2;border-radius:8px}
+.routine-admin-total-option input[type=checkbox]{width:20px;height:20px;min-height:0;flex:none}

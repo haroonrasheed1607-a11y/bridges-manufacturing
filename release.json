@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "QR attendance shows the number of individuals who timed in today and refreshes the count after scans."
+    "Administrators can enter a QR’s daily production total from Routine Scan. Existing recorded pieces are reconciled to prevent double counting."
   ]
 }

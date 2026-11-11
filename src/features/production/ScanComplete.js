@@ -1,3 +1,4 @@
+import { QrDailyTotal } from "../admin-approvals/QrDailyTotal.jsx";
 import { ScannerDailyWork } from './ScannerDailyWork.jsx';
 import {DumpingScanner} from '../dumping/DumpingScanner.jsx';
 import {isDumpingCode, isIndividualJobCode} from '../dumping/model.js';
@@ -12,12 +13,14 @@ import { ManufacturingBoxQr } from "../work-orders/BoxQr.js";
 
 function ManufacturingScanComplete({minimal=false} = {}) {
   const {
-      orders, orderDisplayTitle,
+      orders, orderDisplayTitle, profile,
       workforce,
       completeProductionBox
     } = useManufacturing(),
     h = React.createElement,
     [cameraOpen, setCameraOpen] = React.useState(false),
+    [dailyMode, setDailyMode] = React.useState(false),
+    [dailyCode, setDailyCode] = React.useState(''),
     [dumpCode,setDumpCode] = React.useState(''),
     dumpLock = React.useRef(false),
     [code, setCode] = React.useState(''),
@@ -30,7 +33,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     saving = React.useRef(false);
   React.useEffect(() => { if (selectedCode) document.querySelector('.scanned-box-panel')?.scrollIntoView({behavior:'smooth',block:'start'}); }, [selectedCode]);
   React.useEffect(() => {
-    if (!minimal || dumpCode || cameraOpen || selectedCode) return;
+    if (!minimal || dumpCode || dailyCode || cameraOpen || selectedCode) return;
     let buffer = '', lastKey = 0;
     function readScanner(event) {
       if (event.target?.matches?.('input,select,textarea,[contenteditable="true"]') || event.ctrlKey || event.altKey || event.metaKey) return;
@@ -41,7 +44,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     }
     window.addEventListener('keydown', readScanner);
     return () => window.removeEventListener('keydown', readScanner);
-  }, [minimal, dumpCode, cameraOpen, selectedCode, orders]);
+  }, [minimal, dumpCode, dailyCode, dailyMode, cameraOpen, selectedCode, orders, profile?.role]);
   const selected = manufacturingFindBox(orders, selectedCode),
     completed = selected && (selected.box.completedAt || selected.box.status === 'completed'),
     individual = selected && workforce.people.find(person => person.id === selected.box.personId),
@@ -56,6 +59,12 @@ function ManufacturingScanComplete({minimal=false} = {}) {
   }
   function scan(value, preview = false) {
     if(dumpLock.current || saving.current)return;
+    if (profile?.role === 'admin' && dailyMode) {
+      dumpLock.current = true;
+      setDailyCode(String(value).trim().toUpperCase());
+      setCode(''); setSelectedCode(''); setError('');
+      return;
+    }
     if(isDumpingCode(value) || isIndividualJobCode(value)){
       dumpLock.current=true;setDumpCode(String(value).trim().toUpperCase());setCode('');setSelectedCode('');setError('');return;
     }
@@ -100,10 +109,17 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     setError('');
     focusScanner();
   }
+  if (dailyCode) return h(QrDailyTotal, {
+    code: dailyCode,
+    onDone: () => { setDailyCode(''); dumpLock.current = false; setTimeout(focusScanner, 0); }
+  });
   if(dumpCode)return h(DumpingScanner,{key:dumpCode,code:dumpCode,onDone:()=>{setDumpCode('');dumpLock.current=false;setTimeout(focusScanner,0);}});
   return h('div', {
     className: 'production-line-page'
-  }, minimal && h(ScannerDailyWork, {refreshKey:message}), !minimal && h('div', {
+  }, profile?.role === 'admin' && h('label', { className: 'routine-admin-total-option' },
+    h('input', { type: 'checkbox', checked: dailyMode, onChange: event => setDailyMode(event.target.checked) }),
+    h('span', null, 'Daily production total', h('small', { className: 'block quiet' }, 'Scan a QR, then enter the entire day’s total.'))
+  ), minimal && h(ScannerDailyWork, {refreshKey:message}), !minimal && h('div', {
     className: 'page-heading'
   }, h('div', null, h('div', {
     className: 'eyebrow'

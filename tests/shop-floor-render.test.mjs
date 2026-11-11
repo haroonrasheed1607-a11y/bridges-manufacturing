@@ -75,6 +75,9 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.doesNotMatch(setup,/Bulk box labels|Single box|Reusable barcode/);
  const scanner=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_scanner');
  assert.doesNotMatch(scanner,/>Print</);assert.match(scanner,/>Routine Scan</);
+ assert.doesNotMatch(scanner,/Daily production total/);
+ const adminScan=await render('/src/features/production/ScanComplete.js','ManufacturingScanComplete','admin',null,{minimal:true});
+ assert.match(adminScan,/Daily production total/);
  assert.match(scanner,/Completed work/);assert.match(scanner,/type="date"/);assert.match(scanner,/Scan QR code/);
  assert.doesNotMatch(scanner,/Approved plans|production-box-scan|Box ID|Create reusable QR/);
  }finally{await server.close();}
