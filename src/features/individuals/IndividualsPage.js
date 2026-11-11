@@ -1,4 +1,5 @@
-import { IndividualJobQrDialog } from "./IndividualJobQrDialog.jsx";
+import { IndividualProfile } from "./IndividualProfile.jsx";
+import { IndividualBulkPrint } from "./IndividualBulkPrint.jsx";
 import { IndividualImport } from './IndividualImport.jsx';
 import { WeeklyHours } from './WeeklyHours.jsx';
 import {useScreenMemory} from '../../state/useScreenMemory.js';
@@ -25,6 +26,8 @@ function ManufacturingIndividuals() {
       open
     } = useManufacturing(),
     h = React.createElement;
+  const [profilePerson, setProfilePerson] = useScreenMemory('individual-profile', null);
+  const [bulkPrint, setBulkPrint] = React.useState(false);
   const [timesheetPerson,setTimesheetPerson]=useScreenMemory('individuals-timesheet',null);
   const [week, setWeek] = useScreenMemory('individuals-week',manufacturingToday),
     [search, setSearch] = React.useState(''),
@@ -34,7 +37,6 @@ function ManufacturingIndividuals() {
     [statusChange, setStatusChange] = React.useState(null),
     [statusBusy, setStatusBusy] = React.useState(false),
     [personForm, setPersonForm] = React.useState(null),
-    [qrPerson, setQrPerson] = React.useState(null),
     [personError, setPersonError] = React.useState(''),
     [personSaving, setPersonSaving] = React.useState(false),
     [bookingForm, setBookingForm] = React.useState(null),
@@ -257,6 +259,13 @@ function ManufacturingIndividuals() {
     className: 'primary',
     disabled: personSaving
   }, editingPersonId ? 'Save changes' : 'Save individual')));
+  const profileIndividual = workforce.people.find(person => person.id === profilePerson && person.kind === 'individual');
+  if (bulkPrint) return h(IndividualBulkPrint, { people: workforce.people, onBack: () => setBulkPrint(false) });
+  if (profileIndividual) return h(IndividualProfile, {
+    person: profileIndividual,
+    onBack: () => setProfilePerson(null),
+    onEdit: () => { setProfilePerson(null); editPerson(profileIndividual); }
+  });
   if(timesheetPerson!==null)return h(TimesheetsPage,{initialPerson:timesheetPerson,onBack:()=>setTimesheetPerson(null)});
   return h('div', {
     className: 'individuals-page'
@@ -268,7 +277,7 @@ function ManufacturingIndividuals() {
     className: 'quiet'
   }, 'See booked work and remaining capacity before making future bookings.')), h('div', {
     className: 'people-heading-actions'
-  }, formButton('Weekly timesheets',()=>setTimesheetPerson(selected||'')), formButton('Availability chart',()=>setView('availability')), formButton('Attendance roster',()=>setView('attendance')), formButton('Import Excel', () => setImportOpen(true)), formButton('＋ Add individual', () => {
+  }, formButton('Bulk print QR stickers', () => setBulkPrint(true)), formButton('Weekly timesheets',()=>setTimesheetPerson(selected||'')), formButton('Availability chart',()=>setView('availability')), formButton('Attendance roster',()=>setView('attendance')), formButton('Import Excel', () => setImportOpen(true)), formButton('＋ Add individual', () => {
     setPersonError('');
     setPersonForm({
       name: '',
@@ -288,7 +297,7 @@ function ManufacturingIndividuals() {
   }, message), error && h('p', {
     role: 'alert',
     className: 'alert'
-  }, error), qrPerson && h(IndividualJobQrDialog, {person: qrPerson, onClose: () => setQrPerson(null)}), importOpen && h(IndividualImport, {
+  }, error), importOpen && h(IndividualImport, {
     people: workforce.people,
     onClose: () => setImportOpen(false),
     onImport: async rows => {
@@ -473,7 +482,7 @@ function ManufacturingIndividuals() {
       scope: 'row'
     }, h('button', {
       className: 'text-link',
-      onClick: () => setSelected(person.id)
+      onClick: () => person.kind === 'individual' ? setProfilePerson(person.id) : setSelected(person.id)
     }, person.name), h('button', {
       className: 'text-link individual-edit-trigger',
       type: 'button',
@@ -485,8 +494,8 @@ function ManufacturingIndividuals() {
       className: 'text-link individual-edit-trigger',
       'aria-label': 'Job QR for ' + person.name,
       'aria-haspopup': 'dialog',
-      onClick: () => setQrPerson(person)
-    }, 'Job QR'), h('small', {
+      onClick: () => setProfilePerson(person.id)
+    }, 'Profile / QR'), h('small', {
       className: 'block quiet'
     }, person.role || 'No role set'), person.kind === 'individual' && h('small', {
       className: 'block quiet'

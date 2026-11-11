@@ -1,0 +1,12 @@
+.individual-profile-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-top:16px}
+.individual-profile-grid .panel{min-width:0}
+.individual-profile-facts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.individual-profile-facts dt{color:#56677c}.individual-profile-facts dd{margin:0;font-weight:600;overflow-wrap:anywhere}
+.individual-profile-week{list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.individual-profile-week li{display:grid;gap:6px;text-align:center;border:1px solid #d9e2eb;border-radius:6px;padding:8px 12px}
+.individual-sticker-preview{width:max-content;max-width:100%;overflow:auto;margin:16px auto;border:1px solid #c6d0db;border-radius:2px;box-shadow:0 3px 14px #20365312}
+.individual-sticker-gallery{max-height:650px;overflow:auto}
+.individual-bulk-list{max-height:460px;overflow:auto}
+.individual-bulk-person{display:flex;gap:12px;align-items:center;padding:10px 4px;border-bottom:1px solid #e4eaf0}
+.individual-bulk-person input[type=checkbox]{width:18px;height:18px;flex:none}
+@media(max-width:760px){.individual-profile-grid{grid-template-columns:1fr}.individual-profile-facts{grid-template-columns:1fr}.individual-profile-facts dd{margin-bottom:6px}}
