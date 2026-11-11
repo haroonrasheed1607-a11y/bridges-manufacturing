@@ -28,6 +28,13 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.doesNotMatch(lockedDetail,/Edit order request/);
  const clients=await render('/src/features/customers/CustomersPage.js','ManufacturingCustomers');
  assert.match(clients,/Register client/);
+ const catalog=await render('/src/features/customers/ClientCatalog.jsx','ClientCatalog','admin',null,{clients:[{id:'C1',name:'Client',items:[{id:'I1',code:'PART-42',name:'Assembly kit',unit:'Box',piecesPerUnit:100,revision:1}]}]});
+ assert.match(catalog,/<th>Unit<\/th>/);assert.match(catalog,/<th>Pieces per unit<\/th>/);assert.match(catalog,/aria-label="Edit Assembly kit"/);assert.match(catalog,/>Box<\/td>/);
+ const itemForm=await render('/src/features/customers/ClientItemForm.jsx','ClientItemForm','admin',null,{item:{id:'I1',code:'PART-42',name:'Assembly kit',unit:'Box',piecesPerUnit:100,revision:1}});
+ assert.match(itemForm,/Edit item/);assert.match(itemForm,/Pieces per box/);assert.match(itemForm,/value="100"/);assert.match(itemForm,/Save changes/);
+ const singleForm=await render('/src/features/customers/ClientItemForm.jsx','ClientItemForm','admin',null,{item:{id:'I2',unit:'Item',revision:0}});
+ assert.doesNotMatch(singleForm,/Pieces per (box|pack)/);assert.match(singleForm,/One item = one piece/);
+
  const {CurrentWorkPanel}=await server.ssrLoadModule('/src/features/production/CurrentWorkPanel.jsx');
  const panel=renderToStaticMarkup(React.createElement(CurrentWorkPanel,{person:workforce.people[0],current:{busy:true,items:[{id:'BOX-0123456789ABCDEF',orderId:'O1',orderTitle:'Assembly order',workId:'W1',description:'Parts assembly',jobName:'Sub-job 1',quantity:25}]},onError(){}}));
  assert.match(panel,/A new barcode cannot be created/);assert.match(panel,/BOX-0123456789ABCDEF/);assert.match(panel,/Reprint current barcode/);

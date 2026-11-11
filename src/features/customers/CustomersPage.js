@@ -10,7 +10,7 @@ function ManufacturingCustomers() {
       orders,
       open,
       customers,
-      addCustomer, customerCatalog = [], registerCustomerItem
+      addCustomer, customerCatalog = [], saveCustomerItem
     } = useManufacturing(),
     h = React.createElement;
   const [adding, setAdding] = React.useState(false),
@@ -97,7 +97,7 @@ function ManufacturingCustomers() {
     }, order.id)) : '—'));
   })))) : h('p', {
     className: 'empty'
-  }, 'No clients yet. Register your first client to get started.')), h(ClientCatalog, {clients:customerCatalog,onRegisterItem:registerCustomerItem}));
+  }, 'No clients yet. Register your first client to get started.')), h(ClientCatalog, {clients:customerCatalog,onSaveItem:saveCustomerItem}));
 }
 
 export { ManufacturingCustomers };

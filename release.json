@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Plan Work creates an order, approves its work order, assigns all active Job Coaches and prepares a single sub-job for Scan & Assign. Production and delivery both default to today."
+    "Client catalog items now support Item, Pack and Box units with pieces per pack or box. Edit item names, codes, rates and units; new Plan Work orders use the saved quantity while existing orders keep their recorded settings."
   ]
 }

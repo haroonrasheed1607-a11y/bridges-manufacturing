@@ -223,6 +223,12 @@ function ManufacturingProvider({ children }) {
       return "";
     } catch (e) { return e.message; }
   }
+  async function saveCustomerItem(item) {
+    try {
+      await mutate("app_save_customer_item", item, "Client item saved.");
+      return "";
+    } catch (e) { return e.message; }
+  }
   async function saveIndividual(value) {
     const person = {
       id: value.id || createId("PERSON"),
@@ -376,6 +382,7 @@ function ManufacturingProvider({ children }) {
     createProductionBox,
     addCustomer,
     registerCustomerItem,
+    saveCustomerItem,
     saveIndividual,
     importIndividuals,
     setIndividualActive,

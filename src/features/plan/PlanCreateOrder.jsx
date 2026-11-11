@@ -27,7 +27,7 @@ export function PlanCreateOrder({ onPlanned }) {
   const pieces = Number(quantity);
   const today = manufacturingToday();
   const disabled = busy || Boolean(pending) || Boolean(result);
-  const perPack = item?.productionDefaults?.perPack ?? 25;
+  const perPack = item?.piecesPerUnit ?? item?.productionDefaults?.perPack ?? 25;
 
   async function plan(event) {
     event.preventDefault();

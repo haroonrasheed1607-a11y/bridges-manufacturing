@@ -111,3 +111,5 @@
 .plan-create-footer, .plan-created-result { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
 .plan-created-result { padding: 12px; border-radius: 8px; background: #eaf5f0; }
 @media (max-width: 760px) { .plan-create-fields { grid-template-columns: 1fr; gap: 10px; } .plan-create-footer > button { width: 100%; } }
+
+.catalog-item-fields { margin: 0; padding: 0; border: 0; min-width: 0; }

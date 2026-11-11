@@ -15,8 +15,8 @@ begin
  insert into auth.users(id,email) values(coach1,coach1::text||'@example.invalid'),(coach2,coach2::text||'@example.invalid');
  insert into public.staff_profiles(id,role,display_name,person_id) values(coach1,'coach','Coach one',prefix||'-C1'),(coach2,'coach','Coach two',prefix||'-C2');
  insert into public.customers(id,name) values(cid,prefix);
- insert into public.customer_items(id,customer_id,code,name,rate,production_defaults)
- values(item,cid,'PART-TEST','Quick plan item',0.125,'{"perPack":100,"type":"Packaging","description":"Pack the parts","instructions":"Check the sample first"}');
+ insert into public.customer_items(id,customer_id,code,name,rate,unit,pieces_per_unit,production_defaults)
+ values(item,cid,'PART-TEST','Quick plan item',0.125,'Box',100,'{"perPack":100,"type":"Packaging","description":"Pack the parts","instructions":"Check the sample first"}');
  perform set_config('request.jwt.claim.sub',actor::text,true);
  r:=public.app_plan_create_order(cid,item,250,today,request);
  oid:=r->>'orderId';wid:=r->>'workId';jid:=r->>'jobId';aid:=(r->>'approvalId')::uuid;
