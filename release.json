@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Plan can approve orders for Scan & Assign. Individual QR cards activate for production one minute after assignment."
+    "Mobile Scan & Assign has a compact camera-only interface and a red selected tab. Tapping Scan & Assign refreshes approved orders."
   ]
 }

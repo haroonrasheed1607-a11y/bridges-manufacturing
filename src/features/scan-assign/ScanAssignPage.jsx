@@ -5,7 +5,7 @@ import { manufacturingToday } from "../../utils/dates.js";
 import { QrCamera } from "../production/QrCamera.jsx";
 import { DumpingScanner } from "../dumping/DumpingScanner.jsx";
 
-export function ScanAssignPage() {
+export function ScanAssignPage({ refreshVersion = 0 }) {
   const { profile, refresh } = useManufacturing();
   const [rows, setRows] = React.useState([]);
   const [approval, setApproval] = React.useState("");
@@ -25,6 +25,7 @@ export function ScanAssignPage() {
   async function load() {
     const ticket = ++request.current;
     setLoadedDate("");
+    setError("");
     try {
       const value = await manufacturingApi.rpc("app_scan_assign_approvals", { p_date: today });
       if (ticket !== request.current) return;
@@ -33,7 +34,7 @@ export function ScanAssignPage() {
       setApproval(current => value.some(row => row.id === current) ? current : "");
     } catch (problem) { if (ticket === request.current) setError(problem.message); }
   }
-  React.useEffect(() => { load(); return () => { request.current++; }; }, [today]);
+  React.useEffect(() => { load(); return () => { request.current++; }; }, [today, refreshVersion]);
 
   React.useEffect(() => {
     if (!result?.waitSeconds) { setSeconds(0); return; }
@@ -70,7 +71,7 @@ export function ScanAssignPage() {
     setProductionCode(""); setResult(null); setTimeout(() => input.current?.focus(), 0);
   }} />;
   return <section className="panel scan-assign-page">
-    <header className="section-heading"><div><h2>Scan & Assign</h2><p className="quiet">First scan assigns the individual. Scan again after one minute to record the planned pieces.</p></div>
+    <header className="section-heading scan-assign-desktop-heading"><div><h2>Scan & Assign</h2><p className="quiet">First scan assigns the individual. Scan again after one minute to record the planned pieces.</p></div>
       <button type="button" disabled={busy} onClick={load}>Refresh orders</button></header>
     <label className="field">Approved order<select value={approval} disabled={busy || loadedDate !== today} onChange={e => {
       setApproval(e.target.value); setResult(null); setError("");
@@ -78,13 +79,15 @@ export function ScanAssignPage() {
       {row.orderTitle}{row.orderCode && " · " + row.orderCode} · {row.jobName || row.jobId} · {row.piecesPerScan} pieces/scan
     </option>)}</select></label>
     {loadedDate === today && !rows.length && <p className="quiet">Approve an order for today in Plan to use Scan & Assign.</p>}
-    <form onSubmit={event => { event.preventDefault(); scan(code); }}>
+    <form className="scan-assign-desktop-controls" onSubmit={event => { event.preventDefault(); scan(code); }}>
       <label className="field">Individual QR card<input ref={input} value={code} autoComplete="off" spellCheck={false}
         placeholder="Scan the individual’s QR card and press Enter" disabled={busy || !approval}
         onChange={e => setCode(e.target.value)} /></label>
-      <div className="form-actions"><button className="primary" disabled={busy || !approval || !code.trim()}>{busy ? "Checking card…" : "Scan card"}</button>
-        <button type="button" disabled={busy || !approval} onClick={() => setCamera(true)}>Scan with camera</button></div>
+      <div className="form-actions"><button className="primary" disabled={busy || !approval || !code.trim() || loadedDate !== today}>{busy ? "Checking card…" : "Scan card"}</button></div>
     </form>
+    <div className="form-actions scan-assign-camera-action">
+      <button type="button" className="primary" disabled={busy || !approval || loadedDate !== today} onClick={() => setCamera(true)}>Scan with camera</button>
+    </div>
     {error && <p role="alert" className="alert">{error}</p>}
     {result && <div className="scan-assign-result" role="status"><h3>{result.personName} · Assigned</h3>
       <p>{result.piecesPerScan} pieces per scan</p>

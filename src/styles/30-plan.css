@@ -60,3 +60,10 @@
 .plan-person.plan-qr-option{grid-template-columns:auto minmax(0,1fr);border:1px solid #d6dfe9;border-radius:6px;margin-bottom:8px}
 
 .scan-assign-approval{margin-bottom:16px}.scan-assign-approval-list{list-style:none;padding:0;margin:12px 0}.scan-assign-approval-list li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #dbe3ed}.scan-assign-result{padding:16px;margin-top:16px;background:#e5f5ec;border-radius:8px}.scan-assign-page{max-width:850px;margin:auto}@media(max-width:600px){.scan-assign-approval-list li{align-items:start;flex-direction:column}}
+
+@media(max-width:600px){
+  .production-mode-tabs button.scan-assign-tab.is-selected{background:#b4232d;border-color:#b4232d;color:#fff}
+  .production-mode-tabs button.scan-assign-tab.is-selected:hover{background:#951c25}
+  .scan-assign-page .scan-assign-desktop-heading,.scan-assign-page .scan-assign-desktop-controls{display:none}
+  .scan-assign-page .scan-assign-camera-action button{width:100%;min-height:52px}
+}

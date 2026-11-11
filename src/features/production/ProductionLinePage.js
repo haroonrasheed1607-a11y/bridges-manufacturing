@@ -11,6 +11,7 @@ function ManufacturingProductionLine() {
   const { profile } = useManufacturing();
   const tasks = productionTabs(profile?.role).map(([task]) => task);
   const [saved, setTask] = useScreenMemory(hasDesktopPrinter() ? "desktop-shop-floor" : "shop-floor-tab", tasks[0]);
+  const [assignRefresh, setAssignRefresh] = React.useState(0);
   const current = tasks.includes(saved) ? saved : tasks[0];
   const h = React.createElement;
   if (!current) return h("p", { role: "alert" }, "Shop Floor access required.");
@@ -20,14 +21,17 @@ function ManufacturingProductionLine() {
       [["scan", "Scan"], ["print", "Print"], ["assign", "Scan & Assign"]].map(([task, label]) => h("button", {
         key: task,
         type: "button",
-        className: current === task ? "is-selected" : "",
+        className: [current === task ? "is-selected" : "", task === "assign" ? "scan-assign-tab" : ""].filter(Boolean).join(" "),
         "aria-pressed": current === task,
         disabled: !tasks.includes(task),
-        onClick: () => setTask(task),
+        onClick: () => {
+          if (task === "assign") setAssignRefresh(value => value + 1);
+          setTask(task);
+        },
       }, label))),
     current === "scan"
       ? h(ManufacturingScanComplete, { minimal: profile?.role === "box_scanner" })
-      : current === "assign" ? h(ScanAssignPage) : h(ApprovedPlanPrint));
+      : current === "assign" ? h(ScanAssignPage, { refreshVersion: assignRefresh }) : h(ApprovedPlanPrint));
 }
 
 export { ManufacturingProductionLine };
