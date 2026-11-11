@@ -10,3 +10,9 @@ test('Print navigation persists for permitted roles',()=>{
   assert.equal(validView(role,'shopfloorprint'),'shopfloorprint');
  assert.equal(validView('box_scanner','shopfloorprint'),'productionline');
 });
+
+test('Shop Floor menu features persist for permitted roles',()=>{
+ for(const role of ['admin','manager','coach','station','box_setup','box_scanner'])
+  for(const view of ['shopfloordashboard','shopfloorattendance']) assert.equal(validView(role,view),view);
+ assert.notEqual(validView('accounts','shopfloorattendance'),'shopfloorattendance');
+});

@@ -7,4 +7,5 @@ function productionTabs(role) {
   if (canUsePlan(role) || role === 'box_scanner') tabs.push(['assign', 'Scan & Assign']);
   return tabs;
 }
-export { canUsePlan, isShopFloorRole, productionTabs };
+function canUseShopFloor(role) { return productionTabs(role).length > 0; }
+export { canUseShopFloor, canUsePlan, isShopFloorRole, productionTabs };

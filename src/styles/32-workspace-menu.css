@@ -1,0 +1,11 @@
+#manufacturing-app .top.compact-workspace-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;min-height:52px;padding:6px 16px;gap:12px;background:#000}
+#manufacturing-app .compact-workspace-header>.brand-logo{display:block;order:0;width:104px;height:32px;object-fit:contain;margin:0;flex:none}
+#manufacturing-app .compact-workspace-header .workspace-menu-navigation{position:relative;display:block!important;order:1;width:auto!important;margin:0 0 0 auto!important;padding:0!important;flex:none;overflow:visible}
+#manufacturing-app .workspace-menu-navigation .workspace-menu-trigger{display:flex;align-items:center;justify-content:center;gap:7px;min-width:0;min-height:40px;margin:0;padding:7px 10px;border:1px solid #ffffff66;border-radius:6px;background:transparent;color:#fff;font-size:14px;font-weight:600}
+.workspace-menu-panel{position:absolute;top:calc(100% + 7px);right:0;width:min(300px,calc(100vw - 24px));max-height:min(72dvh,640px);overflow-y:auto;padding:6px;border:1px solid #dce3eb;border-radius:8px;background:#fff;color:#172a48;box-shadow:0 10px 28px #0003;z-index:100}
+.workspace-menu-panel[hidden]{display:none!important}
+#manufacturing-app .workspace-menu-panel>a,#manufacturing-app .workspace-menu-panel>.workspace-menu-sign-out{display:flex;align-items:center;width:100%;min-height:44px;margin:0;padding:10px 12px;border:0;border-radius:5px;background:transparent;color:#172a48;text-align:left;font:inherit;font-size:14px;font-weight:600;line-height:1.4;text-decoration:none;white-space:normal}
+#manufacturing-app .workspace-menu-panel>a:hover,#manufacturing-app .workspace-menu-panel>a[aria-current],#manufacturing-app .workspace-menu-panel>button:hover{background:#edf2f8}
+#manufacturing-app .workspace-menu-panel>.workspace-menu-sign-out{margin-top:6px;border-top:1px solid #dce3eb;border-radius:0;color:#a51f2c}
+.workspace-menu-navigation :is(a,button):focus-visible{outline:3px solid #6294db;outline-offset:2px}
+@media(max-width:600px){#manufacturing-app .top.compact-workspace-header{padding:4px 12px;min-height:48px}#manufacturing-app .compact-workspace-header>.brand-logo{width:94px;height:30px}}

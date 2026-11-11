@@ -9,6 +9,8 @@ const pageNames = {
   plan: "Plan",
   productionline: "Shop Floor",
   shopfloorprint: "Print",
+  shopfloordashboard: "Shop Floor Dashboard",
+  shopfloorattendance: "Time In / Out",
   customers: "Clients",
   individuals: "Individuals",
   availability: "Availability",
@@ -23,7 +25,7 @@ export function WorkspaceBreadcrumbs() {
   const { view, setView, order, orderDisplayTitle, manager } = useManufacturing();
   if (hasDesktopPrinter()) return null;
   const parents = [];
-  if (view === "shopfloorprint") parents.push(["productionline", pageNames.productionline]);
+  if (["shopfloorprint", "shopfloordashboard", "shopfloorattendance"].includes(view)) parents.push(["productionline", pageNames.productionline]);
   if (["orders", "new", "detail"].includes(view)) parents.push(["board", pageNames.board]);
   if (view === "detail" && manager) parents.push(["orders", pageNames.orders]);
   if (view === "barcodeapprovals") parents.push(["configurations", pageNames.configurations]);

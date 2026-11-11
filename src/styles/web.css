@@ -31,6 +31,7 @@
 @import "./29-desktop-box-setup.css";
 @import "./30-plan.css";
 @import "./31-individual-profile.css";
+@import "./32-workspace-menu.css";
 
 .job-completion{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px;font-weight:600;color:#244d40}.job-completion progress{width:90px;height:7px;accent-color:#27825d}.compact-job-card .job-completion{margin:4px 0;font-size:12px}
 

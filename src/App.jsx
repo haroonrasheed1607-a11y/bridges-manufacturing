@@ -1,3 +1,5 @@
+import { ShopFloorDashboard } from "./features/production/ShopFloorDashboard.jsx";
+import { QrAttendance } from "./features/attendance/QrAttendance.jsx";
 import { ApprovedPlanPrint } from "./features/production/ApprovedPlanPrint.jsx";
 import { hasDesktopPrinter } from "./services/printing/desktopPrinter.js";
 import { PlanPage } from './features/plan/PlanPage.jsx';
@@ -6,7 +8,7 @@ import {AvailabilityPage} from './features/availability/AvailabilityPage.jsx';
 import {AttendancePage} from './features/attendance/AttendancePage.jsx';
 import {ConfigurationsPage} from './features/configurations/ConfigurationsPage.jsx';
 import { UsersPage } from './features/users/UsersPage.jsx';
-import { canUsePlan, isShopFloorRole } from './features/auth/permissions.js';
+import { canUseShopFloor, canUsePlan, isShopFloorRole } from './features/auth/permissions.js';
 import { React } from './vendor/react-runtime.js';
 import { WorkOrdersPage } from './features/work-orders/WorkOrdersPage.js';
 // app/App.js
@@ -28,6 +30,8 @@ function App() {
     view: e, manager, profile, orderDisplayTitle,
     order: t
   } = useManufacturing();
+  if (e === 'shopfloordashboard' && canUseShopFloor(profile?.role)) return <AppLayout><ShopFloorDashboard /></AppLayout>;
+  if (e === 'shopfloorattendance' && canUseShopFloor(profile?.role)) return <AppLayout><QrAttendance /></AppLayout>;
   if(e === 'shopfloorprint' && canUsePlan(profile?.role)) return <AppLayout><ApprovedPlanPrint /></AppLayout>;
   if (hasDesktopPrinter()) return <AppLayout><ManufacturingProductionLine /></AppLayout>;
   if(e === 'plan' && canUsePlan(profile?.role)) return <AppLayout><PlanPage /></AppLayout>;
