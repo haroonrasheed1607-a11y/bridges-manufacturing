@@ -51,7 +51,9 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(attendance,/Daily attendance roster/);assert.match(attendance,/Bulk attendance/);
  assert.match(attendance,/aria-label="Select Alex"/);assert.match(attendance,/>Time In</);assert.match(attendance,/>Time Out</);
  assert.match(await render('/src/features/dumping/DumpingSetup.jsx','DumpingSetup'),/100/);
- const nav=await render('/src/components/Navbar.jsx','Navbar','box_setup');assert.match(nav,/href="#plan"/);assert.match(nav,/href="#shopfloorprint"/);assert.match(nav,/href="#shopfloordashboard"/);assert.match(nav,/href="#shopfloorattendance"/);assert.match(nav,/>Menu</);assert.match(nav,/Sign out/);
+ const nav=await render('/src/components/Navbar.jsx','Navbar','box_setup');assert.match(nav,/href="#plan"/);assert.match(nav,/href="#shopfloorprint"/);assert.match(nav,/refined-navigation/);assert.doesNotMatch(nav,/>Menu</);
+ const mobileNav=await render('/src/components/MobileNavbar.jsx','MobileNavbar','box_setup');
+ assert.match(mobileNav,/href="#shopfloordashboard"/);assert.match(mobileNav,/href="#shopfloorattendance"/);assert.match(mobileNav,/>Menu</);assert.match(mobileNav,/Sign out/);
  const board=await render('/src/features/job-board/JobBoardPage.js','ManufacturingJobBoard');
  assert.match(board,/List view/);assert.match(board,/Approve Work Order/);
  const ordersList=await render('/src/features/orders/OrdersPage.js','OrdersPage');
@@ -67,7 +69,7 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const scannerNav=await render('/src/components/Navbar.jsx','Navbar','box_scanner');assert.doesNotMatch(scannerNav,/href="#plan"|href="#shopfloorprint"/);
  const plan=await render('/src/features/plan/PlanPage.jsx','PlanPage','box_setup');assert.match(plan,/Sub-job 1/);assert.match(plan,/Move →/);assert.match(plan,/Plans for approval/);assert.doesNotMatch(plan,/Print all|>Preview</);
  const setup=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_setup');
- assert.doesNotMatch(setup,/shop-floor-utility-actions|Time In \/ Out|>Dashboard</);
+ assert.match(setup,/desktop-shop-floor-actions/);assert.match(setup,/Time In \/ Out/);assert.match(setup,/>Dashboard</);
  assert.match(setup,/<button[^>]+disabled[^>]*>Routine Scan<\/button>/);
  assert.doesNotMatch(setup,/>Print</);assert.match(setup,/Scan &amp; Assign/);
  assert.doesNotMatch(setup,/Bulk box labels|Single box|Reusable barcode/);

@@ -1,78 +1,93 @@
 import { hasDesktopPrinter } from "../services/printing/desktopPrinter.js";
-import { canUsePlan, canUseShopFloor, isShopFloorRole } from "../features/auth/permissions.js";
+import { canUsePlan, isShopFloorRole } from '../features/auth/permissions.js';
+// components/layout/Navigation.js
 import { useManufacturing } from "../state/ManufacturingContext.jsx";
-import { SessionActions } from "../features/auth/AuthGate.js";
 import { React } from "../vendor/react-runtime.js";
 
 function Navbar() {
-  const { setView, view, manager, profile } = useManufacturing();
-  const session = React.useContext(SessionActions);
-  const [open, setOpen] = React.useState(false);
-  const root = React.useRef(null);
-  const trigger = React.useRef(null);
-  const menuId = React.useId();
-  const desktop = hasDesktopPrinter();
-
+  const {
+      setView,
+      view, manager, profile
+    } = useManufacturing(),
+    h = React.createElement,
+    [expanded, setExpanded] = React.useState(''),
+    root = React.useRef(null);
   React.useEffect(() => {
-    if (!open) return;
-    function closeOutside(event) {
-      if (!root.current?.contains(event.target)) setOpen(false);
+    function close(event) {
+      if (root.current && !root.current.contains(event.target)) setExpanded('');
     }
-    document.addEventListener("pointerdown", closeOutside);
-    return () => document.removeEventListener("pointerdown", closeOutside);
-  }, [open]);
-  React.useEffect(() => { setOpen(false); }, [view]);
-
-  const items = [];
-  if (!desktop && manager) items.push(["Dashboard", "dashboard"], ["Job Board", "board"]);
-  items.push(["Shop Floor", "productionline"]);
-  if (canUseShopFloor(profile?.role)) {
-    items.push(["Shop Floor Dashboard", "shopfloordashboard"], ["Time In / Out", "shopfloorattendance"]);
+    document.addEventListener('pointerdown', close);
+    return () => document.removeEventListener('pointerdown', close);
+  }, []);
+  const active = route => route === 'board' ? ['board', 'orders', 'new', 'detail'].includes(view) : route === view;
+  function link(label, route, detail) {
+    return h('a', {
+      key: route,
+      href: '#' + route,
+      className: 'nav-text-link',
+      'aria-current': active(route) ? 'page' : undefined,
+      onClick: event => {
+        event.preventDefault();
+        setExpanded('');
+        setView(route);
+      }
+    }, h('span', null, label), detail && h('small', null, detail));
   }
-  if (canUsePlan(profile?.role)) {
-    items.push(["Print", "shopfloorprint"]);
-    if (!desktop) items.push(["Plan", "plan"]);
-  }
-  if (!desktop && manager) {
-    items.push(["Clients", "customers"], ["Individuals", "individuals"],
-      ["Availability", "availability"], ["Attendance roster", "attendance"]);
-    if (profile?.role === "admin") items.push(["Users", "users"], ["Configurations", "configurations"]);
-  } else if (!desktop && !isShopFloorRole(profile?.role)) {
-    items.push(["Job Board", "board"]);
-    if (profile?.role === "coach") items.push(["Availability", "availability"], ["Attendance roster", "attendance"]);
-  }
-  function active(route) {
-    return route === "board" ? ["board", "orders", "new", "detail"].includes(view) : route === view;
-  }
-  function closeAndFocus() { setOpen(false); trigger.current?.focus(); }
-
-  return <nav ref={root} className="main-navigation workspace-menu-navigation" aria-label="Main navigation"
-    onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setOpen(false); }}
-    onKeyDown={event => {
-      if (event.key === "Escape" && open) { event.preventDefault(); closeAndFocus(); }
-    }}>
-    <button ref={trigger} type="button" className="workspace-menu-trigger" aria-expanded={open}
-      aria-controls={menuId} onClick={() => setOpen(value => !value)}
-      onKeyDown={event => {
-        if (event.key === "ArrowDown") {
+  function dropdown(id, label, items) {
+    const selected = items.some(item => active(item[1]));
+    return h('div', {
+      key: id,
+      className: 'nav-dropdown' + (expanded === id ? ' is-open' : ''),
+      onMouseEnter: () => {
+        if (window.matchMedia('(hover: hover)').matches) setExpanded(id);
+      },
+      onMouseLeave: () => {
+        if (!root.current?.querySelector('[data-menu="' + id + '"]')?.contains(document.activeElement)) setExpanded('');
+      },
+      'data-menu': id,
+      onBlur: event => {
+        if (!event.currentTarget.contains(event.relatedTarget)) setExpanded('');
+      }
+    }, h('button', {
+      type: 'button',
+      className: 'nav-menu-trigger' + (selected ? ' is-current' : ''),
+      'aria-expanded': expanded === id,
+      'aria-controls': 'nav-menu-' + id,
+      onClick: () => setExpanded(value => value === id ? '' : id),
+      onKeyDown: event => {
+        if (event.key === 'ArrowDown') {
           event.preventDefault();
-          setOpen(true);
-          requestAnimationFrame(() => root.current?.querySelector(".workspace-menu-panel a")?.focus());
+          setExpanded(id);
+          requestAnimationFrame(() => root.current?.querySelector('#nav-menu-' + id + ' a')?.focus());
         }
-      }}>
-      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-        <path d="M4 6h16M4 12h16M4 18h16" />
-      </svg>
-      Menu
-    </button>
-    <div id={menuId} className="workspace-menu-panel" hidden={!open}>
-      {items.map(([label, route]) => <a key={route} href={"#" + route} aria-current={active(route) ? "page" : undefined}
-        onClick={event => { event.preventDefault(); closeAndFocus(); setView(route); }}>{label}</a>)}
-      <button type="button" className="workspace-menu-sign-out" disabled={!session?.signOut}
-        onClick={() => { setOpen(false); session?.signOut(); }}>Sign out</button>
-    </div>
-  </nav>;
+      }
+    }, label, h('span', {
+      className: 'nav-chevron',
+      'aria-hidden': true
+    }, '⌄')), h('div', {
+      id: 'nav-menu-' + id,
+      className: 'nav-menu-panel',
+      hidden: expanded !== id
+    }, items.map(([title, route, description]) => link(title, route, description))));
+  }
+  const desktop = hasDesktopPrinter();
+  const print = canUsePlan(profile?.role) ? [link("Print", "shopfloorprint")] : [];
+  const plan = canUsePlan(profile?.role) ? [link('Plan','plan')] : [];
+  return h('nav', {
+    ref: root,
+    className: 'main-navigation refined-navigation',
+    'aria-label': 'Main navigation',
+    onKeyDown: event => {
+      if (event.key === 'Escape') {
+        const button = root.current?.querySelector('.is-open .nav-menu-trigger');
+        setExpanded('');
+        button?.focus();
+      }
+    }
+  }, ...(desktop ? [link('Shop Floor', 'productionline'), ...print] : manager ? [link('Dashboard', 'dashboard'), link('Job Board', 'board'), ...plan, link('Shop Floor', 'productionline'), ...print, dropdown('directory', 'Directory', [['Clients', 'customers', 'Register clients and their items'], ['Individuals', 'individuals', 'Work bookings and future availability'], ['Availability','availability','Reported weekly and monthly availability'], ['Attendance','attendance','Daily attendance roster'], ...(profile?.role==='admin' ? [['Users', 'users', 'Staff accounts and password management']] : [])]), ...(profile?.role==='admin' ? [link('Configurations','configurations')] : [])] : isShopFloorRole(profile?.role) ? [link('Shop Floor','productionline'),...print,...plan] : [link('Shop Floor','productionline'),...print,...plan,link('Job Board','board'),...(profile?.role==='coach'?[link('Availability','availability'),link('Attendance','attendance')]:[])]) );
 }
 
-export { Navbar, Navbar as ManufacturingNavigation };
+export { Navbar };
+
+export { Navbar as ManufacturingNavigation };
 export default Navbar;

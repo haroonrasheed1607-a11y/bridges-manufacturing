@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "A compact header places the Bridges logo on the left and features inside a Menu button. Shop Floor keeps Routine Scan and Scan & Assign on the main screen."
+    "The compact Menu header applies only to mobile screens. Larger screens use the previous navigation and Shop Floor buttons."
   ]
 }

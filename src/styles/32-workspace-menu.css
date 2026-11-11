@@ -9,3 +9,15 @@
 #manufacturing-app .workspace-menu-panel>.workspace-menu-sign-out{margin-top:6px;border-top:1px solid #dce3eb;border-radius:0;color:#a51f2c}
 .workspace-menu-navigation :is(a,button):focus-visible{outline:3px solid #6294db;outline-offset:2px}
 @media(max-width:600px){#manufacturing-app .top.compact-workspace-header{padding:4px 12px;min-height:48px}#manufacturing-app .compact-workspace-header>.brand-logo{width:94px;height:30px}}
+
+/* The compact header is reserved for mobile viewports. */
+#manufacturing-app .top.compact-workspace-header{display:none}
+#manufacturing-app .desktop-workspace-header{display:flex}
+.shop-floor-utility-actions{display:flex;justify-content:flex-end;gap:8px;margin-bottom:8px}
+.shop-floor-utility-actions .shop-floor-dashboard-button{min-height:32px;padding:5px 12px;font-size:12px;border-radius:6px}
+.shop-floor-dashboard-button[aria-pressed=true]{background:#243c5c;color:#fff}
+@media(max-width:760px){
+  #manufacturing-app .desktop-workspace-header{display:none}
+  #manufacturing-app .top.compact-workspace-header{display:flex}
+  .shop-floor-utility-actions.desktop-shop-floor-actions{display:none}
+}
