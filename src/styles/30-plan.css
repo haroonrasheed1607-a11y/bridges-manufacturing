@@ -113,3 +113,5 @@
 @media (max-width: 760px) { .plan-create-fields { grid-template-columns: 1fr; gap: 10px; } .plan-create-footer > button { width: 100%; } }
 
 .catalog-item-fields { margin: 0; padding: 0; border: 0; min-width: 0; }
+
+.scan-assign-approval-actions.form-actions { margin: 0; gap: 8px; flex-wrap: wrap; }

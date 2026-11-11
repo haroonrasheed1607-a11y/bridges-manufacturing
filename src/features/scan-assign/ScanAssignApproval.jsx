@@ -46,6 +46,22 @@ export function ScanAssignApproval({ date, onChange, refreshVersion = 0 }) {
     finally { setBusy(false); saving.current = false; }
   }
 
+  async function complete(row) {
+    if (saving.current || loaded !== date) return;
+    if (!window.confirm("Mark this Scan & Assign approval complete? It will leave the Shop Floor list and its card assignments will close. Recorded production will be kept.")) return;
+    const ticket = request.current;
+    saving.current = true;
+    setBusy(true);
+    setError("");
+    try {
+      const value = await manufacturingApi.rpc("app_complete_scan_assign", {
+        p_approval: row.id, p_date: date, p_approved_at: row.approvedAt,
+      });
+      if (ticket === request.current) { setRows(value); onChange(); }
+    } catch (problem) { if (ticket === request.current) setError(problem.message); }
+    finally { setBusy(false); saving.current = false; }
+  }
+
   return <section className="panel scan-assign-approval" aria-labelledby="scan-assign-approval-title">
     <div className="section-heading"><div><h3 id="scan-assign-approval-title">Scan & Assign approval</h3>
       <p className="quiet">Approve an order for the selected work date. Individuals join by scanning their own QR cards at Shop Floor.</p></div>
@@ -69,7 +85,15 @@ export function ScanAssignApproval({ date, onChange, refreshVersion = 0 }) {
     {error && <p role="alert" className="alert">{error}</p>}
     {loaded !== date ? <p role="status">Loading Scan & Assign approvals…</p> : rows.length ? <ul className="scan-assign-approval-list">{rows.map(row => <li key={row.id}>
       <div><strong>{row.orderTitle}{row.orderCode && " · " + row.orderCode}</strong><small className="block quiet">{row.jobName || row.jobId} · {row.piecesPerScan} pieces/scan · {row.assigned} assigned</small></div>
-      <button type="button" disabled={busy} onClick={() => approve(row.jobId, false)}>Revoke approval</button>
+      <ScanAssignApprovalActions row={row} busy={busy} onComplete={() => complete(row)} onRevoke={() => approve(row.jobId, false)} />
     </li>)}</ul> : <p className="quiet">No orders approved for Scan & Assign on this date.</p>}
   </section>;
+}
+
+export function ScanAssignApprovalActions({ row, busy, onComplete, onRevoke }) {
+  return <div className="form-actions scan-assign-approval-actions">
+    <button type="button" className="primary" disabled={busy} onClick={onComplete}
+      aria-label={"Mark complete: " + row.orderTitle + " · " + (row.jobName || row.jobId)}>Mark complete</button>
+    <button type="button" disabled={busy} onClick={onRevoke}>Revoke approval</button>
+  </div>;
 }

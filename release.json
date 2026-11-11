@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Client catalog items now support Item, Pack and Box units with pieces per pack or box. Edit item names, codes, rates and units; new Plan Work orders use the saved quantity while existing orders keep their recorded settings."
+    "Mark Scan & Assign approvals complete from Plan to remove them from the active Shop Floor list and close their assignments. Recorded production and history are preserved."
   ]
 }

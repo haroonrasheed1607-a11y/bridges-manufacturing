@@ -30,10 +30,9 @@ export function ScanAssignPage({ refreshVersion = 0 }) {
     assignedOrders.get(row.orderId).assigned += row.assigned;
   }
 
-  async function load() {
+  async function load(background = false) {
     const ticket = ++request.current;
-    setLoadedDate("");
-    setError("");
+    if (!background) { setLoadedDate(""); setError(""); }
     try {
       const value = await manufacturingApi.rpc("app_scan_assign_approvals", { p_date: today });
       if (ticket !== request.current) return;
@@ -43,6 +42,12 @@ export function ScanAssignPage({ refreshVersion = 0 }) {
     } catch (problem) { if (ticket === request.current) setError(problem.message); }
   }
   React.useEffect(() => { load(); return () => { request.current++; }; }, [today, refreshVersion]);
+
+  React.useEffect(() => {
+    if (camera || productionCode) return;
+    const timer = setInterval(() => { if (!lock.current) load(true); }, 15000);
+    return () => clearInterval(timer);
+  }, [today, refreshVersion, camera, productionCode]);
 
   React.useEffect(() => {
     if (!result?.waitSeconds) { setSeconds(0); return; }
