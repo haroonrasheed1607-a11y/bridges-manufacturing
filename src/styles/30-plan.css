@@ -67,3 +67,13 @@
   .scan-assign-page .scan-assign-desktop-heading,.scan-assign-page .scan-assign-desktop-controls{display:none}
   .scan-assign-page .scan-assign-camera-action button{width:100%;min-height:52px}
 }
+
+.scan-assign-mobile-counts{display:none}
+@media(max-width:600px){
+  .scan-assign-mobile-counts{display:grid;gap:6px;list-style:none;padding:0;margin:12px 0}
+  .scan-assign-mobile-counts li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px;border:1px solid #dce4ed;border-radius:7px}
+  .scan-assign-mobile-counts li.is-selected{background:#f3f6fa;border-color:#9cacc1}
+  .scan-assign-mobile-counts li>span:first-child{min-width:0;overflow-wrap:anywhere}
+  .scan-assign-person-count{flex:none;text-align:center;font-size:12px;color:#46576c}
+  .scan-assign-person-count>strong{display:block;font-size:20px;color:#172a48}
+}

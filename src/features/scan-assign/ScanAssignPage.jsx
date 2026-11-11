@@ -21,6 +21,14 @@ export function ScanAssignPage({ refreshVersion = 0 }) {
   const input = React.useRef(null);
   const request = React.useRef(0);
   const today = manufacturingToday();
+  const assignedOrders = new Map();
+  const selectedOrderId = rows.find(row => row.id === approval)?.orderId;
+  for (const row of rows) {
+    if (!assignedOrders.has(row.orderId)) {
+      assignedOrders.set(row.orderId, { ...row, assigned: 0 });
+    }
+    assignedOrders.get(row.orderId).assigned += row.assigned;
+  }
 
   async function load() {
     const ticket = ++request.current;
@@ -62,13 +70,13 @@ export function ScanAssignPage({ refreshVersion = 0 }) {
       setResult(response);
       setCode("");
       if (response.waitSeconds === 0 && profile?.role !== "box_setup") setProductionCode(normalized);
-      await refresh();
+      await Promise.all([refresh(), load()]);
     } catch (problem) { setError(problem.message); }
     finally { lock.current = false; setBusy(false); input.current?.focus(); }
   }
 
   if (productionCode) return <DumpingScanner key={productionCode} code={productionCode} autoRecord onDone={() => {
-    setProductionCode(""); setResult(null); setTimeout(() => input.current?.focus(), 0);
+    setProductionCode(""); setResult(null); load(); setTimeout(() => input.current?.focus(), 0);
   }} />;
   return <section className="panel scan-assign-page">
     <header className="section-heading scan-assign-desktop-heading"><div><h2>Scan & Assign</h2><p className="quiet">First scan assigns the individual. Scan again after one minute to record the planned pieces.</p></div>
@@ -78,6 +86,12 @@ export function ScanAssignPage({ refreshVersion = 0 }) {
     }}><option value="">Select an approved order</option>{rows.map(row => <option key={row.id} value={row.id}>
       {row.orderTitle}{row.orderCode && " · " + row.orderCode} · {row.jobName || row.jobId} · {row.piecesPerScan} pieces/scan
     </option>)}</select></label>
+    {loadedDate === today && rows.length > 0 && <ul className="scan-assign-mobile-counts" aria-label="Assigned individuals by approved order" aria-live="polite">
+      {[...assignedOrders.values()].map(row => <li key={row.orderId} className={row.orderId === selectedOrderId ? "is-selected" : ""}>
+        <span><strong>{row.orderTitle}{row.orderCode && " · " + row.orderCode}</strong></span>
+        <span className="scan-assign-person-count"><strong>{row.assigned}</strong> assigned</span>
+      </li>)}
+    </ul>}
     {loadedDate === today && !rows.length && <p className="quiet">Approve an order for today in Plan to use Scan & Assign.</p>}
     <form className="scan-assign-desktop-controls" onSubmit={event => { event.preventDefault(); scan(code); }}>
       <label className="field">Individual QR card<input ref={input} value={code} autoComplete="off" spellCheck={false}

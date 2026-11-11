@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Planning order choices show work-order creation dates, pieces per pack, and work-order descriptions."
+    "Planning choices show creation dates, pieces per pack, and descriptions. Mobile Scan & Assign shows an assigned-person count for each approved order and refreshes it after assignment."
   ]
 }
