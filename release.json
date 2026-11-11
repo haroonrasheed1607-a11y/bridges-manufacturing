@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Scan & Assign can move individuals to a new job even when they already have work assigned. Previous production stays recorded, and the personal QR follows the newly selected job after the one-minute activation period."
+    "Plan Work creates an order, approves its work order, assigns all active Job Coaches and prepares a single sub-job for Scan & Assign. Production and delivery both default to today."
   ]
 }

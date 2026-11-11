@@ -1,3 +1,4 @@
+import { PlanCreateOrder } from "./PlanCreateOrder.jsx";
 import { planningWorkDetails } from "./workOrderOption.js";
 import { ScanAssignApproval } from "../scan-assign/ScanAssignApproval.jsx";
 import { React } from "../../vendor/react-runtime.js";
@@ -10,6 +11,7 @@ import { dayPlanKey, dayPlanLabelIds, dayPlanName, groupDayPlans } from "./dayPl
 export function PlanPage() {
   const { orders, workforce, orderDisplayTitle } = useManufacturing();
   const today = manufacturingToday();
+  const [creationVersion, setCreationVersion] = React.useState(0);
   const [date, setDate] = React.useState(manufacturingToday);
   const [jobId, setJobId] = React.useState("");
   const [target, setTarget] = React.useState(null);
@@ -164,11 +166,16 @@ export function PlanPage() {
     <header className="plan-heading">
       <div>
         <h2>Plan</h2>
-        <p className="quiet">Choose personal Job QR cards or printed job stickers before saving a plan.</p>
+        <p className="quiet">Create work for today, or plan individuals for existing jobs.</p>
       </div>
       <button type="button" disabled={busy} onClick={load}>Refresh</button>
     </header>
-    <ScanAssignApproval date={date} onChange={load} />
+    <PlanCreateOrder onPlanned={async receipt => {
+      setCreationVersion(value => value + 1);
+      if (date !== receipt.date) setDate(receipt.date);
+      else await load();
+    }} />
+    <ScanAssignApproval date={date} refreshVersion={creationVersion} onChange={load} />
     <form onSubmit={move}>
       <div className="panel plan-toolbar">
         <label className="field">Work date

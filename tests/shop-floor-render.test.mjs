@@ -67,7 +67,8 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const adminNav=await render('/src/components/Navbar.jsx','Navbar');
  assert.match(adminNav,/href="#board"/);assert.doesNotMatch(adminNav,/nav-menu-orders/);
  const scannerNav=await render('/src/components/Navbar.jsx','Navbar','box_scanner');assert.doesNotMatch(scannerNav,/href="#plan"|href="#shopfloorprint"/);
- const plan=await render('/src/features/plan/PlanPage.jsx','PlanPage','box_setup');assert.match(plan,/Sub-job 1/);assert.match(plan,/Move →/);assert.match(plan,/Plans for approval/);assert.doesNotMatch(plan,/Print all|>Preview</);
+ const plan=await render('/src/features/plan/PlanPage.jsx','PlanPage','box_setup');assert.match(plan,/Sub-job 1/);assert.match(plan,/Move →/);assert.match(plan,/Plans for approval/);const adminPlan=await render('/src/features/plan/PlanPage.jsx','PlanPage','admin');assert.match(adminPlan,/Create Order/);assert.match(adminPlan,/Plan Work/);assert.match(adminPlan,/Number of pieces/);assert.doesNotMatch(plan,/Print all|>Preview</);
+ const scannerPlan=await render('/src/features/plan/PlanPage.jsx','PlanPage','box_scanner');assert.doesNotMatch(scannerPlan,/Create Order/);
  const setup=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_setup');
  assert.match(setup,/desktop-shop-floor-actions/);assert.match(setup,/Time In \/ Out/);assert.match(setup,/>Dashboard</);
  assert.match(setup,/<button[^>]+disabled[^>]*>Routine Scan<\/button>/);

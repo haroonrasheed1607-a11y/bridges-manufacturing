@@ -3,7 +3,7 @@ import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 
-export function ScanAssignApproval({ date, onChange }) {
+export function ScanAssignApproval({ date, onChange, refreshVersion = 0 }) {
   const { orders, orderDisplayTitle } = useManufacturing();
   const [orderId, setOrderId] = React.useState("");
   const [jobId, setJobId] = React.useState("");
@@ -28,7 +28,7 @@ export function ScanAssignApproval({ date, onChange }) {
       if (ticket === request.current) { setRows(value); setLoaded(date); }
     } catch (problem) { if (ticket === request.current) setError(problem.message); }
   }
-  React.useEffect(() => { load(); return () => { request.current++; }; }, [date]);
+  React.useEffect(() => { load(); return () => { request.current++; }; }, [date, refreshVersion]);
 
   async function approve(job, enabled) {
     if (saving.current || loaded !== date) return;
