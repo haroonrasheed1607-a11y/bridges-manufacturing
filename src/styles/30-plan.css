@@ -77,3 +77,13 @@
   .scan-assign-person-count{flex:none;text-align:center;font-size:12px;color:#46576c}
   .scan-assign-person-count>strong{display:block;font-size:20px;color:#172a48}
 }
+
+.shop-floor-utility-actions{display:flex;justify-content:flex-end;margin-bottom:8px}
+.shop-floor-utility-actions .shop-floor-dashboard-button{min-height:32px;padding:5px 12px;font-size:12px;border-radius:6px}
+.shop-floor-dashboard-button[aria-pressed=true]{background:#243c5c;color:#fff}
+.shop-floor-dashboard table{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}
+.shop-floor-dashboard th,.shop-floor-dashboard td{padding:12px 8px;border-bottom:1px solid #dce4ed;text-align:left;overflow-wrap:anywhere}
+.shop-floor-dashboard thead th{font-size:12px;color:#52627b}
+.shop-floor-dashboard th:first-child{width:66.666%}
+.shop-floor-dashboard td,.shop-floor-dashboard th:last-child{text-align:right}
+.shop-floor-dashboard td{font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}

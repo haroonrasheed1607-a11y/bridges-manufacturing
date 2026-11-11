@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Reusable production scans default to 120 seconds between loads. Work orders and quick approval include an editable scan interval."
+    "Shop Floor includes a compact dashboard showing orders and pieces scanned today, with automatic refresh."
   ]
 }
