@@ -63,8 +63,8 @@ export function ScanSettings() {
           </label>
           <label className="field"><span>Seconds between scans for 1× load</span>
             <input type="number" min="0" max="604800" step="1" value={seconds} disabled={!current}
-              onChange={event => setSeconds(event.target.value)} placeholder="Calculated from work timing" />
-            <small>Blank uses work-order timing. Zero removes the delay. A 2× load doubles the time. Applies to repeat scans of the same QR.</small>
+              onChange={event => setSeconds(event.target.value)} placeholder="Standard: 120 seconds" />
+            <small>Blank uses the standard 120 seconds. Zero removes the delay. A 2× load doubles the time. Applies to repeat scans of the same QR.</small>
           </label>
           <label className="field"><span>Pieces per scan (1×)</span>
             <input type="number" min="1" max={current?.work.quantity ?? 1000000} step="1" value={pieces} disabled={!current}

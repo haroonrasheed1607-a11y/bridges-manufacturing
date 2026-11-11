@@ -30,6 +30,7 @@ function WorkOrderForm({
     [packSeconds, setPackSeconds] = React.useState(existingWork && existingWork.timingVersion !== 2
       ? Number(existingWork.packageSeconds ?? 0)
       : Number(existingWork?.packSeconds ?? 20)),
+    [scanCooldownSeconds, setScanCooldownSeconds] = React.useState(existingWork?.scanCooldownSeconds ?? 120),
     [parts, setParts] = React.useState(() => existingWork?.parts ?? (existingWork ? [] : manufacturingDefaultParts())),
     [hoursPerDay, setHoursPerDay] = React.useState(Number(existingWork?.hoursPerDay ?? order.hoursPerDay ?? 6)),
     [startDate, setStartDate] = React.useState(existingWork?.startDate || order.startDate || manufacturingToday()),
@@ -41,7 +42,7 @@ function WorkOrderForm({
   const replacingSubJobs = !!replacementPrefix;
   const { work, suggestedPacks } = manufacturingBuildWorkOrder(order, {
     id, type, description, instructions, parts, seconds, packSeconds,
-    hoursPerDay, startDate, required, assignedPeople, packsOverride, existingWork, replacementPrefix,
+    hoursPerDay, startDate, required, assignedPeople, packsOverride, existingWork, replacementPrefix, scanCooldownSeconds: Number(scanCooldownSeconds),
   });
   const { quantity, perPack, packageSeconds, recommendedPeople, packsPerSubJob } = work;
   const field = (label, props, hint) => h(FormField, {
@@ -143,7 +144,16 @@ function WorkOrderForm({
     min: startDate,
     value: required,
     onChange: event => setRequired(event.target.value)
-  })), h('div', {
+  })), field('Seconds between production scans (1× load)', {
+    type: 'number',
+    min: 0,
+    max: 604800,
+    step: 1,
+    required: true,
+    value: scanCooldownSeconds,
+    onChange: event => setScanCooldownSeconds(event.target.value)
+  }, 'Standard: 120 seconds. A 2× load uses twice the interval.'),
+  h('div', {
     className: 'work-plan-people'
   }, field('People needed / assigned', {
     type: 'number',

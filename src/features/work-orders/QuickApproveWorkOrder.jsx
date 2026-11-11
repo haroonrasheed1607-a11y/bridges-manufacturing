@@ -28,6 +28,7 @@ export function QuickApproveWorkOrder({ order }) {
     const { work } = manufacturingBuildWorkOrder(order, {
       id: createId("WO"),
       type: fields.get("type"),
+      scanCooldownSeconds: Number(fields.get("scanCooldownSeconds") ?? 120),
       description: order.title.trim(),
       instructions: String(fields.get("instructions") ?? "").trim(),
     });
@@ -72,6 +73,9 @@ export function QuickApproveWorkOrder({ order }) {
             <option>Assembly</option>
             <option>Packaging</option>
           </select>
+        </FormField>
+        <FormField label="Seconds between production scans (1× load)">
+          <input name="scanCooldownSeconds" type="number" min="0" max="604800" step="1" required defaultValue={120} />
         </FormField>
         <FormField label="Work instructions">
           <textarea name="instructions" required rows={3} placeholder="What should the team do?" />

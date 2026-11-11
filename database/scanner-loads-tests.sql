@@ -25,9 +25,9 @@ do $$declare admin_id uuid;scanner_id uuid;setup_id uuid;result jsonb;report jso
  result:=public.app_dumping_scan(code,req,200);if (result->>'pieces')::int<>200 then raise exception 'Default batch failed';end if;
  result:=public.app_dumping_scan(code,req);if not (result->>'duplicate')::boolean or (select completed from public.sub_jobs where id=jid)<>200 then raise exception 'Retry counted twice';end if;
  begin perform public.app_dumping_scan(code,gen_random_uuid());raise exception 'Expected duplicate guard';exception when raise_exception then if sqlerrm not like 'Too soon to scan%' then raise;end if;end;
- update public.dumping_assignments set last_scan_at=clock_timestamp()-interval '51 minutes' where id=code;
- begin perform public.app_dumping_scan(code,gen_random_uuid(),200);raise exception 'Double load accepted before its fill time';exception when raise_exception then if sqlerrm not like 'Too soon to scan%' then raise;end if;end;
- update public.dumping_assignments set last_scan_at=clock_timestamp()-interval '101 minutes' where id=code;
+ update public.dumping_assignments set last_scan_at=clock_timestamp()-interval '121 seconds' where id=code;
+ begin perform public.app_dumping_scan(code,gen_random_uuid(),200);raise exception 'Double load accepted before its scan interval';exception when raise_exception then if sqlerrm not like 'Too soon to scan%' then raise;end if;end;
+ update public.dumping_assignments set last_scan_at=clock_timestamp()-interval '241 seconds' where id=code;
  begin perform public.app_dumping_scan(code,gen_random_uuid());raise exception 'Expected capacity guard';exception when raise_exception then if sqlerrm not like 'Batch exceeds%' then raise;end if;end;
  begin perform public.app_dumping_scan(code,gen_random_uuid(),201);raise exception 'Over two loads accepted';exception when raise_exception then if sqlerrm not like 'Batch exceeds%' then raise;end if;end;
  perform public.app_dumping_scan(code,gen_random_uuid(),20);

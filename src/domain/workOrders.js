@@ -66,6 +66,7 @@ function manufacturingBuildWorkOrder(order, {
   hoursPerDay = Number(order.hoursPerDay ?? 6),
   startDate = order.startDate || manufacturingToday(),
   required = order.required, existingWork, replacementPrefix, assignedPeople = '', packsOverride = null,
+  scanCooldownSeconds = Number(existingWork?.scanCooldownSeconds ?? 120),
 }) {
   const { quantity, perPack, packCount } = manufacturingOrderPlan(existingWork ?? order);
   const totalSeconds = manufacturingWorkSeconds({
@@ -79,7 +80,7 @@ function manufacturingBuildWorkOrder(order, {
   const work = {
     ...existingWork,
     id, type, description, instructions, parts: type === 'Assembly' ? parts : [],
-    timingVersion: 2, quantity, perPack, packCount, seconds, packSeconds,
+    timingVersion: 2, quantity, perPack, packCount, seconds, packSeconds, scanCooldownSeconds,
     packageSeconds: seconds * perPack + packSeconds,
     hoursPerDay, startDate, required, expected: plan.expected,
     people: plan.people, recommendedPeople: plan.recommendedPeople,

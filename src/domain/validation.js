@@ -16,6 +16,8 @@ var getOrderPackRecords = e => e.workOrders.flatMap(e => e.jobs.flatMap(t => bui
   job: t.name
 }))));
 function validateWorkOrder(e) {
+  if (e.scanCooldownSeconds != null && (!Number.isInteger(e.scanCooldownSeconds) || e.scanCooldownSeconds < 0 || e.scanCooldownSeconds > 604800))
+    return "Seconds between scans must be a whole number between 0 and 604800.";
   if (!Number.isFinite(Number(e.packSeconds ?? 0)) || Number(e.packSeconds ?? 0) < 0 || !Number.isFinite(Number(e.packageSeconds ?? 0)) || Number(e.packageSeconds ?? 0) < 0) return `Packing times must be zero or greater.`;
   return [`Assembly`, `Packing`, `Packaging`].includes(e.type) ? !e.description.trim() || !e.instructions.trim() ? `Description and instructions are required.` : [e.quantity, e.perPack, e.people].every(e => Number.isSafeInteger(e) && e > 0) ? e.quantity > 1e6 || e.perPack > 1e6 ? `The screen draft supports up to 1,000,000 pieces per work order.` : !Number.isFinite(e.seconds) || e.seconds <= 0 ? `Time per piece must be greater than zero.` : !e.expected || !e.required ? `Both delivery dates are required.` : !e.jobs.length || e.jobs.some(e => !e.name.trim() || !Number.isSafeInteger(e.quantity) || e.quantity < 1 || ![`Box`, `Packet`].includes(e.packType)) ? `Each sub-job needs a name, positive whole quantity and pack type.` : e.jobs.reduce((e, t) => e + t.quantity, 0) === e.quantity ? `` : `Sub-job pieces must add up to the work-order quantity.` : `Pieces, pieces per pack and people must be positive whole numbers.` : `Choose Assembly or Packing.`;
 }
