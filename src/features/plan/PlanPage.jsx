@@ -1,3 +1,4 @@
+import { planningWorkDetails } from "./workOrderOption.js";
 import { ScanAssignApproval } from "../scan-assign/ScanAssignApproval.jsx";
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
@@ -184,7 +185,7 @@ export function PlanPage() {
           <select required value={jobId} disabled={!editable} onChange={e => selectPlan(e.target.value)}>
             <option value="">{jobs.length ? "Select a sub-job" : "No unfinished sub-jobs in production"}</option>
             {jobs.map(({order, work, job}) => <option key={job.id} value={job.id}>
-              {orderDisplayTitle(order)} · {work.description} · {job.name} ({job.quantity - job.completed} remaining)
+              {orderDisplayTitle(order)} · {planningWorkDetails(work)} · {job.name} ({job.quantity - job.completed} remaining)
             </option>)}
           </select>
         </label>

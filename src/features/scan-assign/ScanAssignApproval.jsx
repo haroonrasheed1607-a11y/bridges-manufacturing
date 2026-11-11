@@ -1,3 +1,4 @@
+import { planningOrderOption, planningWorkDetails } from "../plan/workOrderOption.js";
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
@@ -15,6 +16,7 @@ export function ScanAssignApproval({ date, onChange }) {
   const saving = React.useRef(false);
   const eligible = orders.filter(order => order.stage === 1 && order.workOrders.some(work => work.jobs.some(job => job.completed < job.quantity)));
   const order = eligible.find(item => item.id === orderId);
+  const selectedWork = order?.workOrders.find(work => work.jobs.some(job => job.id === jobId));
   const jobs = order?.workOrders.flatMap(work => work.jobs.filter(job => job.completed < job.quantity)) ?? [];
 
   async function load() {
@@ -54,13 +56,14 @@ export function ScanAssignApproval({ date, onChange }) {
         const selectedOrder = eligible.find(item => item.id === e.target.value);
         setJobId(selectedOrder?.workOrders.flatMap(work => work.jobs.filter(job => job.completed < job.quantity))[0]?.id ?? "");
         setPieces("");
-      }}><option value="">Select an order</option>{eligible.map(item => <option key={item.id} value={item.id}>{orderDisplayTitle(item)}</option>)}</select></label>
+      }}><option value="">Select an order</option>{eligible.map(item => <option key={item.id} value={item.id}>{planningOrderOption(item, orderDisplayTitle(item))}</option>)}</select></label>
       <label className="field">Sub-job<select value={jobId} disabled={busy || !order} onChange={e => setJobId(e.target.value)}>
         <option value="">Select a sub-job</option>{jobs.map(job => <option key={job.id} value={job.id}>{job.name} · {job.quantity - job.completed} remaining</option>)}
       </select></label>
       <label className="field">Pieces per scan (optional override)<input type="number" min="1" max="1000000" step="1" value={pieces}
         placeholder="Use the order’s scan quantity" disabled={busy} onChange={e => setPieces(e.target.value)} /></label>
     </div>
+    {selectedWork && <p className="quiet">{planningWorkDetails(selectedWork)}</p>}
     <button type="button" className="primary" disabled={busy || loaded !== date || !jobId || (pieces !== "" && (!Number.isInteger(Number(pieces)) || Number(pieces) < 1))}
       onClick={() => approve(jobId, true)}>Approve for Scan & Assign</button>
     {error && <p role="alert" className="alert">{error}</p>}
