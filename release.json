@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Shop Floor includes a compact dashboard showing orders and pieces scanned today, with automatic refresh."
+    "Shop Floor can record Time In and Time Out by scanning personal QR cards. Attendance uses Tulsa time and protects against duplicate scans."
   ]
 }
