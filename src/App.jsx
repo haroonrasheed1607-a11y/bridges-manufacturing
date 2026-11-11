@@ -1,3 +1,4 @@
+import { ApprovedPlanPrint } from "./features/production/ApprovedPlanPrint.jsx";
 import { hasDesktopPrinter } from "./services/printing/desktopPrinter.js";
 import { PlanPage } from './features/plan/PlanPage.jsx';
 import {BarcodeApprovals} from './features/admin-approvals/BarcodeApprovals.jsx';
@@ -27,6 +28,7 @@ function App() {
     view: e, manager, profile, orderDisplayTitle,
     order: t
   } = useManufacturing();
+  if(e === 'shopfloorprint' && canUsePlan(profile?.role)) return <AppLayout><ApprovedPlanPrint /></AppLayout>;
   if (hasDesktopPrinter()) return <AppLayout><ManufacturingProductionLine /></AppLayout>;
   if(e === 'plan' && canUsePlan(profile?.role)) return <AppLayout><PlanPage /></AppLayout>;
   if(isShopFloorRole(profile?.role))return React.createElement(AppLayout,null,React.createElement(ManufacturingProductionLine));

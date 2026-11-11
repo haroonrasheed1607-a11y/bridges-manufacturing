@@ -4,7 +4,6 @@ import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { useScreenMemory } from "../../state/useScreenMemory.js";
 import { React } from "../../vendor/react-runtime.js";
 import { productionTabs } from "../auth/permissions.js";
-import { ApprovedPlanPrint } from "./ApprovedPlanPrint.jsx";
 import { ManufacturingScanComplete } from "./ScanComplete.js";
 
 function ManufacturingProductionLine() {
@@ -17,11 +16,11 @@ function ManufacturingProductionLine() {
   if (!current) return h("p", { role: "alert" }, "Shop Floor access required.");
 
   return h("section", { className: "shop-floor-tasks" },
-    h("div", { className: "production-mode-tabs", role: "group", "aria-label": "Shop Floor tasks" },
-      [["scan", "Scan"], ["print", "Print"], ["assign", "Scan & Assign"]].map(([task, label]) => h("button", {
+    h("div", { className: "production-mode-tabs shop-floor-scan-tabs", role: "group", "aria-label": "Shop Floor tasks" },
+      [["scan", "Routine Scan"], ["assign", "Scan & Assign"]].map(([task, label]) => h("button", {
         key: task,
         type: "button",
-        className: [current === task ? "is-selected" : "", task === "assign" ? "scan-assign-tab" : ""].filter(Boolean).join(" "),
+        className: [current === task ? "is-selected" : "", task === "assign" ? "scan-assign-tab" : "routine-scan-tab"].filter(Boolean).join(" "),
         "aria-pressed": current === task,
         disabled: !tasks.includes(task),
         onClick: () => {
@@ -31,7 +30,7 @@ function ManufacturingProductionLine() {
       }, label))),
     current === "scan"
       ? h(ManufacturingScanComplete, { minimal: profile?.role === "box_scanner" })
-      : current === "assign" ? h(ScanAssignPage, { refreshVersion: assignRefresh }) : h(ApprovedPlanPrint));
+      : h(ScanAssignPage, { refreshVersion: assignRefresh }));
 }
 
 export { ManufacturingProductionLine };

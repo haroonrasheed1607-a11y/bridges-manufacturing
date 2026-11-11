@@ -51,7 +51,7 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(attendance,/Daily attendance roster/);assert.match(attendance,/Bulk attendance/);
  assert.match(attendance,/aria-label="Select Alex"/);assert.match(attendance,/>Time In</);assert.match(attendance,/>Time Out</);
  assert.match(await render('/src/features/dumping/DumpingSetup.jsx','DumpingSetup'),/100/);
- const nav=await render('/src/components/Navbar.jsx','Navbar','box_setup');assert.match(nav,/href="#plan"/);
+ const nav=await render('/src/components/Navbar.jsx','Navbar','box_setup');assert.match(nav,/href="#plan"/);assert.match(nav,/href="#shopfloorprint"/);
  const board=await render('/src/features/job-board/JobBoardPage.js','ManufacturingJobBoard');
  assert.match(board,/List view/);assert.match(board,/Approve Work Order/);
  const ordersList=await render('/src/features/orders/OrdersPage.js','OrdersPage');
@@ -64,14 +64,14 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(crumbs,/Job Board.*All orders.*Assembly order · PART-42/);
  const adminNav=await render('/src/components/Navbar.jsx','Navbar');
  assert.match(adminNav,/href="#board"/);assert.doesNotMatch(adminNav,/nav-menu-orders/);
- const scannerNav=await render('/src/components/Navbar.jsx','Navbar','box_scanner');assert.doesNotMatch(scannerNav,/href="#plan"/);
+ const scannerNav=await render('/src/components/Navbar.jsx','Navbar','box_scanner');assert.doesNotMatch(scannerNav,/href="#plan"|href="#shopfloorprint"/);
  const plan=await render('/src/features/plan/PlanPage.jsx','PlanPage','box_setup');assert.match(plan,/Sub-job 1/);assert.match(plan,/Move →/);assert.match(plan,/Plans for approval/);assert.doesNotMatch(plan,/Print all|>Preview</);
  const setup=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_setup');
- assert.match(setup,/<button[^>]+disabled[^>]*>Scan<\/button>/);
- assert.match(setup,/>Print</);assert.match(setup,/Approved plans/);
+ assert.match(setup,/<button[^>]+disabled[^>]*>Routine Scan<\/button>/);
+ assert.doesNotMatch(setup,/>Print</);assert.match(setup,/Scan &amp; Assign/);
  assert.doesNotMatch(setup,/Bulk box labels|Single box|Reusable barcode/);
  const scanner=await render('/src/features/production/ProductionLinePage.js','ManufacturingProductionLine','box_scanner');
- assert.match(scanner,/<button[^>]+disabled[^>]*>Print<\/button>/);
+ assert.doesNotMatch(scanner,/>Print</);assert.match(scanner,/>Routine Scan</);
  assert.match(scanner,/Completed work/);assert.match(scanner,/type="date"/);assert.match(scanner,/Scan QR code/);
  assert.doesNotMatch(scanner,/Approved plans|production-box-scan|Box ID|Create reusable QR/);
  }finally{await server.close();}

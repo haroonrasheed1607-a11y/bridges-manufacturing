@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Mobile Scan & Assign has a compact camera-only interface and a red selected tab. Tapping Scan & Assign refreshes approved orders."
+    "Shop Floor printing is now in the navigation bar. Routine Scan uses two-thirds of the scanning tabs."
   ]
 }

@@ -70,7 +70,8 @@ function Navbar() {
       hidden: expanded !== id
     }, items.map(([title, route, description]) => link(title, route, description))));
   }
-  if (hasDesktopPrinter()) return null;
+  const desktop = hasDesktopPrinter();
+  const print = canUsePlan(profile?.role) ? [link("Print", "shopfloorprint")] : [];
   const plan = canUsePlan(profile?.role) ? [link('Plan','plan')] : [];
   return h('nav', {
     ref: root,
@@ -83,7 +84,7 @@ function Navbar() {
         button?.focus();
       }
     }
-  }, ...(manager ? [link('Dashboard', 'dashboard'), link('Job Board', 'board'), ...plan, link('Shop Floor', 'productionline'), dropdown('directory', 'Directory', [['Clients', 'customers', 'Register clients and their items'], ['Individuals', 'individuals', 'Work bookings and future availability'], ['Availability','availability','Reported weekly and monthly availability'], ['Attendance','attendance','Daily attendance roster'], ...(profile?.role==='admin' ? [['Users', 'users', 'Staff accounts and password management']] : [])]), ...(profile?.role==='admin' ? [link('Configurations','configurations')] : [])] : isShopFloorRole(profile?.role) ? [link('Shop Floor','productionline'),...plan] : [link('Shop Floor','productionline'),...plan,link('Job Board','board'),...(profile?.role==='coach'?[link('Availability','availability'),link('Attendance','attendance')]:[])]) );
+  }, ...(desktop ? [link('Shop Floor', 'productionline'), ...print] : manager ? [link('Dashboard', 'dashboard'), link('Job Board', 'board'), ...plan, link('Shop Floor', 'productionline'), ...print, dropdown('directory', 'Directory', [['Clients', 'customers', 'Register clients and their items'], ['Individuals', 'individuals', 'Work bookings and future availability'], ['Availability','availability','Reported weekly and monthly availability'], ['Attendance','attendance','Daily attendance roster'], ...(profile?.role==='admin' ? [['Users', 'users', 'Staff accounts and password management']] : [])]), ...(profile?.role==='admin' ? [link('Configurations','configurations')] : [])] : isShopFloorRole(profile?.role) ? [link('Shop Floor','productionline'),...print,...plan] : [link('Shop Floor','productionline'),...print,...plan,link('Job Board','board'),...(profile?.role==='coach'?[link('Availability','availability'),link('Attendance','attendance')]:[])]) );
 }
 
 export { Navbar };

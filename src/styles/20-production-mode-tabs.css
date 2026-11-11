@@ -1,1 +1,4 @@
 .production-mode-tabs{display:flex;gap:8px;border-bottom:1px solid #d9dee5;margin-bottom:24px;padding-bottom:8px}.production-mode-tabs button{flex:1;min-height:52px;background:#f3f5f7;border:1px solid #d9dee5;color:#344054;font-weight:650}.production-mode-tabs button.is-selected{background:#151515;color:#fff;border-color:#151515}.production-mode-tabs button:focus-visible{outline:3px solid #6aa6e8;outline-offset:3px}@media(max-width:600px){.production-mode-tabs{gap:8px}.production-mode-tabs button{padding:12px 8px;line-height:1.4;font-size:14px}}
+
+.production-mode-tabs.shop-floor-scan-tabs{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr)}
+.production-mode-tabs.shop-floor-scan-tabs button{min-width:0;white-space:normal}
