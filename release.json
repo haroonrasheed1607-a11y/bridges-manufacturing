@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Administrators can enter a QR’s daily production total from Routine Scan. Existing recorded pieces are reconciled to prevent double counting."
+    "Scan & Assign can move individuals to a new job even when they already have work assigned. Previous production stays recorded, and the personal QR follows the newly selected job after the one-minute activation period."
   ]
 }

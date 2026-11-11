@@ -103,7 +103,7 @@ export function ScanAssignPage({ refreshVersion = 0 }) {
       <button type="button" className="primary" disabled={busy || !approval || loadedDate !== today} onClick={() => setCamera(true)}>Scan with camera</button>
     </div>
     {error && <p role="alert" className="alert">{error}</p>}
-    {result && <div className="scan-assign-result" role="status"><h3>{result.personName} · Assigned</h3>
+    {result && <div className="scan-assign-result" role="status"><h3>{result.personName} · {result.reassigned ? "Reassigned" : "Assigned"}</h3>
       <p>{result.piecesPerScan} pieces per scan</p>
       <p>{seconds > 0 ? "Production scans unlock in " + seconds + " seconds."
         : profile?.role === "box_setup" ? "Ready for production scanning."

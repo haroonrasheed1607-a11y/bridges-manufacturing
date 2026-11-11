@@ -14,6 +14,8 @@ declare
  result jsonb;
  activation timestamptz;
  receipt uuid:=gen_random_uuid();
+ future_id text:='REUSE-'||upper(substr(replace(gen_random_uuid()::text,'-',''),1,16));
+ legacy_id text:='REUSE-'||upper(substr(replace(gen_random_uuid()::text,'-',''),1,16));
 begin
  select id into strict admin_id from public.staff_profiles where active and role='admin' limit 1;
  select id into strict scanner_id from public.staff_profiles where active and role='box_scanner' limit 1;
@@ -60,10 +62,6 @@ begin
    raise exception 'Personal scan bypassed activation';
  exception when raise_exception then if sqlerrm not like 'This card is assigned. Wait%' then raise; end if; end;
  begin
-   perform public.app_scan_and_assign(other_approval,qr);
-   raise exception 'Individual was assigned to two jobs';
- exception when raise_exception then if sqlerrm not like 'This individual already has work%' then raise; end if; end;
- begin
    perform public.app_scan_and_assign(approval,'IND-0000000000000000');
    raise exception 'Unknown personal QR was accepted';
  exception when raise_exception then if sqlerrm not like 'Scan a system-generated%' then raise; end if; end;
@@ -72,6 +70,55 @@ begin
  result:=public.app_scan_individual_job_qr(qr,assigned_id,receipt,100,100);
  if not result @> '{"pieces":100,"duplicate":false}' then raise exception 'Production failed after activation'; end if;
  if not public.app_scan_individual_job_qr(qr,assigned_id,receipt,100,100) @> '{"duplicate":true}' then raise exception 'A retry counted twice'; end if;
+ -- Move to another approved job while retaining the earlier scans.
+ result:=public.app_scan_and_assign(other_approval,qr);
+ if not result @> '{"reassigned":true,"piecesPerScan":50}'
+   or (select active from public.dumping_assignments where id=assigned_id)
+   or (result->>'waitSeconds')::int not between 59 and 60 then
+   raise exception 'Reassignment failed %',result;
+ end if;
+ if (select completed from public.sub_jobs where id=prefix)<>100
+  or (select count(*) from public.dumping_completions where assignment_id=assigned_id)<>1 then
+   raise exception 'Reassignment changed production';
+ end if;
+ -- Original receipt remains safe to retry after changing jobs.
+ if not public.app_scan_individual_job_qr(qr,assigned_id,receipt,100,100) @> '{"duplicate":true}' then
+   raise exception 'Original scan retry failed after reassignment';
+ end if;
+ update public.dumping_assignments set scan_assign_ready_at=clock_timestamp()-interval '1 second'
+ where id=result->>'assignmentId';
+ if not public.app_individual_job_qr(qr) @> '{"batchQuantity":50,"scanQuantity":50}' then
+   raise exception 'Personal card did not follow the new job';
+ end if;
+ begin
+   perform public.app_scan_individual_job_qr(qr,assigned_id,gen_random_uuid(),100,100);
+   raise exception 'Stale production confirmation was accepted';
+ exception when serialization_failure then null;end;
+ result:=public.app_scan_individual_job_qr(qr,result->>'assignmentId',gen_random_uuid(),50,50);
+ if not result @> '{"pieces":50,"duplicate":false}'
+  or (select completed from public.sub_jobs where id=prefix||'-J2')<>50 then
+   raise exception 'New job production failed';
+ end if;
+ -- Returning to a previous job creates a fresh assignment, retaining its history.
+ result:=public.app_scan_and_assign(approval,qr);
+ if result->>'assignmentId'=assigned_id or not result @> '{"reassigned":true}' then
+   raise exception 'Returning to a previous job failed';
+ end if;
+ -- An unfinished single-use box does not block Scan & Assign or get completed by it.
+ perform set_config('request.jwt.claim.sub',admin_id::text,true);
+ rows:=public.app_individual_qr_cards(array[other_person],true);
+ insert into public.boxes(id,person_id,sub_job_id,quantity) values(prefix||'-BOX',other_person,prefix,25);
+ insert into public.dumping_assignments(id,person_id,sub_job_id,batch_quantity,created_by,work_date)
+ values(future_id,other_person,prefix,100,admin_id,today+1),
+       (legacy_id,other_person,prefix,100,admin_id,null);
+ perform set_config('request.jwt.claim.sub',scanner_id::text,true);
+ result:=public.app_scan_and_assign(other_approval,rows->0->>'code');
+ if not result @> '{"reassigned":true}'
+  or (select active from public.dumping_assignments where id=legacy_id)
+  or not (select active from public.dumping_assignments where id=future_id)
+  or (select completed_at from public.boxes where id=prefix||'-BOX') is not null then
+   raise exception 'Existing work was not preserved correctly';
+ end if;
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
  begin
    perform public.app_approve_scan_assign(today,prefix,50,true);
