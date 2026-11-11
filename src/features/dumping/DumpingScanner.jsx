@@ -2,7 +2,7 @@ import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { SUCCESS_DISPLAY_MS, scanRequestKey, completedLoadPieces, isIndividualJobCode } from "./model.js";
-export function DumpingScanner({ code, onDone }) {
+export function DumpingScanner({ code, onDone, autoRecord = false }) {
   const personal = isIndividualJobCode(code);
   const { workforce, refresh, profile } = useManufacturing();
   const [result, setResult] = React.useState(null),
@@ -13,6 +13,7 @@ export function DumpingScanner({ code, onDone }) {
     [assignment, setAssignment] = React.useState(null),
     [multiplier, setMultiplier] = React.useState(1),
     [submitted, setSubmitted] = React.useState(false);
+  const autoStarted = React.useRef(false);
   const lock = React.useRef(false),
     pending = React.useRef(null),
     key = scanRequestKey(profile?.id, code),
@@ -94,6 +95,11 @@ export function DumpingScanner({ code, onDone }) {
     }).catch(e => { if (!cancelled) setError(e.message); });
     return () => { cancelled = true; };
   }, [code]);
+  React.useEffect(() => {
+    if (!autoRecord || !assignment || autoStarted.current || !assignment.scanQuantity) return;
+    autoStarted.current = true;
+    record();
+  }, [autoRecord, assignment?.id]);
   React.useEffect(() => {
     if (!result) return;
     const timer = setTimeout(() => {

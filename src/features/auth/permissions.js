@@ -5,6 +5,7 @@ function productionTabs(role) {
   const tabs = [];
   if (['admin', 'manager', 'coach', 'station', 'box_scanner'].includes(role)) tabs.push(['scan', 'Scan & Complete Work']);
   if (canUsePlan(role)) tabs.push(['print', 'Generate Box Printouts']);
+  if (canUsePlan(role) || role === 'box_scanner') tabs.push(['assign', 'Scan & Assign']);
   return tabs;
 }
 export { canUsePlan, isShopFloorRole, productionTabs };

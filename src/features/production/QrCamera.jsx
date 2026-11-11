@@ -1,7 +1,7 @@
 import {cameraErrorMessage} from './cameraErrors.js';
 import { useEffect, useRef, useState } from "react";
 
-export function QrCamera({ onScan, onClose }) {
+export function QrCamera({ onScan, onClose, description }) {
   const dialog = useRef(null),
     video = useRef(null),
     [error, setError] = useState(""),
@@ -158,13 +158,12 @@ export function QrCamera({ onScan, onClose }) {
             aria-label="QR camera preview"
           />
           <p>
-            Box scans open completion confirmation. Reusable dumping QR scans
-            record the assigned batch automatically.
+            {description || "Scan a box or an individual’s Job QR to record completed work."}
           </p>
         </>
       )}
       <button type="button" onClick={onClose}>
-        Enter box code manually
+        Close camera
       </button>
     </dialog>
   );

@@ -1,3 +1,4 @@
+import { ScanAssignApproval } from "../scan-assign/ScanAssignApproval.jsx";
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
@@ -24,7 +25,7 @@ export function PlanPage() {
   const jobs = orders.filter(o => o.stage === 1).flatMap(order =>
     order.workOrders.flatMap(work => work.jobs.filter(job => job.completed < job.quantity)
       .map(job => ({ order, work, job }))));
-  const plans = groupDayPlans(labels);
+  const plans = groupDayPlans(labels.filter(label => !label.scanAssign));
   const current = jobs.find(item => item.job.id === jobId);
   const savedPlan = target && plans.find(plan => plan.key === target.key);
   const savedPeople = savedPlan?.labels.map(label => label.personId) ?? [];
@@ -166,6 +167,7 @@ export function PlanPage() {
       </div>
       <button type="button" disabled={busy} onClick={load}>Refresh</button>
     </header>
+    <ScanAssignApproval date={date} onChange={load} />
     <form onSubmit={move}>
       <div className="panel plan-toolbar">
         <label className="field">Work date

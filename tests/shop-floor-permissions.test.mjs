@@ -8,12 +8,12 @@ test('shop floor aliases use separate case-insensitive identities', () => {
   assert.equal(normalizeLogin(' BoxScan '), 'boxscan@bridges-manufacturing.local');
 });
 test('each shop-floor role has only its designated production task', () => {
-  assert.deepEqual(productionTabs('box_setup').map(([id]) => id), ['print']);
-  assert.deepEqual(productionTabs('box_scanner').map(([id]) => id), ['scan']);
+  assert.deepEqual(productionTabs('box_setup').map(([id]) => id), ['print', 'assign']);
+  assert.deepEqual(productionTabs('box_scanner').map(([id]) => id), ['scan', 'assign']);
   assert.equal(isShopFloorRole('box_setup'), true);
   assert.equal(isShopFloorRole('box_scanner'), true);
   for (const role of ['admin', 'manager', 'coach', 'station']) {
-    assert.deepEqual(productionTabs(role).map(([id]) => id), ['scan', 'print']);
+    assert.deepEqual(productionTabs(role).map(([id]) => id), ['scan', 'print', 'assign']);
     assert.equal(isShopFloorRole(role), false);
   }
   assert.deepEqual(productionTabs(undefined), []);
