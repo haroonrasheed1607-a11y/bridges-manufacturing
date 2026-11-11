@@ -1,3 +1,4 @@
+import { QrAttendanceCount } from "./QrAttendanceCount.jsx";
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
@@ -22,6 +23,7 @@ export function QrAttendance() {
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState("");
   const [result, setResult] = React.useState(null);
+  const [countRefresh, setCountRefresh] = React.useState(0);
   const lock = React.useRef(false);
   const input = React.useRef(null);
 
@@ -46,6 +48,7 @@ export function QrAttendance() {
         p_code: submission.code, p_action: submission.action, p_request: submission.request,
       });
       setResult(receipt);
+      setCountRefresh(value => value + 1);
       setCode("");
       setPending(null);
       try { sessionStorage.removeItem(key); } catch {}
@@ -63,7 +66,7 @@ export function QrAttendance() {
   }
 
   return <section className="panel qr-attendance">
-    <h2>QR attendance</h2>
+    <div className="qr-attendance-heading"><h2>QR attendance</h2><QrAttendanceCount refreshVersion={countRefresh} /></div>
     <div className="production-mode-tabs" role="group" aria-label="Attendance action">
       {[["in", "Time In"], ["out", "Time Out"]].map(([value, title]) => <button key={value} type="button"
         className={value === action ? "is-selected" : ""} aria-pressed={value === action}

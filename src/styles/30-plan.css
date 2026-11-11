@@ -92,3 +92,10 @@
 .qr-attendance-camera{display:block;width:100%;min-height:52px;margin-top:12px}
 .qr-attendance-manual{margin-bottom:12px}
 @media(max-width:600px){.qr-attendance-manual{display:none}}
+
+.qr-attendance-heading{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px 16px;margin-bottom:12px}
+.qr-attendance-heading h2{margin:0}
+.qr-attendance-count{display:flex;align-items:center;gap:10px;padding:7px 12px;border-radius:8px;background:#edf5f0;color:#24523c}
+.qr-attendance-count>strong{font-size:28px;font-variant-numeric:tabular-nums;line-height:1.2}
+.qr-attendance-count>span{font-size:12px;font-weight:600}
+.qr-attendance-count small{display:block;font-size:10px;font-weight:400}

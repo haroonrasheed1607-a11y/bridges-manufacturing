@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "The compact Menu header applies only to mobile screens. Larger screens use the previous navigation and Shop Floor buttons."
+    "QR attendance shows the number of individuals who timed in today and refreshes the count after scans."
   ]
 }
