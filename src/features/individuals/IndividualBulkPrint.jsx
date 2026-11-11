@@ -32,7 +32,7 @@ export function IndividualBulkPrint({ people, onBack }) {
   return <section>
     <style>{stickerStyles}</style>
     <nav aria-label="Bulk sticker breadcrumb"><button type="button" className="text-link" onClick={onBack}>Individuals</button> / Bulk stickers</nav>
-    <header className="section-heading"><div><h2>Print individual QR stickers</h2><p className="quiet">2.4 × 3.2 inches · {validSelected.length} selected</p></div></header>
+    <header className="section-heading"><div><h2>Print individual QR stickers</h2><p className="quiet">2.4 × 4.8 inches · {validSelected.length} selected</p></div></header>
     {error && <p className="alert" role="alert">{error}</p>}
     <div className="individual-profile-grid">
       <section className="panel">

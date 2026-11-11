@@ -59,7 +59,7 @@ export function IndividualProfile({ person, onBack, onEdit }) {
           <li key={i}><span>{["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"][i]}</span><strong>{hours} h</strong></li>)}</ul>
       </section>
       <section className="panel"><h3>Personal QR sticker</h3>
-        <p className="quiet">2.4 inches wide × 3.2 inches high · One sticker per individual</p>
+        <p className="quiet">2.4 inches wide × 4.8 inches high · One sticker per individual</p>
         {!card ? !error && <p role="status">Loading QR details…</p> : <>
           <form onSubmit={event => {
             event.preventDefault();

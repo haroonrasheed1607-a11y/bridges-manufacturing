@@ -10,7 +10,7 @@ export async function printIndividualStickers(cards) {
   const frame = document.createElement("iframe");
   frame.title = "Individual QR sticker print";
   frame.setAttribute("aria-hidden", "true");
-  frame.style.cssText = "position:fixed;left:-10000px;top:0;width:2.4in;height:3.2in;border:0";
+  frame.style.cssText = "position:fixed;left:-10000px;top:0;width:2.4in;height:4.8in;border:0";
   document.body.appendChild(frame);
   const popup = frame.contentWindow;
   const doc = popup?.document;
@@ -20,7 +20,7 @@ export async function printIndividualStickers(cards) {
   }
   doc.title = "Bridges Individual QR stickers";
   const style = doc.createElement("style");
-  style.textContent = "@page{size:2.4in 3.2in;margin:0}html,body{margin:0;padding:0;background:white}" + stickerStyles;
+  style.textContent = "@page{size:2.4in 4.8in;margin:0}html,body{margin:0;padding:0;background:white}" + stickerStyles;
   doc.head.appendChild(style);
   const container = doc.createElement("div");
   doc.body.appendChild(container);
