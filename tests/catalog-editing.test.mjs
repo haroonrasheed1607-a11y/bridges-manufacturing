@@ -10,7 +10,7 @@ test('catalog edits require confirmation before saving and retain the expected r
 });
 test('cancelled, unchanged and invalid edits never save',async()=>{
  let calls=0;const save=async()=>{calls++;};
- const cancelled=await saveConfirmedCatalogItem(item,{...catalogDraft(item),name:'New name'},{confirm:()=>false,save});assert.equal(cancelled.saved,false);
+ const cancelled=await saveConfirmedCatalogItem(item,{...catalogDraft(item),piecesPerUnit:50},{confirm:()=>false,save});assert.equal(cancelled.saved,false);
  await saveConfirmedCatalogItem(item,{...catalogDraft(item),code:' PART-1 '},{confirm:()=>{throw Error('Unchanged edit asked for confirmation');},save});
  const invalid=await saveConfirmedCatalogItem(item,{...catalogDraft(item),piecesPerUnit:0},{confirm:()=>{throw Error('Invalid edit asked for confirmation');},save});assert.ok(invalid.error);assert.equal(calls,0);
 });
@@ -22,3 +22,6 @@ test('Item unit confirmation includes normalization to one piece and save errors
 });
 
 test('Manufacturing rate edits cannot reach confirmation or persistence',async()=>{const result=await saveConfirmedCatalogItem(item,{...catalogDraft(item),rate:1},{confirm:()=>{throw Error('Rate change confirmation should not open');},save:()=>{throw Error('Rate change should not save');}});assert.match(result.error,/Only Accounts/);});
+
+test('Manufacturing cannot change code or name even with a crafted draft',async()=>{for(const edit of [{code:'OTHER'},{name:'Other name'}]){const result=await saveConfirmedCatalogItem(item,{...catalogDraft(item),...edit},{confirm:()=>{throw Error('No confirmation for forbidden fields');},save:()=>{throw Error('No save for forbidden fields');}});assert.match(result.error,/Only Accounts/);}});
+test('Accounts confirms metadata changes before saving',async()=>{let saved;const result=await saveConfirmedCatalogItem(item,{...catalogDraft(item),name:'Updated',rate:.5},{allowDetails:true,confirm:message=>{assert.match(message,/Item name: Parts → Updated/);return true;},save:async value=>{saved=value;}});assert.equal(result.saved,true);assert.equal(saved.p_name,'Updated');assert.equal(saved.p_rate,.5);});

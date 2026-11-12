@@ -6,13 +6,13 @@ begin
  select id into strict admin_id from public.staff_profiles where active and role='admin' limit 1;
  select id into strict scanner_id from public.staff_profiles where active and role='box_scanner' limit 1;
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
- perform public.app_save_customer('Catalog test client');
+ insert into public.customers(id,name) values('TEST-CATALOG-'||gen_random_uuid(),'Catalog test client');
  select id into strict client_id from public.customers where name='Catalog test client';
  begin
    perform public.app_save_order(order_payload,0,'Catalog test');
    raise exception 'Order without catalog item accepted';
  exception when raise_exception then if sqlerrm<>'Select a registered item for this client' then raise;end if;end;
- perform public.app_register_customer_item(client_id,'ABC-1','Assembly kit',null);
+ insert into public.customer_items(customer_id,code,name,rate) values(client_id,'ABC-1','Assembly kit',0.0125);
  select id into strict item_id from public.customer_items where code='ABC-1' and customer_items.customer_id=client_id;
  update public.customer_items set rate=0.0125 where id=item_id;
  perform public.app_save_order(order_payload||jsonb_build_object('catalogItemId',item_id),0,'Catalog test');

@@ -1,7 +1,7 @@
 import { React } from "../../vendor/react-runtime.js";
 import { catalogDraft, catalogItemChanges, saveConfirmedCatalogItem } from "./catalogEditing.js";
 
-export function ClientItemRow({ item, busy, onSave }) {
+export function ClientItemRow({ item, busy, onSave, accounts = false }) {
   const [base, setBase] = React.useState(item);
   const [draft, setDraft] = React.useState(() => catalogDraft(item));
   const [error, setError] = React.useState("");
@@ -13,16 +13,16 @@ export function ClientItemRow({ item, busy, onSave }) {
     if (lock.current || busy || !dirty) return;
     lock.current = true; setError("");
     try {
-      const result = await saveConfirmedCatalogItem(base, draft, { confirm: message => window.confirm(message), save: onSave });
+      const result = await saveConfirmedCatalogItem(base, draft, { confirm: message => window.confirm(message), save: onSave, allowDetails: accounts });
       if (result.error) setError(result.error);
       else if (result.saved) { const updated = { ...base, ...result.value, revision: base.revision + 1 }; setBase(updated); setDraft(catalogDraft(updated)); }
     } catch (problem) { setError(problem.message); }
     finally { lock.current = false; }
   }
   return <tr className={dirty ? "catalog-item-dirty" : ""}>
-    <td><input aria-label={"Item code: " + item.name} value={draft.code} required maxLength={80} disabled={busy} onChange={event => change("code", event.target.value)} /></td>
-    <td><input aria-label={"Item name: " + item.name} value={draft.name} required maxLength={180} disabled={busy} onChange={event => change("name", event.target.value)} /></td>
-    <td><span className="catalog-rate-locked" title="Rates are managed by Accounts" aria-label={"Rate: " + item.name + " (Accounts only)"}>{item.rate ?? "—"}</span></td>
+    <td>{accounts ? <input aria-label={"Item code: " + item.name} value={draft.code} required maxLength={80} disabled={busy} onChange={event => change("code", event.target.value)} /> : item.code}</td>
+    <td>{accounts ? <input aria-label={"Item name: " + item.name} value={draft.name} required maxLength={180} disabled={busy} onChange={event => change("name", event.target.value)} /> : item.name}</td>
+    <td>{accounts ? <input aria-label={"Rate: " + item.name} type="number" min="0" step="any" value={draft.rate} disabled={busy} onChange={event => change("rate", event.target.value)} /> : <span className="catalog-rate-locked" title="Rates are managed by Accounts" aria-label={"Rate: " + item.name + " (Accounts only)"}>{item.rate ?? "—"}</span>}</td>
     <td><select aria-label={"Unit: " + item.name} value={draft.unit} disabled={busy} onChange={event => change("unit", event.target.value)}>
       <option>Item</option><option>Pack</option><option>Box</option></select></td>
     <td><input aria-label={"Pieces per unit: " + item.name} type="number" min="1" max="1000000" step="1" value={draft.unit === "Item" ? 1 : draft.piecesPerUnit}

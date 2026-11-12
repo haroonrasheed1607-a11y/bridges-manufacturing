@@ -2,7 +2,7 @@ import { ClientItemRow } from "./ClientItemRow.jsx";
 import { React } from "../../vendor/react-runtime.js";
 import { ClientItemForm } from "./ClientItemForm.jsx";
 
-export function ClientCatalog({ clients, onSaveItem }) {
+export function ClientCatalog({ clients, onSaveItem, accounts = false }) {
   const [clientId, setClientId] = React.useState("");
   const [editing, setEditing] = React.useState(null);
   const [error, setError] = React.useState("");
@@ -29,23 +29,23 @@ export function ClientCatalog({ clients, onSaveItem }) {
   return <section className="panel client-catalog">
     <div className="section-heading">
       <h3>Client item catalog</h3>
-      <button type="button" onClick={() => edit({ id: crypto.randomUUID(), revision: 0, unit: "Item", piecesPerUnit: 1 })} disabled={busy}>Register item</button>
+      {accounts && <button type="button" onClick={() => edit({ id: crypto.randomUUID(), revision: 0, unit: "Item", piecesPerUnit: 1 })} disabled={busy}>Register item</button>}
     </div>
     <label className="field">Client
       <select value={client.id} disabled={busy} onChange={event => { setClientId(event.target.value); edit(null); }}>
         {clients.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
       </select>
     </label>
-    {editing && <ClientItemForm key={editing.id} item={editing} busy={busy} onSave={save} onCancel={() => edit(null)} />}
+    {accounts && editing && <ClientItemForm accounts key={editing.id} item={editing} busy={busy} onSave={save} onCancel={() => edit(null)} />}
     {error && <p className="alert" role="alert">{error}</p>}
     {notice && <p role="status">{notice}</p>}
-    <p className="quiet">Edit item details, then Save to confirm. Rates are managed by Accounts.</p>
+    <p className="quiet">{accounts ? "Edit item details, then Save to confirm changes." : "Only Unit and Pieces per unit are editable here. Accounts manages item codes, names and rates."}</p>
     {client.items.length > 0 ? <div className="table-wrap">
       <table className="catalog-edit-table"><colgroup>
         <col className="catalog-col-code" /><col /><col className="catalog-col-rate" /><col className="catalog-col-unit" /><col className="catalog-col-pieces" /><col className="catalog-col-actions" />
       </colgroup><thead><tr><th>Item code</th><th>Item</th><th>Rate</th><th>Unit</th><th>Pieces per unit</th><th>Actions</th></tr></thead>
-        <tbody>{client.items.map(item => <ClientItemRow key={item.id} item={item} busy={busy} onSave={save} />)}</tbody>
+        <tbody>{client.items.map(item => <ClientItemRow key={item.id} item={item} busy={busy} onSave={save} accounts={accounts} />)}</tbody>
       </table>
-    </div> : <p>No registered items. Add one to make it available for new orders.</p>}
+    </div> : <p>No registered items. Register items in the Accounts catalog.</p>}
   </section>;
 }

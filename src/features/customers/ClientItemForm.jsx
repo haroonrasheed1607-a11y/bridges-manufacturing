@@ -1,23 +1,25 @@
 import { React } from "../../vendor/react-runtime.js";
 
-export function ClientItemForm({ item, onSave, onCancel, busy }) {
+export function ClientItemForm({ item, onSave, onCancel, busy, accounts = false }) {
   const [unit, setUnit] = React.useState(item.unit ?? "Item");
   const [count, setCount] = React.useState(item.piecesPerUnit ?? 1);
   return <form onSubmit={event => {
     event.preventDefault();
     const fields = new FormData(event.currentTarget);
+    if (accounts && !window.confirm("Register " + fields.get("name") + " · " + fields.get("code") + " in this client’s catalog?")) return;
     onSave({
       p_item: item.id, p_code: fields.get("code"), p_name: fields.get("name"),
-      p_rate: item.rate ?? null,
+      p_rate: accounts ? (fields.get("rate") === "" ? null : Number(fields.get("rate"))) : item.rate ?? null,
       p_unit: unit, p_pieces_per_unit: unit === "Item" ? 1 : Number(count), p_revision: item.revision ?? 0,
     });
   }}>
-    <h4>{item.revision ? "Edit item" : "Register item"}</h4><p className="quiet">Rates are managed by Accounts.</p>
+    <h4>{item.revision ? "Edit item" : "Register item"}</h4>{!accounts && <p className="quiet">Rates are managed by Accounts.</p>}
     <fieldset disabled={busy} className="catalog-item-fields">
       <div className="form-grid">
         <label className="field">Item code<input name="code" required maxLength={80} defaultValue={item.code ?? ""} /></label>
         <label className="field">Item name<input name="name" required maxLength={180} defaultValue={item.name ?? ""} /></label>
 
+        {accounts && <label className="field">Rate (optional)<input name="rate" type="number" min="0" step="any" defaultValue={item.rate ?? ""} /></label>}
         <label className="field">Unit<select value={unit} onChange={event => setUnit(event.target.value)}>
           <option>Item</option><option>Pack</option><option>Box</option>
         </select></label>

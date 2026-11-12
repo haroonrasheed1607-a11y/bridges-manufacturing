@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Rates are read-only in the Manufacturing catalog. Only Accounts users can change item rates through the Accounts Item rates tab, with confirmation and an audit record."
+    "Manufacturing can edit only units and pieces per unit; Accounts manages client registration and remaining catalog details. The Total Pieces Completed timesheet table now groups production by item code."
   ]
 }

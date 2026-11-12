@@ -52,7 +52,7 @@ function AccountsWorkspace() {
       <nav className="accounts-nav" aria-label="Accounts views">
         <button type="button" aria-pressed={view === "payroll"} onClick={() => setView("payroll")}>Payroll report</button>
         <button type="button" aria-pressed={view === "timesheets"} onClick={() => setView("timesheets")}>Weekly timesheets</button>
-        <button type="button" aria-pressed={view === "rates"} onClick={() => setView("rates")}>Item rates</button>
+        <button type="button" aria-pressed={view === "rates"} onClick={() => setView("rates")}>Clients &amp; items</button>
       </nav>
       {view === "rates" ? <AccountsRates api={accountsApi} /> : view === "payroll" ? <PayrollReport api={accountsApi} /> : <AccountsTimesheets />}
     </main>

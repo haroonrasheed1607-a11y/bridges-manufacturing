@@ -29,3 +29,13 @@ export function attendanceActionLog(data){
  }
  return manual;
 }
+
+export function itemPieceSummary(entries,manual,overrides={}){
+ const mapped=entries.map(row=>{
+  if(row.itemCode)return {...row,code:row.itemCode};
+  const fallback=String(overrides[row.workId]||row.code||'').trim();
+  const code=!fallback||fallback===row.workId||/^WO[-_]/i.test(fallback)?'Uncoded item':fallback;
+  return {...row,code};
+ });
+ return pieceSummary(mapped,manual.map(row=>({...row,code:/^WO[-_]/i.test(row.code||'')?'Uncoded item':row.code})));
+}

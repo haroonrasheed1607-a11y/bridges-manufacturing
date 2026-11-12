@@ -17,3 +17,17 @@ test('fixed report rows preserve all piece totals through overflow groups',async
  const cols=limitedCodes(pieceSummary(entries,[]),['2026-11-02']);assert.equal(cols.length,6);assert.equal(cols.reduce((s,c)=>s+Number(c.values['2026-11-02']||0),0),210);
  assert.equal(limitedLog([],[],'2026-11-02').length,8);
 });
+
+
+test('final pieces table groups different work orders by authoritative item code',async()=>{
+ const {itemPieceSummary}=await import('../src/features/timesheets/model.js');
+ const result=itemPieceSummary([
+  {workId:'WO-1',code:'WO-1',itemCode:'4015',date:'2026-11-09',pieces:100},
+  {workId:'WO-2',code:'WO-2',itemCode:'4015',date:'2026-11-09',pieces:50},
+  {workId:'WO-3',code:'WO-3',itemCode:'3619',date:'2026-11-10',pieces:90},
+  {workId:'WO-4',code:'WO-4',date:'2026-11-10',pieces:10}
+ ],[],{'WO-1':'old work reference'});
+ assert.equal(result['4015']['2026-11-09'],150);assert.equal(result['3619']['2026-11-10'],90);
+ assert.equal(result['Uncoded item']['2026-11-10'],10);assert.equal(result['WO-1'],undefined);
+ assert.equal(Object.values(result).flatMap(Object.values).reduce((a,b)=>a+b,0),250);
+});

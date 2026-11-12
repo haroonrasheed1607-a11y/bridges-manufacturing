@@ -8,7 +8,9 @@ begin
  select id into strict scanner_id from public.staff_profiles where active and role='box_scanner' limit 1;
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
  insert into public.customers(id,name) values(prefix,prefix);
+ perform set_config('request.jwt.claim.sub',accounts_id::text,true);
  perform public.app_save_customer_item(item,prefix,'RATE-1','Accounts rate fixture',null,'Box',25,0);
+ perform set_config('request.jwt.claim.sub',admin_id::text,true);
  begin perform public.app_save_customer_item(item,prefix,'RATE-1','Accounts rate fixture',.5,'Box',25,1);raise exception 'Admin edited rate';exception when insufficient_privilege then null;end;
  begin perform public.app_register_customer_item(prefix,'RATE-2','Forbidden rate',.5);raise exception 'Legacy registration set rate';exception when insufficient_privilege then null;end;
  begin perform public.app_accounts_save_item_rate(item,.5,1);raise exception 'Admin used Accounts rate API';exception when insufficient_privilege then null;end;
@@ -23,7 +25,7 @@ begin
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
  old_order:=public.app_plan_create_order(prefix,item,100,today,gen_random_uuid());
  -- Metadata edits can retain the rate, but cannot change it.
- perform public.app_save_customer_item(item,prefix,'RATE-1','Renamed item',.5,'Box',50,2);
+ perform public.app_save_customer_item(item,prefix,'RATE-1','Accounts rate fixture',.5,'Box',50,2);
  perform set_config('request.jwt.claim.sub',accounts_id::text,true);
  perform public.app_accounts_save_item_rate(item,.75,3);
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
