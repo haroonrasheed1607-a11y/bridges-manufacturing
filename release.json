@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Manufacturing can edit only units and pieces per unit; Accounts manages client registration and remaining catalog details. The Total Pieces Completed timesheet table now groups production by item code."
+    "Daily production entries on individual timesheets now show the item code, matching the Total Pieces Completed table. Attendance action codes and production totals are preserved."
   ]
 }

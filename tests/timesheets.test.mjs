@@ -31,3 +31,15 @@ test('final pieces table groups different work orders by authoritative item code
  assert.equal(result['Uncoded item']['2026-11-10'],10);assert.equal(result['WO-1'],undefined);
  assert.equal(Object.values(result).flatMap(Object.values).reduce((a,b)=>a+b,0),250);
 });
+
+test('daily production uses item codes and preserves attendance actions and piece totals',async()=>{
+ const {timesheetItemEntries,limitedLog}=await import('../src/features/timesheets/model.js');
+ const entries=timesheetItemEntries([
+  {workId:'WO-1',code:'WO-1',itemCode:'4015',date:'2026-11-09',time:'09:00',pieces:100},
+  {workId:'WO-2',code:'WO-2',itemCode:'4015',date:'2026-11-09',time:'10:00',pieces:50}
+ ],{'WO-1':'old reference'});
+ const log=limitedLog(entries,[{date:'2026-11-09',code:'AT',time:'08:00',pieces:0}],'2026-11-09');
+ assert.equal(log[0].code,'AT');assert.equal(log[1].code,'4015');assert.equal(log[1].pieces,150);
+ assert.equal(log[1].first,'09:00');assert.equal(log[1].last,'10:00');
+ assert.ok(!log.some(row=>row.code.startsWith('WO-')));
+});

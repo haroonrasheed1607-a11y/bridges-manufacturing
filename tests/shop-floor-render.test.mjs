@@ -56,6 +56,8 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(await render('/src/features/availability/AvailabilityPage.jsx','AvailabilityPage'),/Individual availability/);
  const accountsRateRow=await render('/src/features/customers/ClientItemRow.jsx','ClientItemRow','accounts',null,{item:{id:'I1',code:'P1',name:'Parts',unit:'Box',piecesPerUnit:50,rate:.5},accounts:true});
  assert.match(accountsRateRow,/aria-label="Rate: Parts" type="number"/);assert.match(accountsRateRow,/Save/);
+ const itemTimesheet=await render('/src/features/timesheets/TimesheetsPage.jsx','TimesheetDocument','admin',null,{person:{name:'Alex'},week:'2026-11-09',entries:[{workId:'WO-INTERNAL-123',code:'WO-INTERNAL-123',itemCode:'4015',date:'2026-11-09',time:'09:00',pieces:100}]});
+ assert.match(itemTimesheet,/Item \/ action code/);assert.match(itemTimesheet,/<strong>4015<\/strong>/);assert.doesNotMatch(itemTimesheet,/WO-INTERNAL-123/);
  const presentTable=await render('/src/features/attendance/PresentWorkers.jsx','PresentWorkersTable','box_scanner',null,{people:[{id:'P1',name:'Alex',number:'225',timeIn:'09:00'}]});
  assert.match(presentTable,/>Alex</);assert.match(presentTable,/>225</);assert.match(presentTable,/>09:00</);assert.match(presentTable,/Time in/);
  const attendance=await render('/src/features/attendance/AttendancePage.jsx','AttendancePage');
