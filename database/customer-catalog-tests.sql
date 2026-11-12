@@ -12,8 +12,9 @@ begin
    perform public.app_save_order(order_payload,0,'Catalog test');
    raise exception 'Order without catalog item accepted';
  exception when raise_exception then if sqlerrm<>'Select a registered item for this client' then raise;end if;end;
- perform public.app_register_customer_item(client_id,'ABC-1','Assembly kit',0.0125);
+ perform public.app_register_customer_item(client_id,'ABC-1','Assembly kit',null);
  select id into strict item_id from public.customer_items where code='ABC-1' and customer_items.customer_id=client_id;
+ update public.customer_items set rate=0.0125 where id=item_id;
  perform public.app_save_order(order_payload||jsonb_build_object('catalogItemId',item_id),0,'Catalog test');
  select data into strict created from public.orders where id='TEST-CATALOG-ORDER';
  if created->>'title'<>'Assembly kit' or created->>'catalogCode'<>'ABC-1' or (created->>'catalogRate')::numeric<>0.0125 then

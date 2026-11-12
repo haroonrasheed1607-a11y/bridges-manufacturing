@@ -8,16 +8,16 @@ export function ClientItemForm({ item, onSave, onCancel, busy }) {
     const fields = new FormData(event.currentTarget);
     onSave({
       p_item: item.id, p_code: fields.get("code"), p_name: fields.get("name"),
-      p_rate: fields.get("rate") === "" ? null : Number(fields.get("rate")),
+      p_rate: item.rate ?? null,
       p_unit: unit, p_pieces_per_unit: unit === "Item" ? 1 : Number(count), p_revision: item.revision ?? 0,
     });
   }}>
-    <h4>{item.revision ? "Edit item" : "Register item"}</h4>
+    <h4>{item.revision ? "Edit item" : "Register item"}</h4><p className="quiet">Rates are managed by Accounts.</p>
     <fieldset disabled={busy} className="catalog-item-fields">
       <div className="form-grid">
         <label className="field">Item code<input name="code" required maxLength={80} defaultValue={item.code ?? ""} /></label>
         <label className="field">Item name<input name="name" required maxLength={180} defaultValue={item.name ?? ""} /></label>
-        <label className="field">Rate (optional)<input name="rate" type="number" min="0" step="any" defaultValue={item.rate ?? ""} /></label>
+
         <label className="field">Unit<select value={unit} onChange={event => setUnit(event.target.value)}>
           <option>Item</option><option>Pack</option><option>Box</option>
         </select></label>

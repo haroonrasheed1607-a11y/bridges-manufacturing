@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Made the client catalog more compact and added a mobile table of people currently present. Backend maintenance mode blocks application requests and displays \u201cSystem under update, please wait\u201d until updates finish."
+    "Rates are read-only in the Manufacturing catalog. Only Accounts users can change item rates through the Accounts Item rates tab, with confirmation and an audit record."
   ]
 }

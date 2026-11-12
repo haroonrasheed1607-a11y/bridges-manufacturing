@@ -22,7 +22,7 @@ export function ClientItemRow({ item, busy, onSave }) {
   return <tr className={dirty ? "catalog-item-dirty" : ""}>
     <td><input aria-label={"Item code: " + item.name} value={draft.code} required maxLength={80} disabled={busy} onChange={event => change("code", event.target.value)} /></td>
     <td><input aria-label={"Item name: " + item.name} value={draft.name} required maxLength={180} disabled={busy} onChange={event => change("name", event.target.value)} /></td>
-    <td><input aria-label={"Rate: " + item.name} type="number" min="0" step="any" value={draft.rate} disabled={busy} onChange={event => change("rate", event.target.value)} /></td>
+    <td><span className="catalog-rate-locked" title="Rates are managed by Accounts" aria-label={"Rate: " + item.name + " (Accounts only)"}>{item.rate ?? "—"}</span></td>
     <td><select aria-label={"Unit: " + item.name} value={draft.unit} disabled={busy} onChange={event => change("unit", event.target.value)}>
       <option>Item</option><option>Pack</option><option>Box</option></select></td>
     <td><input aria-label={"Pieces per unit: " + item.name} type="number" min="1" max="1000000" step="1" value={draft.unit === "Item" ? 1 : draft.piecesPerUnit}

@@ -29,7 +29,7 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const clients=await render('/src/features/customers/CustomersPage.js','ManufacturingCustomers');
  assert.match(clients,/Register client/);assert.doesNotMatch(clients,/Total orders|Active orders/);
  const catalog=await render('/src/features/customers/ClientCatalog.jsx','ClientCatalog','admin',null,{clients:[{id:'C1',name:'Client',items:[{id:'I1',code:'PART-42',name:'Assembly kit',unit:'Box',piecesPerUnit:100,revision:1}]}]});
- assert.match(catalog,/<th>Unit<\/th>/);assert.match(catalog,/<th>Pieces per unit<\/th>/);assert.match(catalog,/aria-label="Item code: Assembly kit"/);assert.match(catalog,/aria-label="Save changes: Assembly kit"/);assert.match(catalog,/value="100"/);
+ assert.match(catalog,/<th>Unit<\/th>/);assert.match(catalog,/<th>Pieces per unit<\/th>/);assert.match(catalog,/aria-label="Item code: Assembly kit"/);assert.match(catalog,/aria-label="Save changes: Assembly kit"/);assert.match(catalog,/value="100"/);assert.match(catalog,/Accounts only/);assert.doesNotMatch(catalog,/aria-label="Rate: Assembly kit" type="number"/);
  const itemForm=await render('/src/features/customers/ClientItemForm.jsx','ClientItemForm','admin',null,{item:{id:'I1',code:'PART-42',name:'Assembly kit',unit:'Box',piecesPerUnit:100,revision:1}});
  assert.match(itemForm,/Edit item/);assert.match(itemForm,/Pieces per box/);assert.match(itemForm,/value="100"/);assert.match(itemForm,/Save changes/);
  const singleForm=await render('/src/features/customers/ClientItemForm.jsx','ClientItemForm','admin',null,{item:{id:'I2',unit:'Item',revision:0}});
@@ -54,6 +54,8 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const adminApprovals=await render('/src/features/admin-approvals/BarcodeApprovals.jsx','BarcodeApprovals');assert.match(adminApprovals,/QR code approvals/);
  const managerApprovals=await render('/src/features/admin-approvals/BarcodeApprovals.jsx','BarcodeApprovals','manager');assert.match(managerApprovals,/Administrator access required/);assert.doesNotMatch(managerApprovals,/Approval reason/);
  assert.match(await render('/src/features/availability/AvailabilityPage.jsx','AvailabilityPage'),/Individual availability/);
+ const accountsRateRow=await render('/src/features/accounts/AccountsRates.jsx','AccountRateRow','accounts',null,{item:{id:'I1',code:'P1',name:'Parts',unit:'Box',piecesPerUnit:50,rate:.5}});
+ assert.match(accountsRateRow,/aria-label="Rate: Parts" type="number"/);assert.match(accountsRateRow,/Save rate/);
  const presentTable=await render('/src/features/attendance/PresentWorkers.jsx','PresentWorkersTable','box_scanner',null,{people:[{id:'P1',name:'Alex',number:'225',timeIn:'09:00'}]});
  assert.match(presentTable,/>Alex</);assert.match(presentTable,/>225</);assert.match(presentTable,/>09:00</);assert.match(presentTable,/Time in/);
  const attendance=await render('/src/features/attendance/AttendancePage.jsx','AttendancePage');

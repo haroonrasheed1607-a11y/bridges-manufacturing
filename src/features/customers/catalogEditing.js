@@ -13,6 +13,7 @@ export function catalogItemChanges(item, draft) {
 }
 export async function saveConfirmedCatalogItem(item, draft, { confirm, save }) {
   const value = normalized(draft);
+  if (value.rate !== normalized(catalogDraft(item)).rate) return { error: "Only Accounts users can change item rates." };
   if (!value.code || value.code.length > 80 || !value.name || value.name.length > 180) return { error: "Enter an item code and name." };
   if (value.rate !== null && (!Number.isFinite(value.rate) || value.rate < 0 || value.rate >= 1000000000)) return { error: "Enter a valid nonnegative rate." };
   if (!["Item", "Pack", "Box"].includes(value.unit) || !Number.isInteger(value.piecesPerUnit) || value.piecesPerUnit < 1 || value.piecesPerUnit > 1000000) return { error: "Enter 1–1,000,000 pieces per pack or box." };

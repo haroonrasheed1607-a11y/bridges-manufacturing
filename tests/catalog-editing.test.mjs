@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import {catalogDraft,catalogItemChanges,saveConfirmedCatalogItem} from '../src/features/customers/catalogEditing.js';
 const item={id:'I1',code:'PART-1',name:'Parts',rate:.12,unit:'Box',piecesPerUnit:100,revision:4};
 test('catalog edits require confirmation before saving and retain the expected revision',async()=>{
- const draft={...catalogDraft(item),rate:'.15',piecesPerUnit:'50'};let payload;let message;
+ const draft={...catalogDraft(item),piecesPerUnit:'50'};let payload;let message;
  const result=await saveConfirmedCatalogItem(item,draft,{confirm:text=>{message=text;return true;},save:async value=>{payload=value;return '';}});
- assert.equal(result.saved,true);assert.equal(payload.p_revision,4);assert.equal(payload.p_rate,.15);assert.equal(payload.p_pieces_per_unit,50);
- assert.match(message,/Rate: 0.12 → 0.15/);assert.match(message,/Pieces per unit: 100 → 50/);
+ assert.equal(result.saved,true);assert.equal(payload.p_revision,4);assert.equal(payload.p_rate,.12);assert.equal(payload.p_pieces_per_unit,50);
+ assert.doesNotMatch(message,/Rate:/);assert.match(message,/Pieces per unit: 100 → 50/);
 });
 test('cancelled, unchanged and invalid edits never save',async()=>{
  let calls=0;const save=async()=>{calls++;};
@@ -20,3 +20,5 @@ test('Item unit confirmation includes normalization to one piece and save errors
  const result=await saveConfirmedCatalogItem(item,draft,{confirm:()=>true,save:async value=>{assert.equal(value.p_pieces_per_unit,1);return 'This item changed';}});
  assert.equal(result.error,'This item changed');assert.equal(result.saved,undefined);
 });
+
+test('Manufacturing rate edits cannot reach confirmation or persistence',async()=>{const result=await saveConfirmedCatalogItem(item,{...catalogDraft(item),rate:1},{confirm:()=>{throw Error('Rate change confirmation should not open');},save:()=>{throw Error('Rate change should not save');}});assert.match(result.error,/Only Accounts/);});

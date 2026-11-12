@@ -39,7 +39,7 @@ export function ClientCatalog({ clients, onSaveItem }) {
     {editing && <ClientItemForm key={editing.id} item={editing} busy={busy} onSave={save} onCancel={() => edit(null)} />}
     {error && <p className="alert" role="alert">{error}</p>}
     {notice && <p role="status">{notice}</p>}
-    <p className="quiet">Edit cells directly, then Save to review and confirm changes.</p>
+    <p className="quiet">Edit item details, then Save to confirm. Rates are managed by Accounts.</p>
     {client.items.length > 0 ? <div className="table-wrap">
       <table className="catalog-edit-table"><colgroup>
         <col className="catalog-col-code" /><col /><col className="catalog-col-rate" /><col className="catalog-col-unit" /><col className="catalog-col-pieces" /><col className="catalog-col-actions" />

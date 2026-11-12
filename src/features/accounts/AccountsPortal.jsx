@@ -1,3 +1,4 @@
+import { AccountsRates } from "./AccountsRates.jsx";
 import { React } from "../../vendor/react-runtime.js";
 import { createApiClient } from "../../api/supabaseClient.js";
 import { manufacturingWorkLogo } from "../../assets/workLogo.js";
@@ -51,8 +52,9 @@ function AccountsWorkspace() {
       <nav className="accounts-nav" aria-label="Accounts views">
         <button type="button" aria-pressed={view === "payroll"} onClick={() => setView("payroll")}>Payroll report</button>
         <button type="button" aria-pressed={view === "timesheets"} onClick={() => setView("timesheets")}>Weekly timesheets</button>
+        <button type="button" aria-pressed={view === "rates"} onClick={() => setView("rates")}>Item rates</button>
       </nav>
-      {view === "payroll" ? <PayrollReport api={accountsApi} /> : <AccountsTimesheets />}
+      {view === "rates" ? <AccountsRates api={accountsApi} /> : view === "payroll" ? <PayrollReport api={accountsApi} /> : <AccountsTimesheets />}
     </main>
   </div>;
 }
