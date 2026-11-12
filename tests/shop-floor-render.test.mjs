@@ -27,7 +27,7 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const lockedDetail=await render('/src/features/orders/OrderDetailsPage.js','OrderDetailsPage','admin','detail',null,{...orders[1],workOrderApprovedAt:'2026-11-10'});
  assert.doesNotMatch(lockedDetail,/Edit order request/);
  const clients=await render('/src/features/customers/CustomersPage.js','ManufacturingCustomers');
- assert.match(clients,/Register client/);
+ assert.match(clients,/Register client/);assert.doesNotMatch(clients,/Total orders|Active orders/);
  const catalog=await render('/src/features/customers/ClientCatalog.jsx','ClientCatalog','admin',null,{clients:[{id:'C1',name:'Client',items:[{id:'I1',code:'PART-42',name:'Assembly kit',unit:'Box',piecesPerUnit:100,revision:1}]}]});
  assert.match(catalog,/<th>Unit<\/th>/);assert.match(catalog,/<th>Pieces per unit<\/th>/);assert.match(catalog,/aria-label="Edit Assembly kit"/);assert.match(catalog,/>Box<\/td>/);
  const itemForm=await render('/src/features/customers/ClientItemForm.jsx','ClientItemForm','admin',null,{item:{id:'I1',code:'PART-42',name:'Assembly kit',unit:'Box',piecesPerUnit:100,revision:1}});

@@ -7,8 +7,6 @@ import { React } from "../../vendor/react-runtime.js";
 
 function ManufacturingCustomers() {
   const {
-      orders,
-      open,
       customers,
       addCustomer, customerCatalog = [], saveCustomerItem
     } = useManufacturing(),
@@ -22,7 +20,7 @@ function ManufacturingCustomers() {
     className: 'eyebrow'
   }, 'OPERATIONS / CLIENTS'), h('h2', null, 'Clients'), h('p', {
     className: 'quiet'
-  }, 'Register clients and manage the items available for orders.')), h('button', {
+  }, 'Manage each client’s items, units and rates.')), h('button', {
     className: 'primary',
     onClick: () => {
       setAdding(true);
@@ -77,27 +75,7 @@ function ManufacturingCustomers() {
   }, 'Save client'))), h('p', {
     role: 'status',
     className: 'quiet'
-  }, message), h('section', {
-    className: 'panel'
-  }, customers.length ? h('div', {
-    className: 'table-wrap'
-  }, h('table', null, h('thead', null, h('tr', null, ['Customer', 'Total orders', 'Active orders', 'Orders'].map(label => h('th', {
-    key: label
-  }, label)))), h('tbody', null, customers.map(name => {
-    const items = orders.filter(order => order.customer.trim().toLowerCase() === name.toLowerCase());
-    return h('tr', {
-      key: name
-    }, h('td', null, name), h('td', null, items.length), h('td', null, items.filter(order => order.stage < 6).length), h('td', null, items.length ? items.map(order => h('button', {
-      key: order.id,
-      className: 'text-link',
-      style: {
-        marginRight: 16
-      },
-      onClick: () => open(order.id)
-    }, order.id)) : '—'));
-  })))) : h('p', {
-    className: 'empty'
-  }, 'No clients yet. Register your first client to get started.')), h(ClientCatalog, {clients:customerCatalog,onSaveItem:saveCustomerItem}));
+  }, message), h(ClientCatalog, {clients:customerCatalog,onSaveItem:saveCustomerItem}));
 }
 
 export { ManufacturingCustomers };
