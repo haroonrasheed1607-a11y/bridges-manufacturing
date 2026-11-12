@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Mark Scan & Assign approvals complete from Plan to remove them from the active Shop Floor list and close their assignments. Recorded production and history are preserved."
+    "Removed Print from the desktop navigation bar and mobile menu."
   ]
 }

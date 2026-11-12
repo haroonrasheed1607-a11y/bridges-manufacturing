@@ -30,7 +30,6 @@ function MobileNavbar() {
     items.push(["Shop Floor Dashboard", "shopfloordashboard"], ["Time In / Out", "shopfloorattendance"]);
   }
   if (canUsePlan(profile?.role)) {
-    items.push(["Print", "shopfloorprint"]);
     if (!desktop) items.push(["Plan", "plan"]);
   }
   if (!desktop && manager) {

@@ -58,9 +58,9 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(attendance,/Daily attendance roster/);assert.match(attendance,/Bulk attendance/);
  assert.match(attendance,/aria-label="Select Alex"/);assert.match(attendance,/>Time In</);assert.match(attendance,/>Time Out</);
  assert.match(await render('/src/features/dumping/DumpingSetup.jsx','DumpingSetup'),/100/);
- const nav=await render('/src/components/Navbar.jsx','Navbar','box_setup');assert.match(nav,/href="#plan"/);assert.match(nav,/href="#shopfloorprint"/);assert.match(nav,/refined-navigation/);assert.doesNotMatch(nav,/>Menu</);
+ const nav=await render('/src/components/Navbar.jsx','Navbar','box_setup');assert.match(nav,/href="#plan"/);assert.doesNotMatch(nav,/href="#shopfloorprint"/);assert.match(nav,/refined-navigation/);assert.doesNotMatch(nav,/>Menu</);
  const mobileNav=await render('/src/components/MobileNavbar.jsx','MobileNavbar','box_setup');
- assert.match(mobileNav,/href="#shopfloordashboard"/);assert.match(mobileNav,/href="#shopfloorattendance"/);assert.match(mobileNav,/>Menu</);assert.match(mobileNav,/Sign out/);
+ assert.match(mobileNav,/href="#shopfloordashboard"/);assert.match(mobileNav,/href="#shopfloorattendance"/);assert.match(mobileNav,/>Menu</);assert.match(mobileNav,/Sign out/);assert.doesNotMatch(mobileNav,/href="#shopfloorprint"/);
  const board=await render('/src/features/job-board/JobBoardPage.js','ManufacturingJobBoard');
  assert.match(board,/List view/);assert.match(board,/Approve Work Order/);
  const ordersList=await render('/src/features/orders/OrdersPage.js','OrdersPage');
