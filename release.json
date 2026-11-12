@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Clients now focuses on the client item catalog. Removed the order counts and order history table while keeping client registration and item editing."
+    "Edit client item codes, names, rates, units and quantities directly in the catalog table. Saving changes requires confirmation showing the old and new values."
   ]
 }

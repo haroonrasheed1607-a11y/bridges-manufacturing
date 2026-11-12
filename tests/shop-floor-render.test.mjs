@@ -29,7 +29,7 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const clients=await render('/src/features/customers/CustomersPage.js','ManufacturingCustomers');
  assert.match(clients,/Register client/);assert.doesNotMatch(clients,/Total orders|Active orders/);
  const catalog=await render('/src/features/customers/ClientCatalog.jsx','ClientCatalog','admin',null,{clients:[{id:'C1',name:'Client',items:[{id:'I1',code:'PART-42',name:'Assembly kit',unit:'Box',piecesPerUnit:100,revision:1}]}]});
- assert.match(catalog,/<th>Unit<\/th>/);assert.match(catalog,/<th>Pieces per unit<\/th>/);assert.match(catalog,/aria-label="Edit Assembly kit"/);assert.match(catalog,/>Box<\/td>/);
+ assert.match(catalog,/<th>Unit<\/th>/);assert.match(catalog,/<th>Pieces per unit<\/th>/);assert.match(catalog,/aria-label="Item code: Assembly kit"/);assert.match(catalog,/aria-label="Save changes: Assembly kit"/);assert.match(catalog,/value="100"/);
  const itemForm=await render('/src/features/customers/ClientItemForm.jsx','ClientItemForm','admin',null,{item:{id:'I1',code:'PART-42',name:'Assembly kit',unit:'Box',piecesPerUnit:100,revision:1}});
  assert.match(itemForm,/Edit item/);assert.match(itemForm,/Pieces per box/);assert.match(itemForm,/value="100"/);assert.match(itemForm,/Save changes/);
  const singleForm=await render('/src/features/customers/ClientItemForm.jsx','ClientItemForm','admin',null,{item:{id:'I2',unit:'Item',revision:0}});

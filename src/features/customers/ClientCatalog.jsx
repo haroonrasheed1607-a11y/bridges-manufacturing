@@ -1,3 +1,4 @@
+import { ClientItemRow } from "./ClientItemRow.jsx";
 import { React } from "../../vendor/react-runtime.js";
 import { ClientItemForm } from "./ClientItemForm.jsx";
 
@@ -12,14 +13,15 @@ export function ClientCatalog({ clients, onSaveItem }) {
 
   function edit(item) { setEditing(item); setError(""); setNotice(""); }
   async function save(fields) {
-    if (lock.current || !client) return;
+    if (lock.current || !client) return "Another item is being saved. Please retry.";
     lock.current = true;
     setBusy(true); setError(""); setNotice("");
     try {
       const problem = await onSaveItem({ ...fields, p_customer: client.id });
       if (problem) setError(problem);
       else { setEditing(null); setNotice(fields.p_revision ? "Item updated." : "Item registered."); }
-    } catch (problem) { setError(problem.message); }
+      return problem || "";
+    } catch (problem) { setError(problem.message); return problem.message; }
     finally { lock.current = false; setBusy(false); }
   }
 
@@ -37,12 +39,10 @@ export function ClientCatalog({ clients, onSaveItem }) {
     {editing && <ClientItemForm key={editing.id} item={editing} busy={busy} onSave={save} onCancel={() => edit(null)} />}
     {error && <p className="alert" role="alert">{error}</p>}
     {notice && <p role="status">{notice}</p>}
+    <p className="quiet">Edit cells directly, then Save to review and confirm changes.</p>
     {client.items.length > 0 ? <div className="table-wrap">
-      <table><thead><tr><th>Item code</th><th>Item</th><th>Rate</th><th>Unit</th><th>Pieces per unit</th><th>Actions</th></tr></thead>
-        <tbody>{client.items.map(item => <tr key={item.id}>
-          <td>{item.code}</td><td>{item.name}</td><td>{item.rate ?? "—"}</td><td>{item.unit ?? "Item"}</td><td>{item.piecesPerUnit ?? 1}</td>
-          <td><button type="button" aria-label={"Edit " + item.name} disabled={busy} onClick={() => edit(item)}>Edit</button></td>
-        </tr>)}</tbody>
+      <table className="catalog-edit-table"><thead><tr><th>Item code</th><th>Item</th><th>Rate</th><th>Unit</th><th>Pieces per unit</th><th>Actions</th></tr></thead>
+        <tbody>{client.items.map(item => <ClientItemRow key={item.id} item={item} busy={busy} onSave={save} />)}</tbody>
       </table>
     </div> : <p>No registered items. Add one to make it available for new orders.</p>}
   </section>;
