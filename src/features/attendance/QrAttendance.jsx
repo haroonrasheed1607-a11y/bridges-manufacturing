@@ -1,3 +1,4 @@
+import { MobilePresentWorkers } from "./PresentWorkers.jsx";
 import { QrAttendanceCount } from "./QrAttendanceCount.jsx";
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
@@ -89,6 +90,7 @@ export function QrAttendance() {
       <p><strong>{result.action === "in" ? "Time In" : "Time Out"} {result.time}</strong> · {formatDate(result.date)}</p>
       <p>{result.duplicate ? "Already recorded." : "Attendance recorded."}</p>
     </div>}
+    <MobilePresentWorkers refreshVersion={countRefresh} />
     {camera && <QrCamera onScan={record} onClose={() => setCamera(false)}
       description={"Scan the individual’s personal QR card to record " + (action === "in" ? "Time In." : "Time Out.")} />}
   </section>;

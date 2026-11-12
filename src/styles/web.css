@@ -32,6 +32,7 @@
 @import "./30-plan.css";
 @import "./31-individual-profile.css";
 @import "./32-workspace-menu.css";
+@import "./33-client-catalog.css";
 
 .job-completion{display:flex;align-items:center;gap:10px;margin:8px 0;font-size:13px;font-weight:600;color:#244d40}.job-completion progress{width:90px;height:7px;accent-color:#27825d}.compact-job-card .job-completion{margin:4px 0;font-size:12px}
 
@@ -102,3 +103,16 @@
 .dashboard-stages dd{margin:0;font-weight:650}
 .dashboard-overdue{margin-inline-start:6px}
 @media(max-width:850px){.dashboard-grid{grid-template-columns:minmax(0,1fr)}}
+
+
+.present-workers { margin-top: 16px; border-top: 1px solid #e0e6ef; padding-top: 12px; }
+.present-workers h3 { font-size: 17px; margin: 0; }
+.present-workers .section-heading { gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+.present-workers th, .present-workers td { padding: 7px 6px; line-height: 1.25; vertical-align: middle; }
+.present-workers td:first-child, .present-workers td:last-child { white-space: nowrap; }
+
+.system-update-screen { min-height: 100dvh; display: grid; place-items: center; padding: 24px; background: #f5f7fa; text-align: center; }
+.system-update-screen section { max-width: 560px; }
+.system-update-screen img { width: 170px; max-width: 60%; margin-bottom: 24px; }
+.system-update-screen h1 { font-size: clamp(24px,4vw,34px); line-height: 1.25; }
+.system-update-screen p { color: #63748b; line-height: 1.5; }

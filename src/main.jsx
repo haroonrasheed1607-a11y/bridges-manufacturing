@@ -1,3 +1,4 @@
+import { SystemUpdateGate } from "./features/system/SystemUpdateGate.jsx";
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App.jsx';
@@ -6,7 +7,7 @@ import { ManufacturingProvider } from './state/ManufacturingContext.jsx';
 import { AuthGate } from './features/auth/AuthGate.js';
 import './styles/web.css';
 const accounts = /^\/accounts\/?$/.test(window.location.pathname);
-createRoot(document.getElementById('root')).render(<React.StrictMode>{accounts
+createRoot(document.getElementById('root')).render(<React.StrictMode><SystemUpdateGate>{accounts
   ? <AccountsPortal />
   : <AuthGate><ManufacturingProvider><App /></ManufacturingProvider></AuthGate>
-}</React.StrictMode>);
+}</SystemUpdateGate></React.StrictMode>);

@@ -26,7 +26,7 @@ export function ClientCatalog({ clients, onSaveItem }) {
   }
 
   if (!client) return null;
-  return <section className="panel">
+  return <section className="panel client-catalog">
     <div className="section-heading">
       <h3>Client item catalog</h3>
       <button type="button" onClick={() => edit({ id: crypto.randomUUID(), revision: 0, unit: "Item", piecesPerUnit: 1 })} disabled={busy}>Register item</button>
@@ -41,7 +41,9 @@ export function ClientCatalog({ clients, onSaveItem }) {
     {notice && <p role="status">{notice}</p>}
     <p className="quiet">Edit cells directly, then Save to review and confirm changes.</p>
     {client.items.length > 0 ? <div className="table-wrap">
-      <table className="catalog-edit-table"><thead><tr><th>Item code</th><th>Item</th><th>Rate</th><th>Unit</th><th>Pieces per unit</th><th>Actions</th></tr></thead>
+      <table className="catalog-edit-table"><colgroup>
+        <col className="catalog-col-code" /><col /><col className="catalog-col-rate" /><col className="catalog-col-unit" /><col className="catalog-col-pieces" /><col className="catalog-col-actions" />
+      </colgroup><thead><tr><th>Item code</th><th>Item</th><th>Rate</th><th>Unit</th><th>Pieces per unit</th><th>Actions</th></tr></thead>
         <tbody>{client.items.map(item => <ClientItemRow key={item.id} item={item} busy={busy} onSave={save} />)}</tbody>
       </table>
     </div> : <p>No registered items. Add one to make it available for new orders.</p>}

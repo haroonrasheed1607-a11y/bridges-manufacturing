@@ -13,3 +13,5 @@
 - Update `release.json` release notes for each feature release, using at most three sentences. Leave `minimumVersion` unchanged for routine deploys.
 
 - Keep Manufacturing independent from Learning Studio. Its separate Supabase project is `xftcsuqexzdpgoqeneem`; never point it at the Learning Studio project. Staff authentication, private storage and shared database APIs are provisioned; the first administrator account is provisioned. Never embed account passwords in source code.
+
+- For backend migrations after the system-update gate is installed, follow docs/backend-updates.md: commit set_system_update(true) before changing the backend, run checks through the operator connection, and set it false only after successful verification. Leave it off for frontend-only deployments. Never clear it on a timer or after a failed update.

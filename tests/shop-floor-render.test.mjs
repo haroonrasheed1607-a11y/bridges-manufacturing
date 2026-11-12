@@ -54,6 +54,8 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const adminApprovals=await render('/src/features/admin-approvals/BarcodeApprovals.jsx','BarcodeApprovals');assert.match(adminApprovals,/QR code approvals/);
  const managerApprovals=await render('/src/features/admin-approvals/BarcodeApprovals.jsx','BarcodeApprovals','manager');assert.match(managerApprovals,/Administrator access required/);assert.doesNotMatch(managerApprovals,/Approval reason/);
  assert.match(await render('/src/features/availability/AvailabilityPage.jsx','AvailabilityPage'),/Individual availability/);
+ const presentTable=await render('/src/features/attendance/PresentWorkers.jsx','PresentWorkersTable','box_scanner',null,{people:[{id:'P1',name:'Alex',number:'225',timeIn:'09:00'}]});
+ assert.match(presentTable,/>Alex</);assert.match(presentTable,/>225</);assert.match(presentTable,/>09:00</);assert.match(presentTable,/Time in/);
  const attendance=await render('/src/features/attendance/AttendancePage.jsx','AttendancePage');
  assert.match(attendance,/Daily attendance roster/);assert.match(attendance,/Bulk attendance/);
  assert.match(attendance,/aria-label="Select Alex"/);assert.match(attendance,/>Time In</);assert.match(attendance,/>Time Out</);

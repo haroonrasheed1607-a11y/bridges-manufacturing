@@ -1,3 +1,4 @@
+import { systemUpdateResponse } from "../_shared/system-update.ts";
 // Public, fixed-role access explicitly enabled for shared shop-floor devices.
 const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'apikey, authorization, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Content-Type':'application/json','Cache-Control':'no-store'};
 const base=Deno.env.get('SUPABASE_URL')!,key=Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -10,6 +11,7 @@ Deno.serve(async(req:Request)=>{
  const {mode}=await req.json();
  const account=mode==='scanner'?{email:'boxscan@bridges-manufacturing.local',role:'box_scanner'}:mode==='boxer'?{email:'boxsetup@bridges-manufacturing.local',role:'box_setup'}:null;
  if(!account)return reply({message:'Choose scanner or boxer'},400);
+ const maintenance=await systemUpdateResponse(base,key,reply);if(maintenance)return maintenance;
  // Resolve only fixed accounts, never a caller-supplied email, ID or role.
  const users=await api('/auth/v1/admin/users?page=1&per_page=1000');
  const user=users.users.find((u:any)=>u.email===account.email);

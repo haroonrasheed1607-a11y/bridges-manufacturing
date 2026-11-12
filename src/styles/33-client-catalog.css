@@ -1,0 +1,27 @@
+/* Dense catalog controls override the shared form and table spacing locally. */
+#manufacturing-app .client-catalog.panel { padding: 12px; }
+#manufacturing-app .client-catalog .section-heading { margin-bottom: 8px; gap: 8px; }
+#manufacturing-app .client-catalog h3 { margin: 0; font-size: 16px; line-height: 1.25; }
+#manufacturing-app .client-catalog > .field { max-width: 360px; font-size: 13px; line-height: 1.25; }
+#manufacturing-app .client-catalog > p { margin: 6px 0 8px; font-size: 12px; line-height: 1.3; }
+#manufacturing-app .client-catalog > .field select { min-height: 30px; padding: 4px 7px; font-size: 13px; }
+#manufacturing-app .client-catalog .catalog-edit-table { table-layout: fixed; min-width: 760px; font-size: 13px; }
+#manufacturing-app .catalog-edit-table th { padding: 7px 6px; line-height: 1.2; letter-spacing: .5px; }
+#manufacturing-app .catalog-edit-table td { padding: 4px 6px; vertical-align: middle; line-height: 1.2; }
+#manufacturing-app .catalog-edit-table th { min-width: 0; }
+#manufacturing-app .catalog-edit-table input,
+#manufacturing-app .catalog-edit-table select { min-height: 30px; height: 30px; padding: 3px 7px; margin: 0; font-size: 13px; line-height: 1.2; border-radius: 4px; }
+#manufacturing-app .catalog-edit-table .form-actions { margin: 0; padding: 0; border: 0; gap: 4px; justify-content: flex-start; }
+#manufacturing-app .catalog-edit-table button,
+#manufacturing-app .client-catalog .section-heading button { min-height: 30px; padding: 4px 8px; font-size: 12px; line-height: 1.2; }
+.catalog-col-code { width: 110px; }
+.catalog-col-rate { width: 90px; }
+.catalog-col-unit { width: 90px; }
+.catalog-col-pieces { width: 115px; }
+.catalog-col-actions { width: 125px; }
+@media (max-width: 760px) {
+ #manufacturing-app .catalog-edit-table input,
+ #manufacturing-app .catalog-edit-table select,
+ #manufacturing-app .client-catalog > .field select { min-height: 38px; height: 38px; font-size: 16px; }
+ #manufacturing-app .catalog-edit-table button { min-height: 38px; }
+}

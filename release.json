@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Edit client item codes, names, rates, units and quantities directly in the catalog table. Saving changes requires confirmation showing the old and new values."
+    "Made the client catalog more compact and added a mobile table of people currently present. Backend maintenance mode blocks application requests and displays \u201cSystem under update, please wait\u201d until updates finish."
   ]
 }

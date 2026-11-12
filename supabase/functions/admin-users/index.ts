@@ -1,3 +1,4 @@
+import { systemUpdateResponse } from "../_shared/system-update.ts";
 const cors = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'authorization, apikey, content-type','Access-Control-Allow-Methods':'POST, OPTIONS','Cache-Control':'no-store'};
 const base = Deno.env.get('SUPABASE_URL')!;
 const secret = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
@@ -13,6 +14,7 @@ Deno.serve(async(req:Request)=>{
  if(req.method!=='POST')return reply({message:'Method not allowed'},405);
  const token=req.headers.get('Authorization')?.replace(/^Bearer\s+/i,'');
  if(!token)return reply({message:'Sign in required'},401);
+ const maintenance=await systemUpdateResponse(base,secret,reply);if(maintenance)return maintenance;
  let actor;
  try{actor=await request('/auth/v1/user','GET',undefined,token);}catch{return reply({message:'Sign in required'},401);}
  try{
