@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Simplified Plan to the Create Order form. Plan Work automatically prepares production; the manual planning and approval sections below the form have been removed."
+    "Plan now lists jobs for the selected day, including quantities, scanned pieces and completion status. Newly created work appears automatically, and approvals can be marked complete from the list."
   ]
 }
