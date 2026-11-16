@@ -123,3 +123,6 @@
 .catalog-edit-table th:nth-child(3), .catalog-edit-table th:nth-child(5) { min-width: 110px; }
 .catalog-edit-table .form-actions { margin: 0; flex-wrap: nowrap; gap: 6px; }
 .catalog-item-dirty { background: #fff8e8; }
+
+.assignment-quantities { display: block; margin: 5px 0 8px; font-size: 13px; line-height: 1.35; color: #46576c; font-weight: 600; overflow-wrap: anywhere; }
+.scan-assign-mobile-counts .assignment-quantities { display: block; margin: 4px 0 0; font-size: 12px; }
