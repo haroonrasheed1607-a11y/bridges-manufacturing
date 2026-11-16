@@ -67,9 +67,9 @@ function ManufacturingBoardActions({
     className: 'job-action-details'
   }, order.workOrders.map(work => h('section', {
     key: work.id
-  }, h('h4', null, work.description), h('p', null, work.id + ' · ' + work.type + ' · ' + work.quantity.toLocaleString() + ' pieces · ' + work.perPack + ' per pack'), h('p', null, 'Job Coach: ' + (work.coachName || 'Awaiting assignment')), h('p', null, 'Quality checks: ' + (work.audits || []).length + ' · Packing checks: ' + (work.packing || []).length), h('ul', null, (work.jobs || []).map(job => h('li', {
+  }, h('h4', null, work.description), h('p', null, work.id + ' · ' + work.type + ' · ' + work.quantity.toLocaleString() + (order.totalBillableUnits != null ? ' billable units · ' + work.billableUnitsPerScan + ' per scan' : ' pieces · ' + work.perPack + ' per pack')), h('p', null, 'Job Coach: ' + (work.coachName || 'Awaiting assignment')), h('p', null, 'Quality checks: ' + (work.audits || []).length + ' · Packing checks: ' + (work.packing || []).length), h('ul', null, (work.jobs || []).map(job => h('li', {
     key: job.id
-  }, job.name + ': ' + job.completed.toLocaleString() + ' / ' + job.quantity.toLocaleString() + ' pieces'))))), h('p', {
+  }, job.name + ': ' + job.completed.toLocaleString() + ' / ' + job.quantity.toLocaleString() + (order.totalBillableUnits != null ? ' billable units' : ' pieces')))))), h('p', {
     className: 'quiet'
   }, 'Warehouse: ' + (order.warehouse?.receivedAt ? 'Received' : 'Pending') + ' · Delivery: ' + (order.delivery?.signedAt ? 'Customer signed' : order.delivery?.dispatchedAt ? 'Dispatched' : 'Pending')), order.history?.length > 0 && h('p', {
     className: 'quiet'

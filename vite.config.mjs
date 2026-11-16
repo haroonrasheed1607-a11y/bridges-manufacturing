@@ -1,4 +1,5 @@
-import { defineConfig } from "vite";
+import { resolveEnvironment } from "./src/config/environment.js";
+import { defineConfig, loadEnv } from "vite";
 import { readFileSync } from "node:fs";
 const releaseConfig = JSON.parse(readFileSync("release.json", "utf8"));
 let release = { version: releaseConfig.minimumVersion, commit: null };
@@ -7,10 +8,12 @@ try {
 } catch (error) {
   if (error.code !== "ENOENT") throw error;
 }
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+const appConfig = resolveEnvironment({ ...loadEnv(mode, process.cwd(), "VITE_"), ...process.env });
+return {
   server: { allowedHosts: ['terminal.local'] },
   esbuild: { jsx: "automatic" },
-  define: { __APP_VERSION__: JSON.stringify(release.version) },
+  define: { __APP_VERSION__: JSON.stringify(release.version), __BRIDGES_CONFIG__: JSON.stringify(appConfig) },
   plugins: [
     {
       name: "bridges-release-manifest",
@@ -29,4 +32,5 @@ export default defineConfig({
       },
     },
   ],
+};
 });

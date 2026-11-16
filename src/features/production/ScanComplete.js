@@ -103,7 +103,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
       individualName: workforce.people.find(person => person.id === selected.box.personId)?.name || selected.box.personId,
       orderTitle: orderDisplayTitle(selected.order)
     });
-    setMessage('Box completed · ' + result.box.completedPieces + ' pieces recorded. Ready for the next scan.');
+    setMessage('Box completed · ' + result.box.completedPieces + (selected.order.totalBillableUnits != null ? ' billable units' : ' pieces') + ' recorded. Ready for the next scan.');
     setSelectedCode('');
     setCode('');
     setPieces('');
@@ -191,13 +191,13 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     'Sub-job': selected.job?.name || selected.box.jobId,
     'Individual': individual?.name || selected.box.personId,
     'Job Coach': selected.work.coachName || '—',
-    'Box quantity': selected.box.quantity + ' pieces'
+    'Box quantity': selected.box.quantity + (selected.order.totalBillableUnits != null ? ' billable units' : ' pieces')
   }).map(([label, value]) => h('div', {
     key: label
   }, h('dt', null, label), h('dd', null, value))))), h('form', {
     onSubmit: complete
   }, h(FormField, {
-    label: 'Completed pieces',
+    label: selected.order.totalBillableUnits != null ? 'Completed billable units' : 'Completed pieces',
     hint: 'Defaults to the box quantity. Change only if the actual completed quantity differs.'
   }, h('input', {
     type: 'number',

@@ -21,7 +21,7 @@ export function ScannerDailyWork({refreshKey}) {
   return <section className="panel">
     <h2>Completed work</h2>
     <label className="field">Day (Tulsa time)<input type="date" required value={date} onChange={e => { if(e.target.value) setDate(e.target.value); }}/></label>
-    <p className="quiet">Most pieces completed first · boxes and reusable loads</p>
-    {error ? <p role="alert" className="alert">{error}</p> : loading ? <p role="status">Loading completed work…</p> : rows.length ? <div className="scanner-recent-list">{rows.map(row => <article key={row.personId}><div><strong>{row.name}</strong><p>{Number(row.pieces).toLocaleString()} pieces completed</p><small>{row.completions} completed scans</small></div></article>)}</div> : <p>No completed work for this day.</p>}
+    <p className="quiet">Completed quantities · billable units and legacy pieces</p>
+    {error ? <p role="alert" className="alert">{error}</p> : loading ? <p role="status">Loading completed work…</p> : rows.length ? <div className="scanner-recent-list">{rows.map(row => <article key={row.personId}><div><strong>{row.name}</strong><p>{Number(row.billableUnits || 0).toLocaleString()} billable units completed{row.pieces > (row.billableUnits || 0) && " · " + (row.pieces - (row.billableUnits || 0)).toLocaleString() + " legacy pieces"}</p><small>{row.completions} completed scans</small></div></article>)}</div> : <p>No completed work for this day.</p>}
   </section>;
 }

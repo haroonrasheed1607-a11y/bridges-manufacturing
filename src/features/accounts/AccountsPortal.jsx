@@ -1,3 +1,4 @@
+import { BillableUnitsReport } from "./BillableUnitsReport.jsx";
 import { AccountsRates } from "./AccountsRates.jsx";
 import { React } from "../../vendor/react-runtime.js";
 import { createApiClient } from "../../api/supabaseClient.js";
@@ -42,7 +43,7 @@ function AccountsTimesheets() {
 
 function AccountsWorkspace() {
   const { signOut } = React.useContext(SessionActions);
-  const [view, setView] = React.useState("payroll");
+  const [view, setView] = React.useState("billable");
 
   return <div id="manufacturing-app">
     <header className="top"><img className="brand-logo" src={manufacturingWorkLogo} alt="Bridges" />
@@ -50,11 +51,12 @@ function AccountsWorkspace() {
     </header>
     <main className="work">
       <nav className="accounts-nav" aria-label="Accounts views">
+        <button type="button" aria-pressed={view === "billable"} onClick={() => setView("billable")}>Billable Units</button>
         <button type="button" aria-pressed={view === "payroll"} onClick={() => setView("payroll")}>Payroll report</button>
         <button type="button" aria-pressed={view === "timesheets"} onClick={() => setView("timesheets")}>Weekly timesheets</button>
         <button type="button" aria-pressed={view === "rates"} onClick={() => setView("rates")}>Clients &amp; items</button>
       </nav>
-      {view === "rates" ? <AccountsRates api={accountsApi} /> : view === "payroll" ? <PayrollReport api={accountsApi} /> : <AccountsTimesheets />}
+      {view === "billable" ? <BillableUnitsReport api={accountsApi} /> : view === "rates" ? <AccountsRates api={accountsApi} /> : view === "payroll" ? <PayrollReport api={accountsApi} /> : <AccountsTimesheets />}
     </main>
   </div>;
 }

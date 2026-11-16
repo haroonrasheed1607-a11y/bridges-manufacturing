@@ -23,7 +23,7 @@ sealed class ShopFloor : Form {
  List<LabelData>? lastLabels;
  record LabelData(string[] Lines,bool[][]? Matrix);
  public ShopFloor(){
-  Text="Bridges Shop Floor v1.10 · QL-800";
+  Text="Bridges Shop Floor v1.11 · QL-800";
   var area=Screen.PrimaryScreen?.WorkingArea??new Rectangle(0,0,1280,900);
   Width=Math.Max(480,Math.Min(1280,area.Width-40));Height=Math.Max(600,Math.Min(900,area.Height-60));MinimumSize=new(480,600);StartPosition=FormStartPosition.CenterScreen;
   var tools=new FlowLayoutPanel{Dock=DockStyle.Top,Height=85,Padding=new(6)};
@@ -63,7 +63,7 @@ sealed class ShopFloor : Form {
    await web.CoreWebView2.Profile.SetPermissionStateAsync(CoreWebView2PermissionKind.Microphone,Origin,CoreWebView2PermissionState.Deny);
   } catch { status.Text="Camera permission setup unavailable · update WebView2 Runtime"; }
   web.CoreWebView2.WebMessageReceived+=Receive;
-  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.10\",cameraSettings:true})});}");
+  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.11\",cameraSettings:true})});}");
   web.CoreWebView2.NavigationCompleted+=(_,e)=>status.Text=e.IsSuccess?"Ready · select boxer or scanner to begin":"Connection failed · check internet and Reload";
   web.Source=new Uri(Origin);
  }catch(Exception ex){MessageBox.Show("Install Microsoft Edge WebView2 Runtime, then restart.\n\n"+ex.Message,"Unable to start");}}
@@ -87,7 +87,8 @@ sealed class ShopFloor : Form {
   var matrix=m.GetProperty("matrix").EnumerateArray().Select(r=>r.EnumerateArray().Select(c=>c.GetBoolean()).ToArray()).ToArray();
   if(matrix.Length!=25||matrix.Any(r=>r.Length!=25))throw new Exception("Invalid QR code.");
   string Read(string key,int max=160){var s=m.GetProperty(key).GetString()??"";if(s.Length>max||s.Any(char.IsControl))throw new Exception("Invalid label text.");return s;}
-  return new([Read("person"),Read("orderTitle"),Read("job")+" · "+Read("quantity",12)+" pcs",Read("boxId",32)],matrix);
+  string unit=m.TryGetProperty("unit",out var u)&&u.GetString()=="units"?"units":"pcs";
+  return new([Read("person"),Read("orderTitle"),Read("job")+" · "+Read("quantity",12)+" "+unit,Read("boxId",32)],matrix);
  }
  void Print(string[] lines,bool[][]? matrix)=>PrintBatch([new(lines,matrix)],false);
  void PrintBatch(List<LabelData> labels,bool showPreview){

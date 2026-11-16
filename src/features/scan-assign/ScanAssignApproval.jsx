@@ -1,3 +1,4 @@
+import { AssignmentQuantities } from "./AssignmentQuantities.jsx";
 import { planningOrderOption, planningWorkDetails } from "../plan/workOrderOption.js";
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
@@ -84,7 +85,7 @@ export function ScanAssignApproval({ date, onChange, refreshVersion = 0 }) {
       onClick={() => approve(jobId, true)}>Approve for Scan & Assign</button>
     {error && <p role="alert" className="alert">{error}</p>}
     {loaded !== date ? <p role="status">Loading Scan & Assign approvals…</p> : rows.length ? <ul className="scan-assign-approval-list">{rows.map(row => <li key={row.id}>
-      <div><strong>{row.orderTitle}{row.orderCode && " · " + row.orderCode}</strong><small className="block quiet">{row.jobName || row.jobId} · {row.piecesPerScan} pieces/scan · {row.assigned} assigned</small></div>
+      <div><strong>{row.orderTitle}{row.orderCode && " · " + row.orderCode}</strong><small className="block quiet">{row.jobName || row.jobId} · {row.assigned} assigned</small><AssignmentQuantities row={row} orders={orders} /></div>
       <ScanAssignApprovalActions row={row} busy={busy} onComplete={() => complete(row)} onRevoke={() => approve(row.jobId, false)} />
     </li>)}</ul> : <p className="quiet">No orders approved for Scan & Assign on this date.</p>}
   </section>;

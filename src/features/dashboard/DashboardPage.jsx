@@ -10,12 +10,12 @@ const number = value => Number(value).toLocaleString();
 function TopPerformers({ performers }) {
   return <section className="panel" aria-labelledby="dashboard-performers-heading">
     <h3 id="dashboard-performers-heading">Top performers</h3>
-    <p className="quiet">Ranked by pieces scanned in the selected period.</p>
+    <p className="quiet">Billable units are shown separately from legacy pieces.</p>
     {performers.length ? <div className="table-wrap"><table>
-      <thead><tr><th scope="col">Rank</th><th scope="col">Individual</th><th scope="col">Pieces</th><th scope="col">Scans</th></tr></thead>
+      <thead><tr><th scope="col">Rank</th><th scope="col">Individual</th><th scope="col">Billable units</th><th scope="col">Legacy pieces</th><th scope="col">Scans</th></tr></thead>
       <tbody>{performers.map((person, index) => <tr key={person.id}>
         <td>{index + 1}</td><th scope="row">{person.name}</th>
-        <td><strong>{number(person.pieces)}</strong></td><td>{number(person.scans)}</td>
+        <td><strong>{number(person.billable_units || 0)}</strong></td><td>{number(person.pieces - (person.billable_units || 0))}</td><td>{number(person.scans)}</td>
       </tr>)}</tbody>
     </table></div> : <p className="quiet">No QR scans in this period.</p>}
   </section>;
@@ -87,8 +87,8 @@ function ManufacturingDashboard() {
       {error && <p role="alert" className="alert">{error}</p>}
       {!busy && result && <>
         <div className="metrics dashboard-metrics">
-          {[["Total pieces done", Number(result.pieces) + Number(result.approvedPieces)], ["QR scans", result.scans], ["Individuals who scanned", result.individuals],
-            ["Pieces from admin approvals", result.approvedPieces]].map(([label, value]) =>
+          {[["Total Billable Units done", result.billableUnits || 0], ["QR scans", result.scans], ["Individuals who scanned", result.individuals],
+            ["Legacy pieces", Number(result.pieces) + Number(result.approvedPieces) - Number(result.billableUnits || 0)]].map(([label, value]) =>
             <div key={label}><span>{label}</span><strong>{number(value)}</strong></div>)}
         </div>
         {result.latestScan && <p className="quiet dashboard-last-scan">Latest scan {formatTimestamp(result.latestScan)}</p>}
@@ -107,7 +107,7 @@ function ManufacturingDashboard() {
           <h3>Orders to watch</h3><p className="quiet">Planned for {formatDate(end)}.</p>
           {busy ? <p className="quiet">Loading planned orders…</p> :
             error ? <p className="quiet">Could not load planned orders.</p> : watch.length ? <div className="table-wrap"><table>
-            <thead><tr><th scope="col">Order</th><th scope="col">Stage</th><th scope="col">Due date</th><th scope="col">Pieces remaining</th></tr></thead>
+            <thead><tr><th scope="col">Order</th><th scope="col">Stage</th><th scope="col">Due date</th><th scope="col">Quantity remaining</th></tr></thead>
             <tbody>{watch.map(order => {
               const { total, completed } = jobCompletion(order);
               return <tr key={order.id}>

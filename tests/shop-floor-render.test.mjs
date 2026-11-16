@@ -81,7 +81,7 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.match(adminNav,/href="#board"/);assert.doesNotMatch(adminNav,/nav-menu-orders/);
  const scannerNav=await render('/src/components/Navbar.jsx','Navbar','box_scanner');assert.doesNotMatch(scannerNav,/href="#plan"|href="#shopfloorprint"/);
  const adminPlan=await render('/src/features/plan/PlanPage.jsx','PlanPage','admin');
- assert.match(adminPlan,/Create Order/);assert.match(adminPlan,/Plan Work/);assert.match(adminPlan,/Number of pieces/);assert.match(adminPlan,/Planned for the day/);
+ assert.match(adminPlan,/Create Order/);assert.match(adminPlan,/Plan Work/);assert.match(adminPlan,/Total Billable Units/);assert.match(adminPlan,/Billable Units per Scan/);assert.match(adminPlan,/Planned for the day/);
  assert.doesNotMatch(adminPlan,/Plans for approval|Scan &amp; Assign approval|Individuals · New plan|Move →|Refresh approvals/);
  const plannedTable=await render('/src/features/plan/PlannedJobs.jsx','PlannedJobsTable','admin',null,{rows:[{jobId:'J1',orderId:'O1',title:'Assembly order',code:'PART-42',quantity:250,piecesToday:100,completed:100,status:'Ready for production',canComplete:true}]});
  assert.match(plannedTable,/Assembly order · PART-42/);assert.match(plannedTable,/100 \/ 250/);assert.match(plannedTable,/Mark complete/);

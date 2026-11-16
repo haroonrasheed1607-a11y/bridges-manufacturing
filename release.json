@@ -1,6 +1,6 @@
 {
-  "minimumVersion": "1.0",
+  "minimumVersion": "2.0",
   "notes": [
-    "The Windows desktop app now accepts QR scans from USB keyboard scanners instead of opening a camera. Web and phone camera scanning is unchanged."
+    "Version 2 adds Total Billable Units and BU per Scan to planning and assignment, with unit-based progress, billing and pay. Historical pieces and rates remain unchanged."
   ]
 }

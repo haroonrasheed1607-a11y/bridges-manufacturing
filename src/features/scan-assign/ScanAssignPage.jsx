@@ -1,3 +1,4 @@
+import { AssignmentQuantities, assignmentQuantityText } from "./AssignmentQuantities.jsx";
 import { hasDesktopPrinter } from "../../services/printing/desktopPrinter.js";
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
@@ -7,7 +8,7 @@ import { QrCamera } from "../production/QrCamera.jsx";
 import { DumpingScanner } from "../dumping/DumpingScanner.jsx";
 
 export function ScanAssignPage({ refreshVersion = 0 }) {
-  const { profile, refresh } = useManufacturing();
+  const { profile, refresh, orders = [] } = useManufacturing();
   const [rows, setRows] = React.useState([]);
   const [approval, setApproval] = React.useState("");
   const [loadedDate, setLoadedDate] = React.useState("");
@@ -23,7 +24,8 @@ export function ScanAssignPage({ refreshVersion = 0 }) {
   const request = React.useRef(0);
   const today = manufacturingToday();
   const assignedOrders = new Map();
-  const selectedOrderId = rows.find(row => row.id === approval)?.orderId;
+  const selectedApproval = rows.find(row => row.id === approval);
+  const selectedOrderId = selectedApproval?.orderId;
   for (const row of rows) {
     if (!assignedOrders.has(row.orderId)) {
       assignedOrders.set(row.orderId, { ...row, assigned: 0 });
@@ -73,7 +75,7 @@ export function ScanAssignPage({ refreshVersion = 0 }) {
     setResult(null);
     try {
       const response = await manufacturingApi.rpc("app_scan_and_assign", { p_approval: approval, p_code: normalized });
-      setResult(response);
+      setResult({...response, assignmentRow: selectedApproval});
       setCode("");
       if (response.waitSeconds === 0 && profile?.role !== "box_setup") setProductionCode(normalized);
       await Promise.all([refresh(), load()]);
@@ -85,16 +87,17 @@ export function ScanAssignPage({ refreshVersion = 0 }) {
     setProductionCode(""); setResult(null); load(); setTimeout(() => input.current?.focus(), 0);
   }} />;
   return <section className="panel scan-assign-page">
-    <header className="section-heading scan-assign-desktop-heading"><div><h2>Scan & Assign</h2><p className="quiet">First scan assigns the individual. Scan again after one minute to record the planned pieces.</p></div>
+    <header className="section-heading scan-assign-desktop-heading"><div><h2>Scan & Assign</h2><p className="quiet">First scan assigns the individual. Scan again after one minute to record the planned quantity.</p></div>
       <button type="button" disabled={busy} onClick={load}>Refresh orders</button></header>
     <label className="field">Approved order<select value={approval} disabled={busy || loadedDate !== today} onChange={e => {
       setApproval(e.target.value); setResult(null); setError("");
     }}><option value="">Select an approved order</option>{rows.map(row => <option key={row.id} value={row.id}>
-      {row.orderTitle}{row.orderCode && " · " + row.orderCode} · {row.jobName || row.jobId} · {row.piecesPerScan} pieces/scan
+      {row.orderTitle}{row.orderCode && " · " + row.orderCode} · {row.jobName || row.jobId} · {assignmentQuantityText(row, orders)}
     </option>)}</select></label>
+    <AssignmentQuantities row={selectedApproval} orders={orders} />
     {loadedDate === today && rows.length > 0 && <ul className="scan-assign-mobile-counts" aria-label="Assigned individuals by approved order" aria-live="polite">
       {[...assignedOrders.values()].map(row => <li key={row.orderId} className={row.orderId === selectedOrderId ? "is-selected" : ""}>
-        <span><strong>{row.orderTitle}{row.orderCode && " · " + row.orderCode}</strong></span>
+        <span><strong>{row.orderTitle}{row.orderCode && " · " + row.orderCode}</strong><AssignmentQuantities row={row} orders={orders} /></span>
         <span className="scan-assign-person-count"><strong>{row.assigned}</strong> assigned</span>
       </li>)}
     </ul>}
@@ -110,7 +113,7 @@ export function ScanAssignPage({ refreshVersion = 0 }) {
     </div>
     {error && <p role="alert" className="alert">{error}</p>}
     {result && <div className="scan-assign-result" role="status"><h3>{result.personName} · {result.reassigned ? "Reassigned" : "Assigned"}</h3>
-      <p>{result.piecesPerScan} pieces per scan</p>
+      <AssignmentQuantities row={result.assignmentRow} orders={orders} />
       <p>{seconds > 0 ? "Production scans unlock in " + seconds + " seconds."
         : profile?.role === "box_setup" ? "Ready for production scanning."
           : "Ready. Scan this card again to record production."}</p>
