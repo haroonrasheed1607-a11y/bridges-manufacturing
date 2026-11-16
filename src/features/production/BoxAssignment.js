@@ -105,8 +105,8 @@ function ManufacturingProductionBoxes({
     key: person.id,
     value: person.id
   }, person.name)))), h(FormField, {
-    label: 'Pieces in this box',
-    hint: remaining + ' pieces remaining in this sub-job.'
+    label: order.totalBillableUnits != null ? 'Billable units in this box' : 'Pieces in this box',
+    hint: remaining + (order.totalBillableUnits != null ? ' billable units remaining.' : ' pieces remaining in this sub-job.')
   }, h('input', {
     type: 'number',
     min: 1,

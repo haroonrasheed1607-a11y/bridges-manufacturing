@@ -64,7 +64,7 @@ export function printBrowser(labels, { preview = false } = {}) {
     const text = node("div", undefined, section);
     text.className = "text";
     const lines = [label.person, label.orderTitle];
-    if (label.quantity != null) lines.push(label.job + " · " + label.quantity + " pcs");
+    if (label.quantity != null) lines.push(label.job + " · " + label.quantity + " " + (label.unit || "pcs"));
     lines.push(label.boxId);
     lines.forEach((value, i) => {
       const line = node("div", undefined, text);

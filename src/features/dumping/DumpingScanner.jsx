@@ -2,7 +2,7 @@ import { isConflictError } from "../../api/conflicts.js";
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
-import { SUCCESS_DISPLAY_MS, scanRequestKey, completedLoadPieces, isIndividualJobCode } from "./model.js";
+import { SUCCESS_DISPLAY_MS, scanRequestKey, completedLoadPieces, billableScanQuantity, isIndividualJobCode } from "./model.js";
 export function DumpingScanner({ code, onDone, autoRecord = false }) {
   const personal = isIndividualJobCode(code);
   const { workforce, refresh, profile } = useManufacturing();
@@ -45,9 +45,10 @@ export function DumpingScanner({ code, onDone, autoRecord = false }) {
     setError("");
     try {
       if (!pending.current) {
-        const quantity = assignment.personalQr
+        const quantity = assignment.billableMode ? billableScanQuantity(assignment.batchQuantity, multiplier, assignment.remainingBillableUnits, pieces) : assignment.personalQr
           ? assignment.scanQuantity
           : completedLoadPieces(assignment.batchQuantity, multiplier, pieces);
+        if (!quantity) throw new Error("Enter a positive quantity within the remaining billable units.");
         pending.current = { id: request.current, pieces: quantity, expectedLoad: assignment.batchQuantity, assignmentId: assignment.id };
         try { sessionStorage.setItem(key, JSON.stringify(pending.current)); } catch {}
       }
@@ -55,7 +56,9 @@ export function DumpingScanner({ code, onDone, autoRecord = false }) {
         p_request: request.current, p_pieces: pending.current.pieces,
         p_expected_load: pending.current.expectedLoad ?? null,
       };
-      const r = personal
+      const r = assignment.billableMode
+        ? await manufacturingApi.rpc("app_scan_billable_units", {p_code:code,p_assignment:pending.current.assignmentId,p_request:request.current,p_units:pending.current.pieces,p_expected_load:pending.current.expectedLoad})
+        : personal
         ? await manufacturingApi.rpc("app_scan_individual_job_qr", {
           ...scan, p_code: code, p_assignment: pending.current.assignmentId,
         })
@@ -80,7 +83,7 @@ export function DumpingScanner({ code, onDone, autoRecord = false }) {
           setAssignment(null);
         }
       }
-      setError(e.message);
+      setError(assignment?.billableMode ? e.message.replace(/pieces/gi,"billable units") : e.message);
     } finally {
       setBusy(false);
       lock.current = false;
@@ -97,7 +100,7 @@ export function DumpingScanner({ code, onDone, autoRecord = false }) {
     return () => { cancelled = true; };
   }, [code]);
   React.useEffect(() => {
-    if (!autoRecord || !assignment || autoStarted.current || !assignment.scanQuantity) return;
+    if (!autoRecord || !assignment || assignment.billableMode || autoStarted.current || !assignment.scanQuantity) return;
     autoStarted.current = true;
     record();
   }, [autoRecord, assignment?.id]);
@@ -126,9 +129,9 @@ export function DumpingScanner({ code, onDone, autoRecord = false }) {
             : `Good job, ${person?.name || "team member"}!`}
         </h2>
         <p>
-          {result.pieces} pieces{" "}
+          {result.billableUnits ?? result.pieces} {result.billableMode ? "billable units" : "pieces"}{" "}
           {result.duplicate
-            ? "were previously recorded. No extra pieces added."
+            ? "were previously recorded. Nothing added twice."
             : "recorded."}
         </p>
         <p>{ready ? "Ready" : "Ready for the next batch in a few seconds…"}</p>
@@ -148,18 +151,18 @@ export function DumpingScanner({ code, onDone, autoRecord = false }) {
           {personal && !assignment && pending.current && <button className="primary" onClick={record}>Retry same scan</button>}
           {assignment && <>
           {personal && <p><strong>{assignment.orderTitle}</strong> · {assignment.jobName || "Sub-job"} · {assignment.orderId}</p>}
-          <p>{workforce.people.find(p => p.id === assignment.personId)?.name || "Team member"} · {assignment.batchQuantity} pieces per load{assignment.workDate && " · Plan date " + assignment.workDate}</p>
-          {assignment.personalQr ? <p><strong>{assignment.scanQuantity} pieces to record</strong>
+          <p>{workforce.people.find(p => p.id === assignment.personId)?.name || "Team member"} · {assignment.batchQuantity} {assignment.billableMode ? "billable units" : "pieces"} per load{assignment.workDate && " · Plan date " + assignment.workDate}</p>
+          {assignment.personalQr && !assignment.billableMode ? <p><strong>{assignment.scanQuantity} pieces to record</strong>
             {assignment.scanQuantity < assignment.batchQuantity && " · Remaining pieces"}</p> : <>
           <label className="field">Load size
             <select value={multiplier} disabled={submitted} onChange={e => { setMultiplier(Number(e.target.value)); setPieces(""); }}>
-              <option value={1}>1× · {assignment.batchQuantity} pieces</option>
-              <option value={2}>2× · {assignment.batchQuantity * 2} pieces</option>
+              <option value={1}>1× · {assignment.batchQuantity} {assignment.billableMode ? "units" : "pieces"}</option>
+              <option value={2}>2× · {assignment.batchQuantity * 2} {assignment.billableMode ? "units" : "pieces"}</option>
             </select>
           </label>
-          <p><strong>{pieces === "" ? assignment.batchQuantity * multiplier : pieces} pieces to record</strong></p>
+          <p><strong>{assignment.billableMode ? billableScanQuantity(assignment.batchQuantity,multiplier,assignment.remainingBillableUnits,pieces) : pieces === "" ? assignment.batchQuantity * multiplier : pieces} {assignment.billableMode ? "billable units" : "pieces"} to record</strong></p>
           <label className="field">
-            Actual pieces (only for a smaller final batch)
+            {assignment.billableMode ? "Actual billable units (smaller final load)" : "Actual pieces (only for a smaller final batch)"}
             <input
               type="number"
               disabled={submitted}
@@ -172,8 +175,8 @@ export function DumpingScanner({ code, onDone, autoRecord = false }) {
             />
           </label>
           </>}
-          <button className="primary" onClick={record} disabled={!submitted && assignment.personalQr && !assignment.scanQuantity}>
-            {submitted ? "Retry same scan" : "Confirm completed pieces"}
+          <button className="primary" onClick={record} disabled={!submitted && (assignment.billableMode ? !billableScanQuantity(assignment.batchQuantity,multiplier,assignment.remainingBillableUnits,pieces) : assignment.personalQr && !assignment.scanQuantity)}>
+            {submitted ? "Retry same scan" : assignment.billableMode ? "Confirm billable units" : "Confirm completed pieces"}
           </button>
           </>}
           <button onClick={onDone}>Back to scanner</button>

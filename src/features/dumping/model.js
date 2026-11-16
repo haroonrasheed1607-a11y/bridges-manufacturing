@@ -29,3 +29,9 @@ export function completedLoadPieces(batchQuantity, multiplier, actual = "") {
   if (!Number.isInteger(batch) || batch < 1 || ![1, 2].includes(factor) || !Number.isInteger(quantity) || quantity < 1 || quantity > batch * 2) throw new Error("Enter between 1 and two loads of pieces.");
   return quantity;
 }
+
+export function billableScanQuantity(load,multiplier,remaining,actual="") {
+ const cap=remaining==null?load*multiplier:Number(remaining);
+ const value=actual===""?Math.min(load*multiplier,cap):Number(actual);
+ return Number.isSafeInteger(value)&&value>0&&value<=load*2&&value<=cap?value:0;
+}

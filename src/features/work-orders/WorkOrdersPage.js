@@ -1,3 +1,4 @@
+import { BillableWork } from "./BillableWork.jsx";
 // features/work-orders/WorkOrdersPage.js
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { manufacturingOrderPlan } from "../../domain/orders.js";
@@ -42,6 +43,7 @@ function WorkOrdersPage() {
     }, 'Work order updated.');
     if (saved) setEditing(null);
   }
+  if(order.totalBillableUnits != null) return h(BillableWork);
   return h(React.Fragment, null, h('div', {
     className: 'section-heading'
   }, h('div', null, h('h3', null, 'Work orders & sub-jobs'), h('p', {

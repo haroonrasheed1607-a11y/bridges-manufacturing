@@ -1,6 +1,6 @@
 {
-  "minimumVersion": "1.0",
+  "minimumVersion": "2.0",
   "notes": [
-    "Staging builds require an isolated database and show a test environment banner. Production configuration and desktop release publishing remain pinned to main."
+    "Version 2.0 staging adds Total Billable Units and Billable Units per Scan during planning. New scans retain units and rates for progress, billing and individual pay; legacy records remain unchanged."
   ]
 }

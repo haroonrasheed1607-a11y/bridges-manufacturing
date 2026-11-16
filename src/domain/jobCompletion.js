@@ -1,4 +1,9 @@
 export function jobCompletion(order){
+ if(order.totalBillableUnits != null){
+  const total=Number(order.totalBillableUnits)||0;
+  const completed=Math.max(0,Math.min(total,Number(order.billableUnitsCompleted)||0));
+  return {total,completed,percent:total?Math.min(100,Math.floor(completed/total*100)):0};
+ }
  const works=order.workOrders||[];
  const amount=value=>Number.isFinite(Number(value))?Math.max(0,Number(value)):0;
  const total=works.length?works.reduce((sum,w)=>sum+amount(w.quantity),0):amount(order.quantity);

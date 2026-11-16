@@ -19,7 +19,7 @@ export function ScanSettings() {
     const work = jobs.find(item => item.work.id === id)?.work;
     setWorkId(id);
     setSeconds(work?.scanCooldownSeconds ?? "");
-    setPieces(work?.scanPieces ?? "");
+    setPieces(work?.billableUnitsPerScan ?? work?.scanPieces ?? "");
     setError("");
     setNotice("");
   }
@@ -32,10 +32,10 @@ export function ScanSettings() {
     setError("");
     setNotice("");
     try {
-      await manufacturingApi.rpc("app_save_scan_settings", {
+      await manufacturingApi.rpc(current.order.totalBillableUnits != null ? "app_save_billable_scan_settings" : "app_save_scan_settings", {
         p_work: workId,
         p_seconds: seconds === "" ? null : Number(seconds),
-        p_pieces: pieces === "" ? null : Number(pieces),
+        ...(current.order.totalBillableUnits != null ? {p_units:Number(pieces)} : {p_pieces:pieces === "" ? null : Number(pieces)}),
       });
       await refresh();
       setNotice("Scan settings saved for this work order.");
@@ -66,10 +66,10 @@ export function ScanSettings() {
               onChange={event => setSeconds(event.target.value)} placeholder="Standard: 120 seconds" />
             <small>Blank uses the standard 120 seconds. Zero removes the delay. A 2× load doubles the time. Applies to repeat scans of the same QR.</small>
           </label>
-          <label className="field"><span>Pieces per scan (1×)</span>
+          <label className="field"><span>{current?.order.totalBillableUnits != null ? "Billable Units per Scan (1×)" : "Pieces per scan (1×)"}</span>
             <input type="number" min="1" max={current?.work.quantity ?? 1000000} step="1" value={pieces} disabled={!current}
               onChange={event => setPieces(event.target.value)} placeholder="Use label’s original load" />
-            <small>{current ? "Work order pack size: " + current.work.perPack + " pieces. " : ""}This sets the scan load for reusable labels. Single-use boxes keep their assigned quantity.</small>
+            <small>{current?.order.totalBillableUnits != null ? "Credits billable units per scan. Existing scans retain their recorded units and rates." : <>{current ? "Work order pack size: " + current.work.perPack + " pieces. " : ""}This sets the scan load for reusable labels. Single-use boxes keep their assigned quantity.</>}</small>
           </label>
         </div>
         <button type="submit" className="primary" disabled={!current || busy}>Save scan settings</button>

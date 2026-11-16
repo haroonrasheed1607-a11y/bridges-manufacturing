@@ -79,7 +79,7 @@ export function PayrollReport({ api }) {
         </div>
         {checkDate && <p><b>Check date</b> {formatDate(checkDate)}</p>}
       </header>
-      <p className="payroll-note">WS pay uses completed pieces and the item rate saved on each order. Hours reflect recorded work hours. WG pay, other pay, combined pay, hourly rates and payroll codes are pending payroll setup.</p>
+      <p className="payroll-note">WS pay uses billable units and the pay rate saved on each new scan. Legacy scans retain their previous pieces-based calculation. Hours reflect recorded work hours. WG pay, other pay, combined pay, hourly rates and payroll codes are pending payroll setup.</p>
       {!validStart ? <p role="alert">Choose a Monday to start the report.</p>
         : currentReport?.error ? <p role="alert">{currentReport.error}</p>
         : !rows ? <p role="status">Loading payroll report…</p>

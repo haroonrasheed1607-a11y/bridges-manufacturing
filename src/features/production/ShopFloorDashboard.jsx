@@ -23,15 +23,15 @@ export function ShopFloorDashboard({ refreshVersion }) {
     return () => { active = false; clearInterval(timer); };
   }, [refreshVersion]);
 
-  return <section className="panel shop-floor-dashboard" aria-label="Orders and pieces scanned today">
+  return <section className="panel shop-floor-dashboard" aria-label="Orders and completed quantity today">
     {error ? <p role="alert" className="alert">{error}</p>
-      : !rows ? <p role="status">Loading scanned pieces…</p>
-        : !rows.length ? <p>No approved orders or scanned pieces today.</p>
+      : !rows ? <p role="status">Loading completed quantity…</p>
+        : !rows.length ? <p>No approved orders or completed quantity today.</p>
           : <table>
-            <thead><tr><th scope="col">Order</th><th scope="col">Pieces scanned today</th></tr></thead>
+            <thead><tr><th scope="col">Order</th><th scope="col">Completed today</th></tr></thead>
             <tbody>{rows.map(row => <tr key={row.id}>
               <th scope="row">{row.title}{row.code && <small className="block quiet">{row.code}</small>}</th>
-              <td>{Number(row.pieces).toLocaleString()}</td>
+              <td>{Number(row.pieces).toLocaleString()} {row.billableMode ? "billable units" : "legacy pieces"}</td>
             </tr>)}</tbody>
           </table>}
   </section>;

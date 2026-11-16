@@ -87,7 +87,8 @@ sealed class ShopFloor : Form {
   var matrix=m.GetProperty("matrix").EnumerateArray().Select(r=>r.EnumerateArray().Select(c=>c.GetBoolean()).ToArray()).ToArray();
   if(matrix.Length!=25||matrix.Any(r=>r.Length!=25))throw new Exception("Invalid QR code.");
   string Read(string key,int max=160){var s=m.GetProperty(key).GetString()??"";if(s.Length>max||s.Any(char.IsControl))throw new Exception("Invalid label text.");return s;}
-  return new([Read("person"),Read("orderTitle"),Read("job")+" · "+Read("quantity",12)+" pcs",Read("boxId",32)],matrix);
+  string unit=m.TryGetProperty("unit",out var u)&&u.GetString()=="units"?"units":"pcs";
+  return new([Read("person"),Read("orderTitle"),Read("job")+" · "+Read("quantity",12)+" "+unit,Read("boxId",32)],matrix);
  }
  void Print(string[] lines,bool[][]? matrix)=>PrintBatch([new(lines,matrix)],false);
  void PrintBatch(List<LabelData> labels,bool showPreview){

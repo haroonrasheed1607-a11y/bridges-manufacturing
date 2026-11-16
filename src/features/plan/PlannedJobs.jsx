@@ -45,10 +45,10 @@ export function PlannedJobs({ date, onDateChange, refreshVersion = 0 }) {
 export function PlannedJobsTable({ rows, busy, onOpen, onComplete }) {
   if (!rows.length) return <p className="quiet">No jobs planned for this date.</p>;
   return <div className="table-wrap"><table><thead><tr>
-    <th>Order / item code</th><th>Sub-job</th><th>Total pieces</th><th>Pieces done on this date</th><th>Overall completion</th><th>Status</th><th>Actions</th>
+    <th>Order / item code</th><th>Sub-job</th><th>Total quantity</th><th>Quantity completed today</th><th>Overall completion</th><th>Status</th><th>Actions</th>
   </tr></thead><tbody>{rows.map(row => <tr key={row.jobId}>
     <td><button type="button" className="text-link" onClick={() => onOpen(row.orderId)}>{row.title}{row.code && " · " + row.code}</button></td>
-    <td>{row.jobName || row.jobId}</td><td>{row.quantity.toLocaleString()}</td><td>{row.piecesToday.toLocaleString()}</td>
+    <td>{row.jobName || row.jobId}</td><td>{row.quantity.toLocaleString()} {row.billableMode ? "billable units" : "pieces"}</td><td>{row.piecesToday.toLocaleString()}</td>
     <td>{row.completed.toLocaleString()} / {row.quantity.toLocaleString()}</td><td><span className={"badge " + (row.status === "Completed" ? "green" : "")}>{row.status}</span></td>
     <td>{row.canComplete && <button type="button" disabled={busy} onClick={() => onComplete(row)}>Mark complete</button>}</td>
   </tr>)}</tbody></table></div>;
