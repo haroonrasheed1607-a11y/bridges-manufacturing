@@ -1,6 +1,6 @@
 {
   "minimumVersion": "2.0",
   "notes": [
-    "Scan & Assign now shows Total BU and BU per Scan in the order selector, selected order, mobile list and assignment confirmation."
+    "Version 2 adds Total Billable Units and BU per Scan to planning and assignment, with unit-based progress, billing and pay. Historical pieces and rates remain unchanged."
   ]
 }

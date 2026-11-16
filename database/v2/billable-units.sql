@@ -1,7 +1,8 @@
--- STAGING ONLY until the Version 2.0 release is approved.
+-- Staging is allowed by its fixture; production requires explicit transaction approval.
 do $$ begin
- if not exists(select 1 from public.customers where id='STAGE-CLIENT') then
-  raise exception 'Staging-only migration: staging fixture is required';
+ if not exists(select 1 from public.customers where id='STAGE-CLIENT')
+  and current_setting('bridges.release_approval',true) is distinct from 'v2-approved' then
+  raise exception 'Production migration requires explicit V2 release approval';
  end if;
 end $$;
 alter table public.orders add column total_billable_units integer check(total_billable_units between 1 and 1000000);

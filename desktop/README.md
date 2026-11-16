@@ -75,3 +75,7 @@ If your currently installed older updater is already failing, close all BridgesS
 
 ## USB keyboard QR scanner
 The desktop Shop Floor now uses a USB keyboard-wedge scanner for Routine Scan, Scan & Assign and QR attendance instead of opening a camera. Select the scan button, then scan into the focused field. Configure the scanner to append Enter (CR) after each code; if no suffix is configured, select Use scanned code or press Enter. Keep the Bridges app in the foreground. Routine Scan also accepts rapid scanner input directly when no input or result dialog is active. Existing load confirmations, cooldowns and attendance checks remain in force. Web and phone camera scanning is unchanged. These shared screens update from the website; restart the app to load the change, with no new installer required.
+
+
+## Version 1.11: billable-unit labels
+The label renderer accepts units for new billable-unit jobs and retains pcs for legacy jobs. Shared production screens load the approved Version 2 web release. Close and reopen the app after the Windows release is published to let the existing updater install it.

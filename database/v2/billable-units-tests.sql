@@ -2,21 +2,23 @@ begin;
 do $$
 declare actor uuid; scanner uuid; finance uuid; item uuid; receipt jsonb; result jsonb; original jsonb; qr text; assignment text;
  req uuid:=gen_random_uuid(); scan_req uuid:=gen_random_uuid(); today date:=(clock_timestamp() at time zone 'America/Chicago')::date;
+ test_customer text:='V2-ROLLBACK-'||gen_random_uuid();
  oid text; wid text; jid text; test_person text:='V2-TEST-'||gen_random_uuid(); existing_count integer; payroll jsonb;
 begin
  select id into strict actor from public.staff_profiles where active and role='admin' limit 1;
  select id into strict scanner from public.staff_profiles where active and role='box_scanner' limit 1;
  select id into strict finance from public.staff_profiles where active and role='accounts' limit 1;
  select count(*) into existing_count from public.orders where total_billable_units is null;
- insert into public.customer_items(customer_id,code,name,rate,unit,pieces_per_unit) values('STAGE-CLIENT','V2-'||gen_random_uuid(),'V2 rollback item',2.5,'Box',500) returning id into item;
+ insert into public.customers(id,name) values(test_customer,'V2 rollback client '||test_customer);
+ insert into public.customer_items(customer_id,code,name,rate,unit,pieces_per_unit) values(test_customer,'V2-'||gen_random_uuid(),'V2 rollback item',2.5,'Box',500) returning id into item;
  perform set_config('request.jwt.claim.sub',actor::text,true);
- receipt:=public.app_plan_billable_order('STAGE-CLIENT',item,100,10,today,req);
+ receipt:=public.app_plan_billable_order(test_customer,item,100,10,today,req);
  oid:=receipt->>'orderId';wid:=receipt->>'workId';jid:=receipt->>'jobId';
  if receipt->>'totalBillableUnits'<>'100' or receipt->>'billableUnitsPerScan'<>'10' then raise exception 'Unit inputs were not preserved';end if;
- result:=public.app_plan_billable_order('STAGE-CLIENT',item,100,10,today,req);
+ result:=public.app_plan_billable_order(test_customer,item,100,10,today,req);
  if result->>'duplicate'<>'true' or result->>'orderId'<>oid then raise exception 'Planning retry created another order';end if;
- begin perform public.app_plan_billable_order('STAGE-CLIENT',item,100,20,today,req);raise exception 'Reused request accepted changed units';exception when raise_exception then if sqlerrm='Reused request accepted changed units' then raise;end if;end;
- begin perform public.app_plan_billable_order('STAGE-CLIENT',item,10,20,today,gen_random_uuid());raise exception 'Invalid scan size accepted';exception when raise_exception then if sqlerrm='Invalid scan size accepted' then raise;end if;end;
+ begin perform public.app_plan_billable_order(test_customer,item,100,20,today,req);raise exception 'Reused request accepted changed units';exception when raise_exception then if sqlerrm='Reused request accepted changed units' then raise;end if;end;
+ begin perform public.app_plan_billable_order(test_customer,item,10,20,today,gen_random_uuid());raise exception 'Invalid scan size accepted';exception when raise_exception then if sqlerrm='Invalid scan size accepted' then raise;end if;end;
  insert into public.people(id,name,kind) values(test_person,'V2 rollback individual','individual');
  result:=public.app_individual_qr_cards(array[test_person],true);qr:=result->0->>'code';
  result:=public.app_scan_and_assign((receipt->>'approvalId')::uuid,qr);
@@ -66,7 +68,7 @@ begin
  if not exists(select 1 from jsonb_array_elements(payroll) e where e->>'id'=test_person and (e->>'week1WsPay')::numeric=210) then raise exception 'Payroll did not use saved unit rates: %',payroll;end if;
  perform set_config('request.jwt.claim.sub',scanner::text,true);
  begin perform public.app_billable_unit_report(today,today,0);raise exception 'Scanner read finance';exception when insufficient_privilege then null;end;
- begin perform public.app_plan_billable_order('STAGE-CLIENT',item,100,10,today,gen_random_uuid());raise exception 'Scanner planned work';exception when insufficient_privilege then null;end;
+ begin perform public.app_plan_billable_order(test_customer,item,100,10,today,gen_random_uuid());raise exception 'Scanner planned work';exception when insufficient_privilege then null;end;
  if exists(select 1 from public.orders where total_billable_units is null and id=oid) or (select count(*) from public.orders where total_billable_units is null)<>existing_count then raise exception 'Legacy orders changed';end if;
  if has_function_privilege('anon','public.app_plan_billable_order(text,uuid,integer,integer,date,uuid)','execute') then raise exception 'Anonymous planning exposed';end if;
 end $$;
