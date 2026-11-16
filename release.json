@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "The Windows desktop app now accepts QR scans from USB keyboard scanners instead of opening a camera. Web and phone camera scanning is unchanged."
+    "Staging builds require an isolated database and show a test environment banner. Production configuration and desktop release publishing remain pinned to main."
   ]
 }
