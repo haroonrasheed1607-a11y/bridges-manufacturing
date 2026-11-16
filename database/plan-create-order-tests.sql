@@ -38,7 +38,7 @@ begin
  begin perform public.app_plan_create_order(cid,item,251,today,request);raise exception 'Changed retry accepted';exception when raise_exception then if sqlerrm<>'This plan request reference has already been used' then raise;end if;end;
  begin perform public.app_plan_create_order(cid,item,0,today,gen_random_uuid());raise exception 'Zero accepted';exception when raise_exception then if sqlerrm not like 'Select a client%' then raise;end if;end;
  begin perform public.app_plan_create_order(cid||'-WRONG',item,250,today,gen_random_uuid());raise exception 'Mismatched client accepted';exception when raise_exception then if sqlerrm<>'Select an item registered for this client' then raise;end if;end;
- begin perform public.app_plan_create_order(cid,item,250,today-1,gen_random_uuid());raise exception 'Previous day accepted';exception when serialization_failure then null;end;
+ begin perform public.app_plan_create_order(cid,item,250,today-1,gen_random_uuid());raise exception 'Previous day accepted';exception when sqlstate 'PT409' then null;end;
  if (select count(*) from public.orders where customer_id=cid)<>1 then raise exception 'Validation failure created partial order';end if;
  -- Partial final packs use the remaining quantity rather than exceeding the order.
  again:=public.app_plan_create_order(cid,item,7,today,gen_random_uuid());

@@ -14,7 +14,7 @@ do $$declare data jsonb;o jsonb;rev bigint;item jsonb;begin
  data:=public.app_get_workspace();select value into o from jsonb_array_elements(data->'orders') where value->>'id'='API-TEST-ORDER';
  rev:=(o->>'_revision')::bigint;
  perform public.app_save_order(o||'{"title":"API title updated"}',rev,'Title updated');
- begin perform public.app_save_order(o,rev,'Stale write');raise exception 'Stale update was accepted';exception when serialization_failure then null;end;
+ begin perform public.app_save_order(o,rev,'Stale write');raise exception 'Stale update was accepted';exception when sqlstate 'PT409' then null;end;
  data:=public.app_complete_box('DEMO-BOX-001',20);
  if (select completed from public.sub_jobs where id='DEMO-WO-005-SJ-001')<>45 then raise exception 'Completed pieces did not accumulate';end if;
  begin perform public.app_complete_box('DEMO-BOX-001',20);raise exception 'Duplicate completion accepted';exception when raise_exception then if sqlerrm='Duplicate completion accepted' then raise;end if;end;

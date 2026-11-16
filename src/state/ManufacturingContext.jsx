@@ -1,3 +1,4 @@
+import { isConflictError } from "../api/conflicts.js";
 import {
   readNavigation,
   writeNavigation,
@@ -123,7 +124,7 @@ function ManufacturingProvider({ children }) {
       })
       .catch(async (e) => {
         setStorageError(e.message);
-        if (e.code === "40001") {
+        if (isConflictError(e)) {
           try {
             await accept(await manufacturingApi.rpc("app_get_workspace"));
           } catch {}

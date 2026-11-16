@@ -14,8 +14,8 @@ test('staff login, authenticated RPC and sign out use the correct protocol',asyn
 
 test('expired sessions share a refresh request and server errors are preserved',async()=>{
  const store=memory();store.setItem('bridges-manufacturing-session-v1',JSON.stringify({access_token:'old',refresh_token:'refresh',expires_at:0}));let refreshes=0;
- const client=createApiClient({url:'https://example.invalid',key:'key',storage:store,transport:async(url)=>{if(url.includes('refresh_token')){refreshes++;return response({access_token:'new',refresh_token:'refresh',expires_in:3600});}return response({message:'Refresh and retry',code:'40001'},409);}});
- const results=await Promise.allSettled([client.rpc('app_get_workspace'),client.rpc('app_get_workspace')]);assert.equal(refreshes,1);assert.equal(results[0].reason.code,'40001');assert.equal(results[1].reason.message,'Refresh and retry');
+ const client=createApiClient({url:'https://example.invalid',key:'key',storage:store,transport:async(url)=>{if(url.includes('refresh_token')){refreshes++;return response({access_token:'new',refresh_token:'refresh',expires_in:3600});}return response({message:'Refresh and retry',code:'PT409'},409);}});
+ const results=await Promise.allSettled([client.rpc('app_get_workspace'),client.rpc('app_get_workspace')]);assert.equal(refreshes,1);assert.equal(results[0].reason.code,'PT409');assert.equal(results[1].reason.message,'Refresh and retry');
 });
 
 test('private picture references hydrate, cache and serialize back to stable paths',async()=>{
@@ -50,4 +50,12 @@ test('Accounts sessions are kept separate from manufacturing sign-in', async () 
  assert.equal(calls[0].email,'payroll@bridges-accounts.local');
  assert.equal(accounts.hasSession(),true);
  assert.equal(createApiClient({storage}).hasSession(),false);
+});
+
+
+test('a stale mutation returns PT409 once without resubmitting the write',async()=>{
+ const store=memory();store.setItem('bridges-manufacturing-session-v1',JSON.stringify({access_token:'token',expires_at:Date.now()/1000+3600}));
+ let calls=0;const client=createApiClient({url:'https://example.invalid',key:'key',storage:store,transport:async()=>{calls++;return response({message:'Refresh and retry',code:'PT409'},409);}});
+ await assert.rejects(client.rpc('app_discard_work_order',{p_revision:0}),error=>error.code==='PT409');
+ assert.equal(calls,1);
 });

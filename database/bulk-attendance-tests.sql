@@ -29,7 +29,7 @@ begin
    perform public.app_bulk_attendance(d,'out','14:00',jsonb_build_array(
      jsonb_build_object('id',b,'revision',1),jsonb_build_object('id',a,'revision',1)));
    raise exception 'Stale bulk update was accepted';
- exception when serialization_failure then null;
+ exception when sqlstate 'PT409' then null;
  end;
  if exists(select 1 from public.daily_attendance where person_id in (a,b) and date=d and departure is not null) then
    raise exception 'A stale batch was partly committed';

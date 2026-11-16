@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Daily production entries on individual timesheets now show the item code, matching the Total Pieces Completed table. Attendance action codes and production totals are preserved."
+    "Stale-data conflicts now return once instead of triggering server retry loops. Affected screens refresh for review without automatically repeating writes."
   ]
 }

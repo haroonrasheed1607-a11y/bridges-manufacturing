@@ -3,7 +3,7 @@ declare old public.orders;cid text;v_id text:=p_order->>'id';w jsonb;j jsonb;b j
  perform manufacturing_private.require_manager();
  if jsonb_typeof(p_order)<>'object' or v_id is null or length(trim(coalesce(p_order->>'title','')))=0 then raise exception 'Order title and reference are required';end if;
  perform pg_advisory_xact_lock(hashtextextended(v_id,0));select * into old from public.orders where id=v_id for update;
- if old.id is not null and old.revision<>p_revision then raise exception 'This order changed on another device. Refresh and retry.' using errcode='40001';end if;
+ if old.id is not null and old.revision<>p_revision then raise exception 'This order changed on another device. Refresh and retry.' using errcode='PT409';end if;
  if old.id is null and p_revision<>0 then raise exception 'Order no longer exists';end if;
  expected_stage:=(p_order->>'stage')::integer;
  if old.id is null and (expected_stage<>0 or jsonb_array_length(coalesce(p_order->'workOrders','[]'))<>0) then raise exception 'New orders must start without work orders';end if;

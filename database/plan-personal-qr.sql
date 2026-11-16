@@ -48,7 +48,7 @@ begin
  if a.personal_qr is not true then a.batch_quantity:=coalesce(w.scan_pieces,a.batch_quantity); end if;
  select coalesce(sum(quantity),0) into pending from public.boxes where sub_job_id=j.id and completed_at is null;
  if a.personal_qr is true and p_pieces is distinct from least(a.batch_quantity,j.quantity-j.completed-pending) then
-   raise exception 'The remaining pieces changed. Review the updated load and confirm again.' using errcode='40001';
+   raise exception 'The remaining pieces changed. Review the updated load and confirm again.' using errcode='PT409';
  end if;$code$],
     array[chr(10)||' select coalesce(sum(quantity),0) into pending from public.boxes where sub_job_id=j.id and completed_at is null;'||chr(10)||' if qty',
           chr(10)||' if qty']
@@ -107,7 +107,7 @@ begin
   execute replace(definition,'return manufacturing_private.scan_reusable_configured',$code$
   if assignment.personal_qr is true then
     if assignment.batch_quantity is distinct from p_expected_load then
-      raise exception 'Pieces per scan changed. Review the updated load and confirm again.' using errcode='40001';
+      raise exception 'Pieces per scan changed. Review the updated load and confirm again.' using errcode='PT409';
     end if;
     return manufacturing_private.dumping_scan(assignment.id,p_request,p_pieces,true);
   end if;

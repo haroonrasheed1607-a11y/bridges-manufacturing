@@ -93,7 +93,7 @@ begin
  begin
    perform public.app_scan_individual_job_qr(qr,assigned_id,gen_random_uuid(),100,100);
    raise exception 'Stale production confirmation was accepted';
- exception when serialization_failure then null;end;
+ exception when sqlstate 'PT409' then null;end;
  result:=public.app_scan_individual_job_qr(qr,result->>'assignmentId',gen_random_uuid(),50,50);
  if not result @> '{"pieces":50,"duplicate":false}'
   or (select completed from public.sub_jobs where id=prefix||'-J2')<>50 then

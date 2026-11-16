@@ -34,7 +34,7 @@ begin
      continue;
    end if;
    if coalesce(entry.revision,0) is distinct from target.revision then
-     raise exception 'Attendance changed elsewhere. Refresh the roster and retry.' using errcode='40001';
+     raise exception 'Attendance changed elsewhere. Refresh the roster and retry.' using errcode='PT409';
    end if;
 
    if entry.person_id is null then
@@ -49,7 +49,7 @@ begin
      where person_id=target.id and date=p_date and revision=target.revision returning * into entry;
    end if;
    if not found then
-     raise exception 'Attendance changed elsewhere. Refresh the roster and retry.' using errcode='40001';
+     raise exception 'Attendance changed elsewhere. Refresh the roster and retry.' using errcode='PT409';
    end if;
    insert into public.workforce_changes(kind,person_id,data,actor_id)
    values('attendance',target.id,jsonb_build_object('date',p_date,'status',entry.status,

@@ -39,7 +39,7 @@ begin
  select * into previous from public.customer_items where id=p_item for update;
  if previous.id is not null and previous.customer_id<>p_customer then raise exception 'This item belongs to another client';end if;
  if (previous.id is null and p_revision<>0) or (previous.id is not null and previous.revision<>p_revision) then
-  raise exception 'This item changed. Close the form and reopen Edit to review the latest values.' using errcode='40001';
+  raise exception 'This item changed. Close the form and reopen Edit to review the latest values.' using errcode='PT409';
  end if;
  begin
   if previous.id is null then

@@ -39,7 +39,7 @@ begin
  begin
    perform public.app_approve_day_plan(work_date,jid,label_ids);
    raise exception 'Stale approval succeeded';
- exception when serialization_failure then null;
+ exception when sqlstate 'PT409' then null;
  end;
  perform set_config('request.jwt.claim.sub',scanner::text,true);
  begin

@@ -93,7 +93,7 @@ begin
   return receipt.result||jsonb_build_object('duplicate',true);
  end if;
  if p_date is distinct from (clock_timestamp() at time zone 'America/Chicago')::date then
-  raise exception 'The day changed. Refresh the daily total before saving.' using errcode='40001';
+  raise exception 'The day changed. Refresh the daily total before saving.' using errcode='PT409';
  end if;
  select row into summary from jsonb_array_elements(manufacturing_private.admin_qr_daily_summary(code)) row
   where row->>'id'=p_target;
@@ -109,7 +109,7 @@ begin
  select row into summary from jsonb_array_elements(manufacturing_private.admin_qr_daily_summary(code)) row
   where row->>'id'=p_target;
  if summary is null or (summary->>'recorded')::integer<>p_expected then
-  raise exception 'Production changed. Refresh the daily total and review again.' using errcode='40001';
+  raise exception 'Production changed. Refresh the daily total and review again.' using errcode='PT409';
  end if;
  if p_total<p_expected or p_total>(summary->>'maxTotal')::integer then
   raise exception 'Enter a total from % to % pieces.',p_expected,summary->>'maxTotal';

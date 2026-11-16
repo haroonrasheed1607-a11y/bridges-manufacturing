@@ -52,7 +52,7 @@ create function manufacturing_private.attendance(p_date date,p_person text defau
   else
    update public.daily_attendance set status=p_status,arrival=p_arrival,departure=p_departure,work_hours=p_work_hours,revision=revision+1,updated_at=now(),updated_by=auth.uid() where person_id=p_person and date=p_date and revision=p_revision;
   end if;
-  if not found then raise exception 'Attendance changed elsewhere. Refresh and retry.' using errcode='40001';end if;
+  if not found then raise exception 'Attendance changed elsewhere. Refresh and retry.' using errcode='PT409';end if;
   insert into public.workforce_changes(kind,person_id,data,actor_id) values('attendance',p_person,jsonb_build_object('date',p_date,'status',p_status,'arrival',p_arrival,'departure',p_departure,'workHours',p_work_hours),auth.uid());
  end if;
  return coalesce((select jsonb_agg(jsonb_build_object('personId',person_id,'date',date,'status',status,'arrival',to_char(arrival,'HH24:MI'),'departure',to_char(departure,'HH24:MI'),'workHours',work_hours,'revision',revision) order by person_id) from public.daily_attendance where date=p_date),'[]');

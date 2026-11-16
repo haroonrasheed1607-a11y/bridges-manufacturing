@@ -162,7 +162,7 @@ begin
        from public.dumping_assignments a join public.sub_jobs j on j.id=a.sub_job_id
        join public.work_orders w on w.id=j.work_order_id where a.id=upper(trim(p_id));
        if load_size is distinct from p_expected_load then
-         raise exception 'Pieces per scan changed. Review the updated load and confirm again.' using errcode='40001';
+         raise exception 'Pieces per scan changed. Review the updated load and confirm again.' using errcode='PT409';
        end if;
      end if;
    end if;

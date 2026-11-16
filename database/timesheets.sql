@@ -12,7 +12,7 @@ begin
   if jsonb_typeof(p_data)<>'object' or octet_length(p_data::text)>100000 then raise exception 'Invalid timesheet';end if;
   insert into public.individual_timesheets(person_id,week_start,data,updated_by) values(p_person,p_week,p_data,auth.uid())
   on conflict(person_id,week_start) do update set data=excluded.data,revision=individual_timesheets.revision+1,updated_at=now(),updated_by=auth.uid() where individual_timesheets.revision=p_revision;
-  if not found then raise exception 'Timesheet changed elsewhere. Reload before saving.' using errcode='40001';end if;
+  if not found then raise exception 'Timesheet changed elsewhere. Reload before saving.' using errcode='PT409';end if;
  end if;
  select * into sheet from public.individual_timesheets where person_id=p_person and week_start=p_week;
  select coalesce(jsonb_agg(e.record order by e.at,e.id),'[]') into entries from (

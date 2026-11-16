@@ -20,7 +20,7 @@ begin
   or not exists(select 1 from public.catalog_rate_changes where item_id=item and actor_id=accounts_id and previous_rate is null and new_rate=.5) then raise exception 'Accounts rate update/audit failed';end if;
  perform public.app_accounts_save_item_rate(item,.5,2);
  if (select count(*) from public.catalog_rate_changes where item_id=item)<>1 then raise exception 'Unchanged rate created audit';end if;
- begin perform public.app_accounts_save_item_rate(item,.75,1);raise exception 'Stale rate edit accepted';exception when serialization_failure then null;end;
+ begin perform public.app_accounts_save_item_rate(item,.75,1);raise exception 'Stale rate edit accepted';exception when sqlstate 'PT409' then null;end;
  begin perform public.app_accounts_save_item_rate(item,-1,2);raise exception 'Negative rate accepted';exception when raise_exception then if sqlerrm<>'Enter a valid nonnegative rate' then raise;end if;end;
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
  old_order:=public.app_plan_create_order(prefix,item,100,today,gen_random_uuid());

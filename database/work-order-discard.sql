@@ -11,7 +11,7 @@ begin
  select * into current_order from public.orders where id=p_order for update;
  if current_order.id is null then raise exception 'Order no longer exists'; end if;
  if current_order.revision is distinct from p_revision then
-   raise exception 'This order changed on another device. Refresh and retry.' using errcode='40001';
+   raise exception 'This order changed on another device. Refresh and retry.' using errcode='PT409';
  end if;
  select * into target from public.work_orders where id=p_work and order_id=p_order for update;
  if target.id is null then raise exception 'Work order no longer exists'; end if;

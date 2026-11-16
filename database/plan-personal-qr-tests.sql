@@ -66,7 +66,7 @@ begin
   begin
     perform public.app_scan_individual_job_qr(own_qr,personal_assignment,gen_random_uuid(),80,40);
     raise exception 'Personal scan accepted a double load';
-  exception when serialization_failure then null;
+  exception when sqlstate 'PT409' then null;
   end;
   if not public.app_scan_individual_job_qr(own_qr,personal_assignment,scan_id,40,40) @> '{"pieces":40,"duplicate":false}' then
     raise exception 'Planned scan did not credit 40 pieces';

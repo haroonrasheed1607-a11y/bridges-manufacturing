@@ -26,7 +26,7 @@ begin
   or not exists(select 1 from public.orders o where id=old_order->>'orderId' and o.data @> '{"title":"Box of parts","catalogCode":"PART-1","catalogUnit":"Box","catalogPiecesPerUnit":50,"catalogRate":0.12}') then raise exception 'Editing changed existing order';end if;
  if not exists(select 1 from public.work_orders where id=new_order->>'workId' and pieces_per_pack=100 and scan_pieces=100)
   or not exists(select 1 from public.orders o where id=new_order->>'orderId' and o.data @> '{"title":"Updated box of parts","catalogCode":"PART-NEW","catalogUnit":"Pack","catalogPiecesPerUnit":100,"catalogRate":0.12}') then raise exception 'New order did not use edited values';end if;
- begin perform public.app_save_customer_item(item,cid,'STALE','Wrong',1,'Item',1,1);raise exception 'Stale edit accepted';exception when serialization_failure then null;end;
+ begin perform public.app_save_customer_item(item,cid,'STALE','Wrong',1,'Item',1,1);raise exception 'Stale edit accepted';exception when sqlstate 'PT409' then null;end;
  perform set_config('request.jwt.claim.sub',account_actor::text,true);
  begin perform public.app_save_customer_item(other,cid,' part-new ','Duplicate',null,'Item',1,0);raise exception 'Duplicate code accepted';exception when raise_exception then if sqlerrm<>'That item code is already registered for this client' then raise;end if;end;
  begin perform public.app_save_customer_item(other,cid,'OTHER','Invalid',1,'Box',0,0);raise exception 'Empty box accepted';exception when raise_exception then if sqlerrm not like 'Enter 1–1,000,000 pieces%' then raise;end if;end;

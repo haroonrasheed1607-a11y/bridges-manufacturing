@@ -112,7 +112,7 @@ begin
   end if;
   return receipt.result||jsonb_build_object('duplicate',true);
  end if;
- if p_date is distinct from today then raise exception 'The day changed. Refresh before planning work.' using errcode='40001';end if;
+ if p_date is distinct from today then raise exception 'The day changed. Refresh before planning work.' using errcode='PT409';end if;
  select * into item from public.customer_items where id=p_item and customer_id=p_customer for share;
  if item.id is null then raise exception 'Select an item registered for this client';end if;
  select coalesce(array_agg(id order by id),'{}'::text[]) into coaches from public.people

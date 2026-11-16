@@ -43,7 +43,7 @@ begin
  select array_agg(id order by id) into actual from public.dumping_assignments
  where sub_job_id=p_job and work_date=p_date and active;
  if actual is null or actual is distinct from p_expected then
-   raise exception 'This plan changed on another device. Refresh and review it.' using errcode='40001';
+   raise exception 'This plan changed on another device. Refresh and review it.' using errcode='PT409';
  end if;
  if exists (
    select 1 from public.dumping_assignments a join public.people p on p.id=a.person_id

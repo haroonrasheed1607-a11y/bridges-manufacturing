@@ -13,7 +13,7 @@ do $$declare admin_id uuid;scanner_id uuid;setup_id uuid;result jsonb;report jso
  perform public.app_availability(today,today+6,pid,'available',6,array[0,1,2,3,4,5,6]);
  result:=public.app_availability(today,today+6,pid);if jsonb_array_length(result)<>7 then raise exception 'Availability range failed';end if;
  perform public.app_attendance(today,pid,'present','09:00','14:00',3.5,0);
- begin perform public.app_attendance(today,pid,'absent',null,null,0,0);raise exception 'Expected stale attendance rejection';exception when serialization_failure then null;end;
+ begin perform public.app_attendance(today,pid,'absent',null,null,0,0);raise exception 'Expected stale attendance rejection';exception when sqlstate 'PT409' then null;end;
  report:=public.app_individual_timesheet(pid,week);if report#>>array['data','days',today::text,'arrival']<>'09:00' then raise exception 'Attendance timesheet overlay failed';end if;
  perform set_config('request.jwt.claim.sub',setup_id::text,true);
  perform public.app_dumping_assign(code,jid,pid,100);

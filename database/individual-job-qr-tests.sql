@@ -65,7 +65,7 @@ begin
  begin
    perform public.app_scan_individual_job_qr(code,first_label,gen_random_uuid(),100,100);
    raise exception 'Stale job confirmation was accepted';
- exception when serialization_failure then null;
+ exception when sqlstate 'PT409' then null;
  end;
  perform public.app_scan_individual_job_qr(code,second_label,gen_random_uuid(),100,100);
  if (select completed from public.sub_jobs where id=j1)<>100

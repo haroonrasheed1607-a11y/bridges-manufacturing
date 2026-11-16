@@ -58,7 +58,7 @@ begin
  perform pg_advisory_xact_lock(hashtextextended('customer-item:'||p_item::text,0));
  select * into item from public.customer_items where id=p_item for update;
  if item.id is null then raise exception 'Select an existing catalog item';end if;
- if p_revision is distinct from item.revision then raise exception 'This item changed. Refresh and review the latest rate.' using errcode='40001';end if;
+ if p_revision is distinct from item.revision then raise exception 'This item changed. Refresh and review the latest rate.' using errcode='PT409';end if;
  if p_rate is distinct from item.rate then
   update public.customer_items set rate=p_rate,revision=revision+1 where id=p_item;
   insert into public.catalog_rate_changes(item_id,actor_id,previous_rate,new_rate) values(item.id,auth.uid(),item.rate,p_rate);

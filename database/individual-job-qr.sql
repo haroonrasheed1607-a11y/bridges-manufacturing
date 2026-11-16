@@ -72,7 +72,7 @@ begin
 
  assignment:=manufacturing_private.resolve_individual_job_qr(p_code);
  if assignment.id is distinct from p_assignment then
-   raise exception 'The planned job changed. Review the assignment and confirm again.' using errcode='40001';
+   raise exception 'The planned job changed. Review the assignment and confirm again.' using errcode='PT409';
  end if;
  return manufacturing_private.scan_reusable_configured(assignment.id,p_request,p_pieces,p_expected_load);
 end;

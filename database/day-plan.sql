@@ -81,7 +81,7 @@ begin
    select coalesce(array_agg(person_id order by person_id),'{}') into current_people
    from public.dumping_assignments where sub_job_id=p_job and work_date=p_date and active;
    if selected<>current_people then
-     if current_people<>p_expected then raise exception 'This plan changed on another device. Refresh and review it.' using errcode='40001';end if;
+     if current_people<>p_expected then raise exception 'This plan changed on another device. Refresh and review it.' using errcode='PT409';end if;
      -- Lock people in stable order before changing their assignments.
      perform 1 from public.people where id=any(selected||current_people) order by id for update;
      -- A finished sub-job frees its people for another plan on the same day.

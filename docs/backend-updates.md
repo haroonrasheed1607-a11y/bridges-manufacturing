@@ -17,3 +17,9 @@ select manufacturing_private.set_system_update(false);
 ```
 
 The web app, Accounts portal and desktop WebView automatically resume within 10 seconds. Never auto-clear the flag on a timer or after failed migrations. Do not enable it for routine frontend changes. Database operators can always clear it directly, even while devices are blocked. Existing signed storage URLs and Supabase Auth infrastructure are not disabled; business API access is paused.
+
+## Business-conflict repair
+
+Apply `database/business-conflicts.sql` after feature definitions. Explicit business conflicts return PT409 (HTTP 409); never raise 40001 for application revision or load checks. Native database serialization failures retain their normal meaning.
+
+For an already-looping PostgREST 14 request, identify the exact backend from logs and pg_stat_activity, verify its PID, backend start, role and RPC, and terminate only that failed request. Replacing the function alone may not end an in-flight retry. Run rollback-only SQL regression fixtures, verify no explicit 40001 business guards remain, then clear maintenance mode.

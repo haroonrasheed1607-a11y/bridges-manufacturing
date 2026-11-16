@@ -1,3 +1,4 @@
+import { isConflictError } from "../../api/conflicts.js";
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
@@ -71,7 +72,7 @@ export function DumpingScanner({ code, onDone, autoRecord = false }) {
         setSubmitted(false);
         try { sessionStorage.removeItem(key); } catch {}
       }
-      if (e.code === "40001" || (personal && e.message.includes("no approved, unfinished plan"))) {
+      if (isConflictError(e) || (personal && e.message.includes("no approved, unfinished plan"))) {
         try {
           setAssignment(await lookup());
           setPieces("");

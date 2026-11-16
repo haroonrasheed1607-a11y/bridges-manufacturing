@@ -30,10 +30,10 @@ begin
  if (select completed from public.sub_jobs where id=job)<>300 then raise exception 'Retry double counted'; end if;
  r:=public.app_set_qr_daily_total(a,a,today,300,300,gen_random_uuid());
  if not r @> '{"added":0}' then raise exception 'Unchanged total counted'; end if;
- begin perform public.app_set_qr_daily_total(a,a,today,400,100,gen_random_uuid());raise exception 'Accepted stale total';exception when serialization_failure then null;end;
+ begin perform public.app_set_qr_daily_total(a,a,today,400,100,gen_random_uuid());raise exception 'Accepted stale total';exception when sqlstate 'PT409' then null;end;
  begin perform public.app_set_qr_daily_total(a,a,today,100,300,gen_random_uuid());raise exception 'Accepted lower total';exception when raise_exception then if sqlerrm not like 'Enter a total from%' then raise;end if;end;
  begin perform public.app_set_qr_daily_total(a,a,today,951,300,gen_random_uuid());raise exception 'Accepted reserved production';exception when raise_exception then if sqlerrm not like 'Enter a total from%' then raise;end if;end;
- begin perform public.app_set_qr_daily_total(a,a,today-1,400,300,gen_random_uuid());raise exception 'Accepted previous day';exception when serialization_failure then null;end;
+ begin perform public.app_set_qr_daily_total(a,a,today-1,400,300,gen_random_uuid());raise exception 'Accepted previous day';exception when sqlstate 'PT409' then null;end;
  rows:=public.app_admin_qr_daily_summary(qr);
  if jsonb_array_length(rows)<>2 then raise exception 'Missing personal card job selection %',rows;end if;
  select row->>'id' into target from jsonb_array_elements(rows) row where row->>'jobId'=job;

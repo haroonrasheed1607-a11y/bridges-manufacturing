@@ -1,3 +1,4 @@
+import { isConflictError } from "../../api/conflicts.js";
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
@@ -62,7 +63,7 @@ export function QrDailyTotal({ code, onDone }) {
       if (problem.status >= 400 && problem.status < 500) {
         setPending(null);
         try { sessionStorage.removeItem(key); } catch {}
-        if (problem.code === "40001") { setTotal(""); await load(); }
+        if (isConflictError(problem)) { setTotal(""); await load(); }
       }
     } finally { lock.current = false; setBusy(false); }
   }

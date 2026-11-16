@@ -26,6 +26,15 @@ begin
  values(prefix||'-BOOKING',pid,oid,wid,today,today,1);
 
  begin
+   perform public.app_discard_work_order(oid,wid,0);
+   raise exception 'A stale revision was accepted';
+ exception when sqlstate 'PT409' then null;
+ end;
+ if not exists(select 1 from public.work_orders where id=wid)
+   or not exists(select 1 from public.orders where id=oid and revision=1 and stage=1)
+ then raise exception 'Stale discard changed work';end if;
+
+ begin
    insert into public.dumping_completions(id,assignment_id,pieces,actor_id) values(gen_random_uuid(),qr,25,actor);
    perform public.app_discard_work_order(oid,wid,1);
    raise exception 'A scanned work order was discarded';

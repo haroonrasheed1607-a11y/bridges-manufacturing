@@ -34,7 +34,7 @@ begin
  select * into approval from public.scan_assign_approvals where id=p_approval for update;
  perform manufacturing_private.dumping_access(approval.sub_job_id,true);
  if p_date is distinct from approval.work_date or p_approved_at is distinct from approval.approved_at then
-  raise exception 'This approval changed. Refresh and review it before marking complete.' using errcode='40001';
+  raise exception 'This approval changed. Refresh and review it before marking complete.' using errcode='PT409';
  end if;
  if approval.completed_at is null then
   update public.scan_assign_approvals set completed_at=clock_timestamp(),completed_by=auth.uid(),

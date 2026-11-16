@@ -34,7 +34,7 @@ begin
  begin
    perform public.app_scan_reusable_configured(qr,request,25,25);
    raise exception 'Stale load accepted';
- exception when serialization_failure then null;
+ exception when sqlstate 'PT409' then null;
  end;
  receipt:=public.app_scan_reusable_configured(qr,request,12,12);
  if receipt->>'pieces' is distinct from '12' then raise exception 'Configured load did not record'; end if;

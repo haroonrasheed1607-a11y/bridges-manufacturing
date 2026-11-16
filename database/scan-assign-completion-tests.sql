@@ -34,7 +34,7 @@ begin
  -- Explicit reapproval is possible; a stale completion cannot close the renewed approval.
  perform public.app_approve_scan_assign(today,r->>'jobId',100,true);
  if not exists(select 1 from public.scan_assign_approvals where id=approval and completed_at is null and completed_by is null and revoked_at is null) then raise exception 'Reapproval failed';end if;
- begin perform public.app_complete_scan_assign(approval,today,approved_at);raise exception 'Stale completion closed renewed approval';exception when serialization_failure then null;end;
+ begin perform public.app_complete_scan_assign(approval,today,approved_at);raise exception 'Stale completion closed renewed approval';exception when sqlstate 'PT409' then null;end;
  select a.approved_at into approved_at from public.scan_assign_approvals a where id=approval;
  rows:=public.app_scan_and_assign(approval,qr);
  rows:=public.app_scan_and_assign((other->>'approvalId')::uuid,qr);current_assignment:=rows->>'assignmentId';
