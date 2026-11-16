@@ -1,3 +1,4 @@
+import { hasDesktopPrinter } from "../../services/printing/desktopPrinter.js";
 import { QrDailyTotal } from "../admin-approvals/QrDailyTotal.jsx";
 import { ScannerDailyWork } from './ScannerDailyWork.jsx';
 import {DumpingScanner} from '../dumping/DumpingScanner.jsx';
@@ -33,7 +34,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     saving = React.useRef(false);
   React.useEffect(() => { if (selectedCode) document.querySelector('.scanned-box-panel')?.scrollIntoView({behavior:'smooth',block:'start'}); }, [selectedCode]);
   React.useEffect(() => {
-    if (!minimal || dumpCode || dailyCode || cameraOpen || selectedCode) return;
+    if ((!minimal && !hasDesktopPrinter()) || dumpCode || dailyCode || cameraOpen || selectedCode) return;
     let buffer = '', lastKey = 0;
     function readScanner(event) {
       if (event.target?.matches?.('input,select,textarea,[contenteditable="true"]') || event.ctrlKey || event.altKey || event.metaKey) return;
@@ -243,7 +244,7 @@ function ManufacturingScanComplete({minimal=false} = {}) {
     onClick: () => scan(box.id)
   }, 'View box')))) : h('p', {
     className: 'empty'
-  }, 'Completed boxes will appear here.')), h('div', {className:'shop-floor-scan-dock'}, h('button', {type:'button',className:'primary',onClick:()=>setCameraOpen(true),'aria-haspopup':'dialog'}, '▣  Scan QR code')), cameraOpen && h(QrCamera,{onClose:()=>setCameraOpen(false),onScan:value=>{setCameraOpen(false);scan(value);}}));
+  }, 'Completed boxes will appear here.')), h('div', {className:'shop-floor-scan-dock'}, h('button', {type:'button',className:'primary',onClick:()=>setCameraOpen(true),'aria-haspopup':'dialog'}, hasDesktopPrinter() ? '▣  USB scanner' : '▣  Scan QR code')), cameraOpen && h(QrCamera,{onClose:()=>setCameraOpen(false),onScan:value=>{setCameraOpen(false);scan(value);}}));
 }
 
 export { ManufacturingScanComplete };

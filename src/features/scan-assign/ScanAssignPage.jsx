@@ -1,3 +1,4 @@
+import { hasDesktopPrinter } from "../../services/printing/desktopPrinter.js";
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
@@ -105,7 +106,7 @@ export function ScanAssignPage({ refreshVersion = 0 }) {
       <div className="form-actions"><button className="primary" disabled={busy || !approval || !code.trim() || loadedDate !== today}>{busy ? "Checking card…" : "Scan card"}</button></div>
     </form>
     <div className="form-actions scan-assign-camera-action">
-      <button type="button" className="primary" disabled={busy || !approval || loadedDate !== today} onClick={() => setCamera(true)}>Scan with camera</button>
+      <button type="button" className="primary" disabled={busy || !approval || loadedDate !== today} onClick={() => setCamera(true)}>{hasDesktopPrinter() ? "Scan with USB scanner" : "Scan with camera"}</button>
     </div>
     {error && <p role="alert" className="alert">{error}</p>}
     {result && <div className="scan-assign-result" role="status"><h3>{result.personName} · {result.reassigned ? "Reassigned" : "Assigned"}</h3>

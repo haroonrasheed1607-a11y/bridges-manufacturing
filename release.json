@@ -1,6 +1,6 @@
 {
   "minimumVersion": "1.0",
   "notes": [
-    "Stale-data conflicts now return once instead of triggering server retry loops. Affected screens refresh for review without automatically repeating writes."
+    "The Windows desktop app now accepts QR scans from USB keyboard scanners instead of opening a camera. Web and phone camera scanning is unchanged."
   ]
 }

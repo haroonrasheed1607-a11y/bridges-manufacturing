@@ -1,7 +1,14 @@
+import { hasDesktopPrinter } from "../../services/printing/desktopPrinter.js";
+import { UsbQrScanner } from "./UsbQrScanner.jsx";
 import {cameraErrorMessage} from './cameraErrors.js';
 import { useEffect, useRef, useState } from "react";
 
-export function QrCamera({ onScan, onClose, description }) {
+// Desktop uses its USB keyboard scanner; browsers retain camera scanning.
+export function QrCamera(props) {
+  return hasDesktopPrinter() ? <UsbQrScanner {...props} /> : <CameraQrScanner {...props} />;
+}
+
+function CameraQrScanner({ onScan, onClose, description }) {
   const dialog = useRef(null),
     video = useRef(null),
     [error, setError] = useState(""),
