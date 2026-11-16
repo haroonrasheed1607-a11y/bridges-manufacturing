@@ -3,5 +3,5 @@
   "compatibility_date": "2026-11-03",
   "workers_dev": true,
   "assets": { "directory": "./dist", "not_found_handling": "single-page-application" },
-  "build": { "command": "node scripts/ensure-deploy-build.mjs" }
+  "build": { "command": "npm run build:staging" }
 }

@@ -6,7 +6,8 @@
     "dev": "vite --host 0.0.0.0",
     "build": "node scripts/build-version.mjs && vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "test": "node --experimental-vm-modules --test scripts/*.test.mjs tests/*.test.mjs src/features/work-orders/*.test.js"
+    "test": "node --experimental-vm-modules --test scripts/*.test.mjs tests/*.test.mjs src/features/work-orders/*.test.js",
+    "build:staging": "node scripts/build-staging.mjs"
   },
   "dependencies": {
     "jsqr": "1.4.0",
