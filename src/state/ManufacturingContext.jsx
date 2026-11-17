@@ -168,7 +168,7 @@ function ManufacturingProvider({ children }) {
     try {
       await mutate("app_discard_work_order", {
         p_order: order.id, p_work: workId, p_revision: order._revision,
-      }, "Work order discarded.");
+      }, "Work order permanently deactivated.");
       return true;
     } catch {
       return false;

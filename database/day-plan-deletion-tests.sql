@@ -44,7 +44,7 @@ begin
    perform public.app_move_day_plan(work_date,jid,'{}',array[uid2],scanned_plan);
    raise exception 'A scanned plan was deleted';
  exception when raise_exception then
-   if sqlerrm not like 'This plan cannot be deleted%' then raise; end if;
+   if sqlerrm not like 'This plan cannot be deactivated%' then raise; end if;
  end;
 
  rows:=public.app_move_day_plan(work_date,jid,array[uid3],'{}',unscanned_plan);
@@ -56,6 +56,8 @@ begin
    or exists(select 1 from jsonb_array_elements(public.app_approved_day_plans(work_date)) x where x->>'id'=unscanned_label)
    or exists(select 1 from public.dumping_assignments where id=unscanned_label and active)
  then raise exception 'Unscanned plan was not retired'; end if;
+ begin perform public.app_move_day_plan(work_date,jid,array[uid3],'{}',unscanned_plan);raise exception 'Inactive plan reopened';exception when sqlstate 'PT409' then null;end;
+ if not exists(select 1 from public.dumping_assignments where id=unscanned_label and not active and deactivated_by=actor) then raise exception 'Inactive assignment history missing';end if;
  if (select completed from public.sub_jobs where id=jid)<>25 then
    raise exception 'Plan deletion changed the scanned piece count';
  end if;

@@ -1,6 +1,6 @@
 {
   "minimumVersion": "2.0",
   "notes": [
-    "Admins can edit BU/Scan in Planned for the day before scanning, or reset the selected day\u2019s scans below 10% before saving. Earlier days are preserved and reset records are retained in a private audit."
+    "Deletion actions now permanently deactivate records while retaining history. Inactive scans are excluded from production and payments, and History includes Active, Inactive and All filters; restoration is unavailable."
   ]
 }

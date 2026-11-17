@@ -89,14 +89,14 @@ function WorkOrdersPage() {
     }, 'Edit work order'), canEdit && h('button', {
       type: 'button',
       disabled: adding || !!editing || !canReopenAllocation,
-      title: canReopenAllocation ? 'Discard unstarted work order' : 'Other work on this order has started',
+      title: canReopenAllocation ? 'Deactivate unstarted work order' : 'Other work on this order has started',
       onClick: () => {
         const destination = order.workOrders.length === 1 ? 'Order Requests' : 'Work Orders for reapproval';
-        if (window.confirm('Discard this work order? Its labels, plans, and bookings will be removed. The order will return to ' + destination + '.')) {
+        if (window.confirm('Permanently deactivate this work order? Its labels, plans, and bookings will become inactive and remain in History. Restoration is unavailable. The order will return to ' + destination + '.')) {
           discardWorkOrder(work.id);
         }
       }
-    }, 'Discard work order'), manager && !canEdit && h('p', {
+    }, 'Deactivate work order'), manager && !canEdit && h('p', {
       className: 'quiet'
     }, 'Editing locked after production progress is recorded.'), h(ManufacturingWorkPaper, {
     order,

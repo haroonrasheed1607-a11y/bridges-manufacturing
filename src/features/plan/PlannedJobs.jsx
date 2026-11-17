@@ -38,7 +38,7 @@ export function PlannedJobs({ date, onDateChange, refreshVersion = 0 }) {
     const state = row.unitEditState;
     if (!state?.canEditUnits) return;
     const reset = Boolean(state.requiresDayReset);
-    if (reset && !window.confirm(`Reset ${row.title}${row.code ? " · " + row.code : ""} for ${date}?\n\nRemove ${state.dayScanCount} scan(s), totaling ${state.dayBillableUnits} BU, and save ${units} BU per Scan. Billing and individual pay from these scans will be removed from active reports. Completed single-use box labels for this day will be retired and need new labels.\n\nEarlier days and attendance will be preserved. An audit copy will be retained.`)) return;
+    if (reset && !window.confirm(`Reset ${row.title}${row.code ? " · " + row.code : ""} for ${date}?\n\nPermanently deactivate ${state.dayScanCount} scan(s), totaling ${state.dayBillableUnits} BU, and save ${units} BU per Scan. Billing and individual pay from these scans will be removed from active reports. Completed single-use box labels for this day will be retired and need new labels.\n\nEarlier days and attendance will be preserved. All records and an audit copy will be retained. Restoration is unavailable.`)) return;
     const signature = JSON.stringify([row.jobId,date,units,reset,state.revision,state.scanFingerprint]);
     let request = attempts.current.get(signature);
     if (!request) { request = crypto.randomUUID(); attempts.current.set(signature, request); }
