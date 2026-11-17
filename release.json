@@ -1,6 +1,6 @@
 {
   "minimumVersion": "2.0",
   "notes": [
-    "Deletion actions now permanently deactivate records while retaining history. Inactive scans are excluded from production and payments, and History includes Active, Inactive and All filters; restoration is unavailable."
+    "Admins can download separate database setup and data SQL backups from Configurations. Backups identify their environment and schema fingerprint; data exports retain inactive records and audit history."
   ]
 }
