@@ -1,49 +1,64 @@
-import { ShopFloorDashboard } from "./features/production/ShopFloorDashboard.jsx";
-import { QrAttendance } from "./features/attendance/QrAttendance.jsx";
-import { ApprovedPlanPrint } from "./features/production/ApprovedPlanPrint.jsx";
-import { hasDesktopPrinter } from "./services/printing/desktopPrinter.js";
-import { PlanPage } from './features/plan/PlanPage.jsx';
-import {BarcodeApprovals} from './features/admin-approvals/BarcodeApprovals.jsx';
-import {AvailabilityPage} from './features/availability/AvailabilityPage.jsx';
-import {AttendancePage} from './features/attendance/AttendancePage.jsx';
-import {ConfigurationsPage} from './features/configurations/ConfigurationsPage.jsx';
-import { UsersPage } from './features/users/UsersPage.jsx';
-import { canUseShopFloor, canUsePlan, isShopFloorRole } from './features/auth/permissions.js';
 import { React } from './vendor/react-runtime.js';
-import { WorkOrdersPage } from './features/work-orders/WorkOrdersPage.js';
-// app/App.js
-import { AppLayout } from "./components/MainLayout.jsx";
-import { ManufacturingCustomers } from "./features/customers/CustomersPage.js";
-import { ManufacturingDashboard } from "./features/dashboard/DashboardPage.jsx";
-import { ManufacturingIndividuals } from "./features/individuals/IndividualsPage.js";
-import { ManufacturingJobBoard } from "./features/job-board/JobBoardPage.js";
-import { CreateOrderPage } from "./features/orders/CreateOrderPage.js";
-import { OrderDetailsPage } from "./features/orders/OrderDetailsPage.js";
-import { OrdersPage } from "./features/orders/OrdersPage.js";
-import { ManufacturingProductionLine } from "./features/production/ProductionLinePage.js";
-import { WorkflowPage } from "./features/workflow/WorkflowPage.js";
-import { useManufacturing } from "./state/ManufacturingContext.jsx";
-import { jsxRuntime } from "./vendor/jsx-runtime.js";
+import { AppLayout } from './components/MainLayout.jsx';
+import { useManufacturing } from './state/ManufacturingContext.jsx';
+import { hasDesktopPrinter } from './services/printing/desktopPrinter.js';
+import { canUsePlan, canUseShopFloor, isShopFloorRole } from './features/auth/permissions.js';
+import { optionalViews } from './config/workspaceNavigation.js';
+import { OptionalWorkflowShell } from './features/configurations/OptionalWorkflows.jsx';
+import { ConfigurationsPage } from './features/configurations/ConfigurationsPage.jsx';
+import { PlanPage } from './features/plan/PlanPage.jsx';
+import { ManufacturingProductionLine } from './features/production/ProductionLinePage.js';
+import { ShopFloorDashboard } from './features/production/ShopFloorDashboard.jsx';
+import { QrAttendance } from './features/attendance/QrAttendance.jsx';
+import { AttendancePage } from './features/attendance/AttendancePage.jsx';
+import { TimesheetsPage } from './features/timesheets/TimesheetsPage.jsx';
+import { DailyOrderDetails } from './features/orders/DailyOrderDetails.jsx';
+import { ManufacturingDashboard } from './features/dashboard/DashboardPage.jsx';
+import { ManufacturingCustomers } from './features/customers/CustomersPage.js';
+import { ManufacturingIndividuals } from './features/individuals/IndividualsPage.js';
+import { UsersPage } from './features/users/UsersPage.jsx';
+import { BarcodeApprovals } from './features/admin-approvals/BarcodeApprovals.jsx';
+// Optional tools stay intact behind the Configurations entry point.
+import { ManufacturingJobBoard } from './features/job-board/JobBoardPage.js';
+import { OrdersPage } from './features/orders/OrdersPage.js';
+import { CreateOrderPage } from './features/orders/CreateOrderPage.js';
+import { OrderDetailsPage } from './features/orders/OrderDetailsPage.js';
+import { WorkflowPage } from './features/workflow/WorkflowPage.js';
+import { AvailabilityPage } from './features/availability/AvailabilityPage.jsx';
+import { ApprovedPlanPrint } from './features/production/ApprovedPlanPrint.jsx';
+import { ShopFloorSetup } from './features/production/ShopFloorSetup.jsx';
 
 function App() {
-  let {
-    view: e, manager, profile, orderDisplayTitle,
-    order: t
-  } = useManufacturing();
-  if (e === 'shopfloordashboard' && canUseShopFloor(profile?.role)) return <AppLayout><ShopFloorDashboard /></AppLayout>;
-  if (e === 'shopfloorattendance' && canUseShopFloor(profile?.role)) return <AppLayout><QrAttendance /></AppLayout>;
-  if(e === 'shopfloorprint' && canUsePlan(profile?.role)) return <AppLayout><ApprovedPlanPrint /></AppLayout>;
-  if (hasDesktopPrinter()) return <AppLayout><ManufacturingProductionLine /></AppLayout>;
-  if(e === 'plan' && canUsePlan(profile?.role)) return <AppLayout><PlanPage /></AppLayout>;
-  if(isShopFloorRole(profile?.role))return React.createElement(AppLayout,null,React.createElement(ManufacturingProductionLine));
-  if(['admin','manager','coach'].includes(profile?.role)&&['availability','attendance'].includes(e))return React.createElement(AppLayout,null,React.createElement(e==='availability'?AvailabilityPage:AttendancePage));
-  if(!manager)return React.createElement(AppLayout,null,e==='detail'&&t?React.createElement(React.Fragment,null,React.createElement('h2',null,orderDisplayTitle(t)),React.createElement(WorkOrdersPage)):e==='board'?React.createElement(ManufacturingJobBoard):React.createElement(ManufacturingProductionLine));
-  return (0, jsxRuntime.jsx)(AppLayout, {
-    children: e === 'barcodeapprovals' && profile?.role === 'admin' ? React.createElement(BarcodeApprovals) : e === 'configurations' && profile?.role === 'admin' ? React.createElement(ConfigurationsPage) : e === 'users' && profile?.role === 'admin' ? React.createElement(UsersPage) : e === `productionline` ? (0, jsxRuntime.jsx)(ManufacturingProductionLine, {}) : e === `individuals` ? (0, jsxRuntime.jsx)(ManufacturingIndividuals, {}) : e === `board` ? (0, jsxRuntime.jsx)(ManufacturingJobBoard, {}) : e === `customers` ? (0, jsxRuntime.jsx)(ManufacturingCustomers, {}) : e === `dashboard` ? (0, jsxRuntime.jsx)(ManufacturingDashboard, {}) : e === `new` ? (0, jsxRuntime.jsx)(CreateOrderPage, {}) : e === `workflow` ? (0, jsxRuntime.jsx)(WorkflowPage, {}) : e === `detail` && t ? (0, jsxRuntime.jsx)(OrderDetailsPage, {}, t.id) : (0, jsxRuntime.jsx)(OrdersPage, {})
-  });
+  const { view, manager, profile, order } = useManufacturing();
+  const role = profile?.role;
+  let screen;
+  if (view === 'shopfloordashboard' && canUseShopFloor(role)) screen = <ShopFloorDashboard />;
+  else if (view === 'shopfloorattendance' && canUseShopFloor(role)) screen = <QrAttendance />;
+  else if (hasDesktopPrinter()) screen = <ManufacturingProductionLine />;
+  else if (optionalViews.includes(view)) {
+    const tools = {
+      board: ManufacturingJobBoard, orders: OrdersPage, new: CreateOrderPage,
+      workflow: WorkflowPage, availability: AvailabilityPage, shopfloorprint: ApprovedPlanPrint,
+      optionalboxes: ShopFloorSetup,
+    };
+    const Tool = tools[view];
+    screen = <OptionalWorkflowShell>{role === 'admin' && (view === 'optionalpeople' ? <ManufacturingIndividuals advanced />
+      : view === 'optionalorder' ? order ? <OrderDetailsPage /> : <p>Select an order in Optional workflows.</p>
+        : Tool ? <Tool /> : null)}</OptionalWorkflowShell>;
+  }
+  else if (view === 'plan' && canUsePlan(role)) screen = <PlanPage />;
+  else if (view === 'detail' && order) screen = <DailyOrderDetails />;
+  else if (isShopFloorRole(role)) screen = <ManufacturingProductionLine />;
+  else if (view === 'attendance' && ['admin','manager','coach'].includes(role)) screen = <AttendancePage />;
+  else if (view === 'timesheets' && ['admin','manager','coach'].includes(role)) screen = <TimesheetsPage />;
+  else if (view === 'configurations' && role === 'admin') screen = <ConfigurationsPage />;
+  else if (view === 'users' && role === 'admin') screen = <UsersPage />;
+  else if (view === 'barcodeapprovals' && role === 'admin') screen = <BarcodeApprovals />;
+  else if (manager && view === 'customers') screen = <ManufacturingCustomers />;
+  else if (manager && view === 'individuals') screen = <ManufacturingIndividuals />;
+  else if (manager && view !== 'productionline') screen = <ManufacturingDashboard />;
+  else screen = <ManufacturingProductionLine />;
+  return <AppLayout>{screen}</AppLayout>;
 }
-
-export { App };
-
-export { App as AppRouter };
+export { App, App as AppRouter };
 export default App;

@@ -1,6 +1,6 @@
 {
   "minimumVersion": "2.0",
   "notes": [
-    "Admins can download separate database setup and data SQL backups from Configurations. Backups identify their environment and schema fingerprint; data exports retain inactive records and audit history."
+    "Navigation is grouped into Daily Operations and Supporting Administration. Optional workflows are retained under Configurations, with compact individual records and a simple daily order view."
   ]
 }

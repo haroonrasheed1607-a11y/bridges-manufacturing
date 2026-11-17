@@ -1,5 +1,6 @@
+import { workspaceGroups, optionalViews } from '../config/workspaceNavigation.js';
 import { hasDesktopPrinter } from "../services/printing/desktopPrinter.js";
-import { canUsePlan, canUseShopFloor, isShopFloorRole } from "../features/auth/permissions.js";
+import { canUseShopFloor } from "../features/auth/permissions.js";
 import { useManufacturing } from "../state/ManufacturingContext.jsx";
 import { SessionActions } from "../features/auth/AuthGate.js";
 import { React } from "../vendor/react-runtime.js";
@@ -23,25 +24,9 @@ function MobileNavbar() {
   }, [open]);
   React.useEffect(() => { setOpen(false); }, [view]);
 
-  const items = [];
-  if (!desktop && manager) items.push(["Dashboard", "dashboard"], ["Job Board", "board"]);
-  items.push(["Shop Floor", "productionline"]);
-  if (canUseShopFloor(profile?.role)) {
-    items.push(["Shop Floor Dashboard", "shopfloordashboard"], ["Time In / Out", "shopfloorattendance"]);
-  }
-  if (canUsePlan(profile?.role)) {
-    if (!desktop) items.push(["Plan", "plan"]);
-  }
-  if (!desktop && manager) {
-    items.push(["Clients", "customers"], ["Individuals", "individuals"],
-      ["Availability", "availability"], ["Attendance roster", "attendance"]);
-    if (profile?.role === "admin") items.push(["Users", "users"], ["Configurations", "configurations"]);
-  } else if (!desktop && !isShopFloorRole(profile?.role)) {
-    items.push(["Job Board", "board"]);
-    if (profile?.role === "coach") items.push(["Availability", "availability"], ["Attendance roster", "attendance"]);
-  }
+  const groups = workspaceGroups(profile?.role, desktop).map(group => group.id !== 'daily' || !canUseShopFloor(profile?.role) ? group : {...group, items: [...group.items, ['Shop Floor Dashboard', 'shopfloordashboard'], ['Time In / Out', 'shopfloorattendance']]});
   function active(route) {
-    return route === "board" ? ["board", "orders", "new", "detail"].includes(view) : route === view;
+    return route === "configurations" ? view === route || optionalViews.includes(view) : route === 'plan' ? ['plan','detail'].includes(view) : route === view;
   }
   function closeAndFocus() { setOpen(false); trigger.current?.focus(); }
 
@@ -65,8 +50,11 @@ function MobileNavbar() {
       Menu
     </button>
     <div id={menuId} className="workspace-menu-panel" hidden={!open}>
-      {items.map(([label, route]) => <a key={route} href={"#" + route} aria-current={active(route) ? "page" : undefined}
-        onClick={event => { event.preventDefault(); closeAndFocus(); setView(route); }}>{label}</a>)}
+      {groups.map(group => <section key={group.id} className="workspace-menu-group" aria-label={group.label}>
+        <h3>{group.label}</h3>
+        {group.items.map(([label, route]) => <a key={route} href={"#" + route} aria-current={active(route) ? "page" : undefined}
+          onClick={event => { event.preventDefault(); closeAndFocus(); setView(route); }}>{label}</a>)}
+      </section>)}
       <button type="button" className="workspace-menu-sign-out" disabled={!session?.signOut}
         onClick={() => { setOpen(false); session?.signOut(); }}>Sign out</button>
     </div>

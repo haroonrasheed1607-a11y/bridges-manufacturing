@@ -1,5 +1,5 @@
 import { hasDesktopPrinter } from "../services/printing/desktopPrinter.js";
-import { canUsePlan, isShopFloorRole } from '../features/auth/permissions.js';
+import { workspaceGroups, optionalViews } from '../config/workspaceNavigation.js';
 // components/layout/Navigation.js
 import { useManufacturing } from "../state/ManufacturingContext.jsx";
 import { React } from "../vendor/react-runtime.js";
@@ -19,7 +19,7 @@ function Navbar() {
     document.addEventListener('pointerdown', close);
     return () => document.removeEventListener('pointerdown', close);
   }, []);
-  const active = route => route === 'board' ? ['board', 'orders', 'new', 'detail'].includes(view) : route === view;
+  const active = route => route === 'configurations' ? view === route || optionalViews.includes(view) : route === 'plan' ? ['plan','detail'].includes(view) : route === view;
   function link(label, route, detail) {
     return h('a', {
       key: route,
@@ -71,7 +71,6 @@ function Navbar() {
     }, items.map(([title, route, description]) => link(title, route, description))));
   }
   const desktop = hasDesktopPrinter();
-  const plan = canUsePlan(profile?.role) ? [link('Plan','plan')] : [];
   return h('nav', {
     ref: root,
     className: 'main-navigation refined-navigation',
@@ -83,7 +82,8 @@ function Navbar() {
         button?.focus();
       }
     }
-  }, ...(desktop ? [link('Shop Floor', 'productionline')] : manager ? [link('Dashboard', 'dashboard'), link('Job Board', 'board'), ...plan, link('Shop Floor', 'productionline'), dropdown('directory', 'Directory', [['Clients', 'customers', 'Register clients and their items'], ['Individuals', 'individuals', 'Work bookings and future availability'], ['Availability','availability','Reported weekly and monthly availability'], ['Attendance','attendance','Daily attendance roster'], ...(profile?.role==='admin' ? [['Users', 'users', 'Staff accounts and password management']] : [])]), ...(profile?.role==='admin' ? [link('Configurations','configurations')] : [])] : isShopFloorRole(profile?.role) ? [link('Shop Floor','productionline'),...plan] : [link('Shop Floor','productionline'),...plan,link('Job Board','board'),...(profile?.role==='coach'?[link('Availability','availability'),link('Attendance','attendance')]:[])]) );
+  }, ...workspaceGroups(profile?.role, desktop).map(group => dropdown(group.id, group.label, group.items)));
+
 }
 
 export { Navbar };

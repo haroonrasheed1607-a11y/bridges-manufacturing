@@ -1,3 +1,4 @@
+import { OptionalWorkflows } from "./OptionalWorkflows.jsx";
 import { BarcodeApprovals } from "../admin-approvals/BarcodeApprovals.jsx";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { useScreenMemory } from "../../state/useScreenMemory.js";
@@ -12,6 +13,7 @@ const sections = [
   ["backup", "Backup", Backups],
   ["approvals", "QR approvals", BarcodeApprovals],
   ["windows", "Windows app", WindowsApp],
+  ["optional", "Optional workflows", OptionalWorkflows],
 ];
 
 export function ConfigurationsPage() {

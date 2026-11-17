@@ -60,11 +60,11 @@ function ManufacturingProvider({ children }) {
   React.useEffect(() => {
     if (
       !loading &&
-      view === "detail" &&
+      ["detail", "optionalorder"].includes(view) &&
       !data.orders.some((o) => o.id === selectedOrderId)
     ) {
       setSelectedOrderId(null);
-      setView(manager ? "orders" : "productionline");
+      setView(manager ? "plan" : "productionline");
     }
   }, [loading, data.orders, view, selectedOrderId]);
   // 3. Load workspace data and resolve private file references.

@@ -6,8 +6,8 @@ test('broken browser storage falls back without crashing navigation',()=>{const 
 test('Plan persists for setup roles and is unavailable to scanner-only accounts',()=>{for(const role of ['admin','manager','coach','station','box_setup'])assert.equal(validView(role,'plan'),'plan');assert.equal(validView('box_scanner','plan'),'productionline');});
 
 test('Print navigation persists for permitted roles',()=>{
- for(const role of ['admin','manager','coach','station','box_setup'])
-  assert.equal(validView(role,'shopfloorprint'),'shopfloorprint');
+ assert.equal(validView('admin','shopfloorprint'),'shopfloorprint');
+ for(const role of ['manager','coach','station','box_setup'])assert.notEqual(validView(role,'shopfloorprint'),'shopfloorprint');
  assert.equal(validView('box_scanner','shopfloorprint'),'productionline');
 });
 
