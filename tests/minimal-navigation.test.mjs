@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { workspaceGroups, optionalViews } from '../src/config/workspaceNavigation.js';
+import { workspaceGroups, optionalViews, orderDetailsView } from '../src/config/workspaceNavigation.js';
 import { validView } from '../src/state/navigationMemory.js';
 
 test('daily navigation keeps optional workflows out of both desktop and mobile group data',()=>{
@@ -19,4 +19,11 @@ test('role-specific navigation preserves scanner and desktop limits',()=>{
  assert.deepEqual(workspaceGroups('admin',true)[0].items,[['Shop Floor','productionline']]);
  assert.equal(validView('coach','timesheets'),'timesheets');
  for(const view of optionalViews)assert.equal(validView('admin',view),view);
+});
+
+test('order links retain their daily or optional workflow context',()=>{
+ assert.equal(orderDetailsView('admin','plan'),'detail');
+ assert.equal(orderDetailsView('admin','board'),'optionalorder');
+ assert.equal(orderDetailsView('admin','optionalpeople'),'optionalorder');
+ assert.equal(orderDetailsView('manager','board'),'detail');
 });

@@ -1,3 +1,4 @@
+import { orderDetailsView } from "../config/workspaceNavigation.js";
 import { isConflictError } from "../api/conflicts.js";
 import {
   readNavigation,
@@ -344,7 +345,7 @@ function ManufacturingProvider({ children }) {
   }
   function open(id) {
     setSelectedOrderId(id);
-    setView("detail");
+    setView(orderDetailsView(profile?.role, view));
     setNotice("");
   }
   function exportData() {

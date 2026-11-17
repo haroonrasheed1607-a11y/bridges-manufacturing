@@ -22,3 +22,6 @@ export function workspaceParent(view) {
   if (['customers', 'individuals', 'users', 'configurations'].includes(view)) return [null, 'Supporting Administration'];
   return [null, 'Daily Operations'];
 }
+export function orderDetailsView(role, origin) {
+  return role === 'admin' && optionalViews.includes(origin) ? 'optionalorder' : 'detail';
+}

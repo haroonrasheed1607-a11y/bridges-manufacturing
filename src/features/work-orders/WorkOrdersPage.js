@@ -51,7 +51,7 @@ function WorkOrdersPage() {
   }, 'Prepare printable job sheets and track production.')), h('div', {
     className: 'paper-editor-buttons'
   }, manager && order.stage < 2 && order.workOrders.length > 0 && h('button', {
-    onClick: () => setView('individuals')
+    onClick: () => setView('optionalpeople')
   }, 'Book individuals'), manager && order.stage === 0 && !order.workOrderApprovedAt && unallocated > 0 && !adding && !editing && h('button', {
     onClick: () => setAdding({ revision: order._revision })
   }, '＋ Add work order'))), order.stage === 1 && h(ManufacturingProductionBoxes, {
