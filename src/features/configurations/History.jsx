@@ -35,7 +35,7 @@ const empty = { columns: [], total: 0, rows: [] };
 
 function defaultFilters(view) {
   const date = view === "scans" ? manufacturingToday() : "";
-  return { view, start: date, end: date, search: "" };
+  return { view, start: date, end: date, search: "", state: "active" };
 }
 
 function cellText(value) {
@@ -61,9 +61,9 @@ export function History() {
     setError("");
     async function load() {
       try {
-        const result = await manufacturingApi.rpc("app_configuration_history", {
+        const result = await manufacturingApi.rpc("app_configuration_history_status", {
           p_view: query.view, p_start: query.start || null, p_end: query.end || null,
-          p_search: query.search.trim(), p_offset: offset,
+          p_search: query.search.trim(), p_offset: offset, p_state: query.state,
         });
         if (ticket === generation.current) {
           setHistory(result);
@@ -118,6 +118,11 @@ export function History() {
         </label>
         <label className="field"><span>Through date</span>
           <input type="date" disabled={!dateLabel} min={filters.start} value={filters.end} onChange={e => change("end", e.target.value)} />
+        </label>
+        <label className="field"><span>Record state</span>
+          <select value={filters.state} onChange={e => change("state", e.target.value)}>
+            <option value="active">Active</option><option value="inactive">Inactive</option><option value="all">All</option>
+          </select>
         </label>
         <label className="field"><span>Search</span>
           <input type="search" maxLength={160} value={filters.search}

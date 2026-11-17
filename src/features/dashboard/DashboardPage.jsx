@@ -65,7 +65,7 @@ function ManufacturingDashboard() {
   return <div className="manufacturing-dashboard">
     <header className="page-heading">
       <div><h2>Production dashboard</h2><p className="quiet">QR output, individual performance, and planned orders.</p></div>
-      <button type="button" onClick={() => setView("board")}>Open Job Board</button>
+      <button type="button" onClick={() => setView("plan")}>Open Plan</button>
     </header>
     <div className="panel dashboard-filters">
       <label className="field"><span>Scan period</span>
@@ -119,11 +119,7 @@ function ManufacturingDashboard() {
             })}</tbody>
           </table></div> : <p className="quiet">No orders are planned for this date.</p>}
         </section>
-        <section className="panel">
-          <h3>Orders by stage</h3>
-          <dl className="dashboard-stages">{stages.map(({ label, count }) =>
-            <div key={label}><dt>{label}</dt><dd>{number(count)}</dd></div>)}</dl>
-        </section>
+
       </div>
     </section>
   </div>;

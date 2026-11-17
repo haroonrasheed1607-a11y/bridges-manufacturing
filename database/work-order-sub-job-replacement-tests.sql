@@ -40,12 +40,15 @@ begin
 
  order_snapshot:=jsonb_set(order_snapshot,'{workOrders,0,replaceSubJobs}','true');
  perform public.app_save_order(order_snapshot,(order_snapshot->>'_revision')::bigint,'Fixture replacement');
- if exists(select 1 from public.sub_jobs where id=old_job)
-   or exists(select 1 from public.boxes where id=old_box)
-   or exists(select 1 from public.dumping_assignments where id=reusable)
+ if exists(select 1 from public.sub_jobs where id=old_job and active)
+   or exists(select 1 from public.boxes where id=old_box and active)
+   or exists(select 1 from public.dumping_assignments where id=reusable and active)
    or not exists(select 1 from public.sub_jobs where id=new_job and quantity=25)
  then raise exception 'Replacement did not retire the old labels and publish the new split'; end if;
 
+ if not exists(select 1 from public.sub_jobs where id=old_job and not active) or not exists(select 1 from public.boxes where id=old_box and not active) then raise exception 'Replacement deleted original rows';end if;
+ begin update public.dumping_assignments set active=true where id=reusable;raise exception 'Old label restored';exception when insufficient_privilege then null;end;
+ reusable:='REUSE-'||upper(substr(replace(gen_random_uuid()::text,'-',''),1,16));
  insert into public.dumping_assignments(id,sub_job_id,person_id,batch_quantity,created_by)
  values(reusable,new_job,person,25,actor);
  insert into public.dumping_completions(id,assignment_id,pieces,actor_id)

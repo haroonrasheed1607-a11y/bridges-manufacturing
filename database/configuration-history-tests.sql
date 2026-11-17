@@ -3,7 +3,7 @@ do $$
 declare
  admin uuid;
  scanner uuid;
- view_name text;
+ view_name text; activity text;
  result jsonb;
  prefix text:='History fixture '||gen_random_uuid()::text;
  views text[]:=array['scans','customers','customer_items','orders','work_orders','sub_jobs','boxes',
@@ -16,6 +16,10 @@ begin
  perform set_config('request.jwt.claim.sub',admin::text,true);
  foreach view_name in array views loop
    result:=public.app_configuration_history(view_name,null,null,'',0);
+   foreach activity in array array['active','inactive','all'] loop
+    result:=public.app_configuration_history_status(view_name,null,null,'',0,activity);
+    if not result->'columns' ? 'Record state' then raise exception 'History state columns missing';end if;
+   end loop;
    if jsonb_typeof(result->'columns') is distinct from 'array'
      or jsonb_typeof(result->'rows') is distinct from 'array'
      or (result->>'total')::integer<jsonb_array_length(result->'rows') then
@@ -30,7 +34,7 @@ begin
  if result->>'total' is distinct from '51' or jsonb_array_length(result->'rows')<>50 then
    raise exception 'Date, search or first page returned an incorrect result';
  end if;
- result:=public.app_configuration_history('customers','2026-11-10','2026-11-10',prefix,50);
+ result:=public.app_configuration_history_status('customers','2026-11-10','2026-11-10',prefix,50,'all');
  if result->>'total' is distinct from '51' or jsonb_array_length(result->'rows')<>1 then
    raise exception 'Second page returned an incorrect result';
  end if;

@@ -45,7 +45,7 @@ function ManufacturingAssignWorkOrder() {
   }, h('div', null, h('h3', null, order.assignmentConfirmedAt ? 'Start production' : 'Assign Job Coaches'), h('p', {
     className: 'quiet'
   }, 'Assign each work order to a Job Coach. Boxes are assigned to individuals during production.')), h('button', {
-    onClick: () => setView('individuals')
+    onClick: () => setView('optionalpeople')
   }, 'People directory')), h('div', {
     className: 'coach-add'
   }, h('label', {

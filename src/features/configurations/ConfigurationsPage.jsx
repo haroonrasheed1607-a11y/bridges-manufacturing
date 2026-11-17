@@ -1,15 +1,19 @@
+import { OptionalWorkflows } from "./OptionalWorkflows.jsx";
 import { BarcodeApprovals } from "../admin-approvals/BarcodeApprovals.jsx";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 import { useScreenMemory } from "../../state/useScreenMemory.js";
 import { React } from "../../vendor/react-runtime.js";
 import { ScanSettings } from "./ScanSettings.jsx";
+import { Backups } from "../backups/Backups.jsx";
 import { History } from "./History.jsx";
 
 const sections = [
   ["settings", "Scan settings", ScanSettings],
   ["history", "History", History],
+  ["backup", "Backup", Backups],
   ["approvals", "QR approvals", BarcodeApprovals],
   ["windows", "Windows app", WindowsApp],
+  ["optional", "Optional workflows", OptionalWorkflows],
 ];
 
 export function ConfigurationsPage() {

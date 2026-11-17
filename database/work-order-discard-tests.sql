@@ -60,17 +60,18 @@ begin
  end;
 
  perform public.app_discard_work_order(oid,wid,1);
- if exists(select 1 from public.work_orders where id=wid)
-   or exists(select 1 from public.sub_jobs where id=jid)
-   or exists(select 1 from public.boxes where id=box)
-   or exists(select 1 from public.dumping_assignments where id=qr)
-   or exists(select 1 from public.bookings where work_order_id=wid)
+ if exists(select 1 from public.work_orders where id=wid and active)
+   or exists(select 1 from public.sub_jobs where id=jid and active)
+   or exists(select 1 from public.boxes where id=box and active)
+   or exists(select 1 from public.dumping_assignments where id=qr and active)
+   or exists(select 1 from public.bookings where work_order_id=wid and active)
  then raise exception 'Discarded work order still has active records'; end if;
+ if not exists(select 1 from public.work_orders where id=wid and not active and deactivated_by=actor) or not exists(select 1 from public.sub_jobs where id=jid and not active) then raise exception 'Deactivation failed to retain work';end if;
  if not exists(select 1 from public.orders where id=oid and stage=0 and revision=2
    and data->>'quantity'='50' and data->>'expected' is null and data->>'workOrderApprovedAt' is null
    and data->>'assignmentConfirmedAt' is null and data->>'productionStartedAt' is null)
  then raise exception 'Order request was not reopened correctly'; end if;
- if not exists(select 1 from public.order_events where order_id=oid and message like 'Discarded unstarted work order%')
+ if not exists(select 1 from public.order_events where order_id=oid and message like 'Deactivated unstarted work order%')
  then raise exception 'Discard event missing'; end if;
 end
 $$;

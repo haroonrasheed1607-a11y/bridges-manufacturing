@@ -1,3 +1,5 @@
+import { workspaceParent, optionalViews } from "../../config/workspaceNavigation.js";
+import { canUsePlan } from "../../features/auth/permissions.js";
 import { hasDesktopPrinter } from "../../services/printing/desktopPrinter.js";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
 
@@ -18,25 +20,26 @@ const pageNames = {
   users: "Users",
   configurations: "Configurations",
   barcodeapprovals: "Barcode approvals",
-  workflow: "Workflow",
+  workflow: "Workflow", timesheets: "Timesheets", optionalorder: "Detailed order workflow", optionalpeople: "Capacity & bookings", optionalboxes: "Box-label setup",
 };
 
 export function WorkspaceBreadcrumbs() {
-  const { view, setView, order, orderDisplayTitle, manager } = useManufacturing();
+  const { view, setView, order, orderDisplayTitle, manager, profile } = useManufacturing();
   if (hasDesktopPrinter()) return null;
   const parents = [];
-  if (["shopfloorprint", "shopfloordashboard", "shopfloorattendance"].includes(view)) parents.push(["productionline", pageNames.productionline]);
-  if (["orders", "new", "detail"].includes(view)) parents.push(["board", pageNames.board]);
-  if (view === "detail" && manager) parents.push(["orders", pageNames.orders]);
-  if (view === "barcodeapprovals") parents.push(["configurations", pageNames.configurations]);
+  const [route, group] = workspaceParent(view);
+  if (view === 'detail') parents.push(canUsePlan(profile?.role) ? ['plan', 'Daily Operations / Plan'] : ['productionline', 'Daily Operations / Shop Floor']);
+  else if (route) parents.push([route, group]);
+  else parents.push([null, group]);
+  if (optionalViews.includes(view)) parents.push([null, 'Optional workflows']);
 
   const title = view === "detail" && order ? orderDisplayTitle(order)
     : pageNames[view] || pageNames.board;
 
   return <nav className="draft-banner workspace-breadcrumbs" aria-label="Breadcrumb">
     <ol>
-      {parents.map(([route, label]) => <li key={route}>
-        <button type="button" onClick={() => setView(route)}>{label}</button>
+      {parents.map(([route, label]) => <li key={route || label}>
+        {route ? <button type="button" onClick={() => setView(route)}>{label}</button> : <span>{label}</span>}
       </li>)}
       <li aria-current="page">{title}</li>
     </ol>

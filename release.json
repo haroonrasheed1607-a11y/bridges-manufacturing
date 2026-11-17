@@ -1,6 +1,6 @@
 {
   "minimumVersion": "2.0",
   "notes": [
-    "Admins can edit BU/Scan in Planned for the day before scanning, or reset the selected day\u2019s scans below 10% before saving. Earlier days are preserved and reset records are retained in a private audit."
+    "Navigation is grouped into Daily Operations and Supporting Administration. Optional workflows are retained under Configurations, with compact individual records and a simple daily order view."
   ]
 }

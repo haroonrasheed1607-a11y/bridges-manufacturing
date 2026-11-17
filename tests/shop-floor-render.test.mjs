@@ -16,6 +16,9 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  assert.equal(rows[0].decision,'');assert.equal(rows[0].matches[0].id,'P1');
  assert.equal(rows[1].decision,'skip');assert.equal(rows[2].decision,'add');
  const individuals=await render('/src/features/individuals/IndividualsPage.js','ManufacturingIndividuals');
+ assert.doesNotMatch(individuals,/Book work|View bookings|Period capacity/);
+ const advancedIndividuals=await render('/src/features/individuals/IndividualsPage.js','ManufacturingIndividuals','admin','optionalpeople',{advanced:true});
+ assert.match(advancedIndividuals,/Book work/);assert.match(advancedIndividuals,/Period capacity/);
  assert.match(individuals,/Import Excel/);assert.match(individuals,/Disable/);assert.match(individuals,/aria-label="Edit Alex" aria-haspopup="dialog"/);assert.match(individuals,/aria-label="Job QR for Alex"/);
  const create=await render('/src/features/orders/CreateOrderPage.js','CreateOrderPage');
  assert.match(create,/Select a client/);assert.match(create,/Select an item/);assert.doesNotMatch(create,/<input[^>]+name="title"/);
@@ -41,10 +44,15 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const dashboard=await render('/src/features/dashboard/DashboardPage.jsx','ManufacturingDashboard');
  assert.match(dashboard,/Production dashboard/);assert.match(dashboard,/Scan period/);
  assert.match(dashboard,/Orders to watch/);assert.match(dashboard,/Overdue orders/);
+ const dailyOrder=await render('/src/features/orders/DailyOrderDetails.jsx','DailyOrderDetails','admin','detail');
+ assert.match(dailyOrder,/Open Plan/);assert.doesNotMatch(dailyOrder,/Next stage|Quality Check|Warehouse|Approve work order/);
+ const optional=await render('/src/features/configurations/OptionalWorkflows.jsx','OptionalWorkflows');
+ assert.match(optional,/Detailed order workflow/);assert.match(optional,/Box-label setup/);
+ const restrictedOptional=await render('/src/features/configurations/OptionalWorkflows.jsx','OptionalWorkflows','box_scanner');assert.equal(restrictedOptional,'');
  const configurations=await render('/src/features/configurations/ConfigurationsPage.jsx','ConfigurationsPage');
  assert.match(configurations,/Seconds between scans for 1× load/);
  assert.match(configurations,/Pieces per scan/);
- assert.match(configurations,/role="tablist"/);assert.match(configurations,/id="config-tab-history"/);
+ assert.match(configurations,/role="tablist"/);assert.match(configurations,/id="config-tab-history"/);assert.match(configurations,/id="config-tab-optional"/);
  assert.match(configurations,/id="config-tab-approvals"/);assert.match(configurations,/id="config-tab-windows"/);
  assert.doesNotMatch(configurations,/Apply filters/);
  const history=await render('/src/features/configurations/History.jsx','History');
@@ -76,9 +84,9 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const summary=await render('/src/features/orders/OrderSummary.jsx','OrderSummary');
  assert.match(summary,/Assembly order · PART-42/);assert.match(summary,/Required delivery/);
  const crumbs=await render('/src/components/layout/WorkspaceBreadcrumbs.jsx','WorkspaceBreadcrumbs','admin','detail');
- assert.match(crumbs,/Job Board.*All orders.*Assembly order · PART-42/);
+ assert.match(crumbs,/Daily Operations \/ Plan.*Assembly order · PART-42/);
  const adminNav=await render('/src/components/Navbar.jsx','Navbar');
- assert.match(adminNav,/href="#board"/);assert.doesNotMatch(adminNav,/nav-menu-orders/);
+ assert.match(adminNav,/Daily Operations/);assert.match(adminNav,/Supporting Administration/);assert.doesNotMatch(adminNav,/href="#board"|href="#new"|href="#availability"/);
  const scannerNav=await render('/src/components/Navbar.jsx','Navbar','box_scanner');assert.doesNotMatch(scannerNav,/href="#plan"|href="#shopfloorprint"/);
  const adminPlan=await render('/src/features/plan/PlanPage.jsx','PlanPage','admin');
  assert.match(adminPlan,/Create Order/);assert.match(adminPlan,/Plan Work/);assert.match(adminPlan,/Total Billable Units/);assert.match(adminPlan,/Billable Units per Scan/);assert.match(adminPlan,/Planned for the day/);

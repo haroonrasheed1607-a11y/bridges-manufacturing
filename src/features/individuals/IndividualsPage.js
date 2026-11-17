@@ -1,3 +1,4 @@
+import { IndividualDirectory } from './IndividualDirectory.jsx';
 import { IndividualProfile } from "./IndividualProfile.jsx";
 import { IndividualBulkPrint } from "./IndividualBulkPrint.jsx";
 import { IndividualImport } from './IndividualImport.jsx';
@@ -16,7 +17,7 @@ const billingDefaults = { services: 'waiver', billing: 'piece', averageWorkingHo
 const serviceLabels = { waiver: 'Waiver', state: 'State' };
 const billingLabels = { hourly: 'Hourly', piece: 'By piece', both: 'Both' };
 
-function ManufacturingIndividuals() {
+function ManufacturingIndividuals({ advanced = false } = {}) {
   const {
       setView, orders, orderDisplayTitle,
       workforce,
@@ -273,11 +274,11 @@ function ManufacturingIndividuals() {
     className: 'page-heading'
   }, h('div', null, h('div', {
     className: 'eyebrow'
-  }, 'OPERATIONS / INDIVIDUALS'), h('h2', null, 'People & availability'), h('p', {
+  }, 'OPERATIONS / INDIVIDUALS'), h('h2', null, advanced ? 'Capacity & bookings' : 'Individuals'), h('p', {
     className: 'quiet'
-  }, 'See booked work and remaining capacity before making future bookings.')), h('div', {
+  }, advanced ? 'See booked work and remaining capacity before making future bookings.' : 'Manage individual details, weekly hours and QR cards.')), h('div', {
     className: 'people-heading-actions'
-  }, formButton('Bulk print QR stickers', () => setBulkPrint(true)), formButton('Weekly timesheets',()=>setTimesheetPerson(selected||'')), formButton('Availability chart',()=>setView('availability')), formButton('Attendance roster',()=>setView('attendance')), formButton('Import Excel', () => setImportOpen(true)), formButton('＋ Add individual', () => {
+  }, formButton('Bulk print QR stickers', () => setBulkPrint(true)), formButton('Weekly timesheets',()=>setTimesheetPerson(selected||'')), advanced && formButton('Availability chart',()=>setView('availability')), formButton('Attendance roster',()=>setView('attendance')), formButton('Import Excel', () => setImportOpen(true)), formButton('＋ Add individual', () => {
     setPersonError('');
     setPersonForm({
       name: '',
@@ -287,7 +288,7 @@ function ManufacturingIndividuals() {
     });
     setError('');
     setMessage('');
-  }), h('button', {
+  }), advanced && h('button', {
     className: 'primary',
     disabled: !activePeople.length || !options.length,
     onClick: () => beginBooking()
@@ -418,7 +419,7 @@ function ManufacturingIndividuals() {
     setError('');
   }), h('button', {
     className: 'primary', disabled: !bookingDays || bookingPerson?.active === false
-  }, 'Save booking'))), h('section', {
+  }, 'Save booking'))), advanced ? h('section', {
     className: 'panel'
   }, h('div', {
     className: 'people-toolbar'
@@ -530,7 +531,7 @@ function ManufacturingIndividuals() {
     className: 'empty'
   }, 'Add individuals to start planning workload and availability.'), workforce.people.length > 0 && !people.length && h('p', {
     className: 'empty'
-  }, 'No individuals match your filters.')), selectedPerson && h('section', {
+  }, 'No individuals match your filters.')) : h(IndividualDirectory, { people, search, onSearch: setSearch, status: personStatus, onStatus: setPersonStatus, onEdit: editPerson, onProfile: setProfilePerson, onStatusChange: setStatusChange }), advanced && selectedPerson && h('section', {
     className: 'panel'
   }, h('div', {
     className: 'section-heading'

@@ -1,3 +1,4 @@
+import { orderDetailsView } from "../config/workspaceNavigation.js";
 import { isConflictError } from "../api/conflicts.js";
 import {
   readNavigation,
@@ -60,11 +61,11 @@ function ManufacturingProvider({ children }) {
   React.useEffect(() => {
     if (
       !loading &&
-      view === "detail" &&
+      ["detail", "optionalorder"].includes(view) &&
       !data.orders.some((o) => o.id === selectedOrderId)
     ) {
       setSelectedOrderId(null);
-      setView(manager ? "orders" : "productionline");
+      setView(manager ? "plan" : "productionline");
     }
   }, [loading, data.orders, view, selectedOrderId]);
   // 3. Load workspace data and resolve private file references.
@@ -168,7 +169,7 @@ function ManufacturingProvider({ children }) {
     try {
       await mutate("app_discard_work_order", {
         p_order: order.id, p_work: workId, p_revision: order._revision,
-      }, "Work order discarded.");
+      }, "Work order permanently deactivated.");
       return true;
     } catch {
       return false;
@@ -344,7 +345,7 @@ function ManufacturingProvider({ children }) {
   }
   function open(id) {
     setSelectedOrderId(id);
-    setView("detail");
+    setView(orderDetailsView(profile?.role, view));
     setNotice("");
   }
   function exportData() {
