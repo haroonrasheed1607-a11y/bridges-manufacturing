@@ -1,0 +1,79 @@
+begin;
+do $$
+declare admin uuid; scanner uuid; manager uuid; item uuid; plan jsonb; state jsonb; old_state jsonb; result jsonb;
+ customer text:='PLAN-UNIT-TEST-'||gen_random_uuid(); person text:='PLAN-UNIT-P-'||gen_random_uuid(); qr text; aid text; jid text; wid text; oid text;
+ today date:=(clock_timestamp() at time zone 'America/Chicago')::date; scan_id uuid:=gen_random_uuid(); previous_id uuid:=gen_random_uuid(); request_id uuid; box_code text;
+begin
+ select id into strict admin from public.staff_profiles where active and role='admin' limit 1;
+ select id into strict scanner from public.staff_profiles where active and role='box_scanner' limit 1;
+ select id into strict manager from public.staff_profiles where active and role='manager' limit 1;
+ perform set_config('request.jwt.claim.sub',admin::text,true);
+ insert into public.customers(id,name) values(customer,customer);
+ insert into public.customer_items(customer_id,code,name,rate) values(customer,'TEST-UNIT','Plan unit rollback',2.5) returning id into item;
+ plan:=public.app_plan_billable_order(customer,item,1000,25,today,gen_random_uuid());
+ jid:=plan->>'jobId';wid:=plan->>'workId';oid:=plan->>'orderId';
+ state:=manufacturing_private.plan_day_unit_state(jid,today);
+ if not (state->>'canEditUnits')::boolean or (state->>'requiresDayReset')::boolean then raise exception 'Zero-scan plan is not editable';end if;
+ result:=public.app_edit_plan_day_units(jid,today,30,false,(state->>'revision')::bigint,state->>'scanFingerprint',gen_random_uuid());
+ if (select billable_units_per_scan from public.work_orders where id=wid)<>30 or (result->>'removedScans')::int<>0 then raise exception 'No-scan edit failed';end if;
+ insert into public.people(id,name,kind) values(person,person,'individual');
+ result:=public.app_individual_qr_cards(array[person],true);qr:=result->0->>'code';
+ perform public.app_scan_and_assign((plan->>'approvalId')::uuid,qr);
+ select id into strict aid from public.dumping_assignments where person_id=person and sub_job_id=jid;
+ update public.dumping_assignments set scan_assign_ready_at=clock_timestamp()-interval '1 hour',last_scan_at=clock_timestamp()-interval '1 hour' where id=aid;
+ -- Preserve a previous day's 200 BU even though overall progress is already 20%.
+ insert into public.dumping_completions(id,assignment_id,pieces,actor_id,completed_at)
+ values(previous_id,aid,200,scanner,((today-1)::timestamp at time zone 'America/Chicago')+interval '10 hours');
+ update public.sub_jobs set completed=completed+200 where id=jid;
+ perform set_config('request.jwt.claim.sub',scanner::text,true);
+ perform public.app_scan_billable_units(qr,aid,scan_id,30,30);
+ perform set_config('request.jwt.claim.sub',admin::text,true);
+ state:=manufacturing_private.plan_day_unit_state(jid,today);
+ if not (state->>'canEditUnits')::boolean or state->>'dayBillableUnits'<>'30' then raise exception 'Threshold used overall progress instead of selected day';end if;
+ begin perform public.app_edit_plan_day_units(jid,today,40,false,(state->>'revision')::bigint,state->>'scanFingerprint',gen_random_uuid());raise exception 'Reset without confirmation accepted';exception when raise_exception then if sqlerrm not like 'Confirm reset%' then raise;end if;end;
+ request_id:=gen_random_uuid();
+ result:=public.app_edit_plan_day_units(jid,today,40,true,(state->>'revision')::bigint,state->>'scanFingerprint',request_id);
+ if result->>'removedUnits'<>'30' or exists(select 1 from public.dumping_completions where id=scan_id) then raise exception 'Selected-day reset failed';end if;
+ if not exists(select 1 from public.dumping_completions where id=previous_id and billable_units=200 and pay_rate_snapshot=2.5) then raise exception 'Earlier day or saved rate changed';end if;
+ if (select billable_units_completed from public.sub_jobs where id=jid)<>200 or (select completed from public.sub_jobs where id=jid)<>200 then raise exception 'Job progress failed to subtract just selected day';end if;
+ if not exists(select 1 from manufacturing_private.plan_day_unit_changes where scan_ids @>array[scan_id] and snapshot#>>'{reusable,0,billable_units}'='30') then raise exception 'Reset audit snapshot missing';end if;
+ result:=public.app_edit_plan_day_units(jid,today,40,true,(state->>'revision')::bigint,state->>'scanFingerprint',request_id);
+ if result->>'duplicate'<>'true' then raise exception 'Uncertain reset retry was not idempotent';end if;
+ perform set_config('request.jwt.claim.sub',scanner::text,true);
+ begin perform public.app_scan_billable_units(qr,aid,scan_id,40,40);raise exception 'Discarded request replay counted again';exception when sqlstate 'PT409' then null;end;
+ perform set_config('request.jwt.claim.sub',admin::text,true);
+ old_state:=manufacturing_private.plan_day_unit_state(jid,today);
+ -- Exactly 10% is locked, not rounded down or treated as below 10%.
+ scan_id:=gen_random_uuid();insert into public.dumping_completions(id,assignment_id,pieces,actor_id) values(scan_id,aid,100,scanner);
+ update public.sub_jobs set completed=completed+100 where id=jid;
+ begin perform public.app_edit_plan_day_units(jid,today,50,true,(old_state->>'revision')::bigint,old_state->>'scanFingerprint',gen_random_uuid());raise exception 'A stale scan list was reset';exception when sqlstate 'PT409' then null;end;
+ state:=manufacturing_private.plan_day_unit_state(jid,today);
+ if (state->>'canEditUnits')::boolean then raise exception 'Exactly ten percent editable';end if;
+ begin perform public.app_edit_plan_day_units(jid,today,50,true,(state->>'revision')::bigint,state->>'scanFingerprint',gen_random_uuid());raise exception 'Ten-percent server rule bypassed';exception when raise_exception then if sqlerrm not like 'At least 10%' then raise;end if;end;
+ update public.dumping_completions set pieces=101 where id=scan_id;update public.sub_jobs set completed=completed+1 where id=jid;
+ if (manufacturing_private.plan_day_unit_state(jid,today)->>'canEditUnits')::boolean then raise exception 'Above ten percent editable';end if;
+ update public.dumping_completions set pieces=99 where id=scan_id;update public.sub_jobs set completed=completed-2 where id=jid;
+ state:=manufacturing_private.plan_day_unit_state(jid,today);
+ if not (state->>'canEditUnits')::boolean then raise exception '9.9 percent was incorrectly locked';end if;
+ -- Resetting without changing the load is supported.
+ perform public.app_edit_plan_day_units(jid,today,40,true,(state->>'revision')::bigint,state->>'scanFingerprint',gen_random_uuid());
+ -- Completed single-use labels are archived and retired, not reopened for replay.
+ insert into public.people(id,name,kind) values(person||'-BOX','Box rollback individual','individual');
+ box_code:='BOX-'||upper(substr(replace(gen_random_uuid()::text,'-',''),1,16));
+ perform public.app_create_box(oid,wid,jsonb_build_object('id',box_code,'jobId',jid,'personId',person||'-BOX','quantity',20,'date',today));
+ perform public.app_complete_box(box_code,20);
+ update public.boxes set completed_at=((today-1)::timestamp at time zone 'America/Chicago')+interval '10 hours' where id=box_code;
+ if (manufacturing_private.plan_day_unit_state(jid,today)->>'canEditUnits')::boolean then raise exception 'Cross-day box was allowed to reset';end if;
+ update public.boxes set completed_at=clock_timestamp() where id=box_code;
+ state:=manufacturing_private.plan_day_unit_state(jid,today);
+ perform public.app_edit_plan_day_units(jid,today,25,true,(state->>'revision')::bigint,state->>'scanFingerprint',gen_random_uuid());
+ if exists(select 1 from public.boxes where id=box_code) or exists(select 1 from public.production_records where box_id=box_code) then raise exception 'Retired box remains active';end if;
+ if (select billable_units_completed from public.sub_jobs where id=jid)<>200 then raise exception 'Single-use reset affected prior days';end if;
+ state:=manufacturing_private.plan_day_unit_state(jid,today);
+ perform set_config('request.jwt.claim.sub',manager::text,true);
+ begin perform public.app_edit_plan_day_units(jid,today,30,false,(state->>'revision')::bigint,state->>'scanFingerprint',gen_random_uuid());raise exception 'Manager changed admin-only setting';exception when insufficient_privilege then null;end;
+ perform set_config('request.jwt.claim.sub',scanner::text,true);
+ begin perform public.app_edit_plan_day_units(jid,today,30,false,(state->>'revision')::bigint,state->>'scanFingerprint',gen_random_uuid());raise exception 'Scanner changed setting';exception when insufficient_privilege then null;end;
+ if has_table_privilege('authenticated','manufacturing_private.plan_day_unit_changes','select') or has_function_privilege('anon','public.app_edit_plan_day_units(text,date,integer,boolean,bigint,text,uuid)','execute') then raise exception 'Audit or write access exposed';end if;
+end $$;
+rollback;
