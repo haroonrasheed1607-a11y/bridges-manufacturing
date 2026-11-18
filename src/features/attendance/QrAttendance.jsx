@@ -1,3 +1,4 @@
+import { hasDesktopPrinter } from "../../services/printing/desktopPrinter.js";
 import { PresentWorkers } from "./PresentWorkers.jsx";
 import { QrAttendanceCount } from "./QrAttendanceCount.jsx";
 import { React } from "../../vendor/react-runtime.js";
@@ -9,14 +10,15 @@ import { formatDate } from "../../utils/dates.js";
 function readPending(key) {
   try {
     const value = JSON.parse(sessionStorage.getItem(key) ?? "null");
-    if (value?.request && /^(?:IND-[A-F0-9]{16}|ATT-[A-F0-9]{32})$/.test(value.code) && ["in", "out"].includes(value.action)) return value;
+    if (value?.request && /^(?:IND-[A-F0-9]{16}|ATT-[A-F0-9]{32})$/.test(value.code) && ["in", "out", "auto"].includes(value.action)) return value;
   } catch {}
   return null;
 }
 
 export function QrAttendance() {
   const { profile } = useManufacturing();
-  const key = "bridges-qr-attendance-pending-v1:" + profile.id;
+  const desktop = hasDesktopPrinter();
+  const key = "bridges-qr-attendance-pending-v1:" + profile.id + (desktop ? ":desktop" : "");
   const [pending, setPending] = React.useState(() => readPending(key));
   const [action, setAction] = React.useState(pending?.action ?? "in");
   const [code, setCode] = React.useState("");
@@ -28,6 +30,10 @@ export function QrAttendance() {
   const lock = React.useRef(false);
   const input = React.useRef(null);
 
+  React.useEffect(() => {
+    if (desktop && !busy && !pending) input.current?.focus();
+  }, [desktop, busy, pending]);
+
   async function record(value) {
     if (lock.current) return;
     const normalized = value.trim().toUpperCase();
@@ -36,7 +42,7 @@ export function QrAttendance() {
       setError("Scan a system-generated personal QR card.");
       return;
     }
-    const submission = pending ?? { code: normalized, action, request: crypto.randomUUID() };
+    const submission = pending ?? { code: normalized, action: desktop ? "auto" : action, request: crypto.randomUUID() };
     lock.current = true;
     setBusy(true);
     setCamera(false);
@@ -68,22 +74,22 @@ export function QrAttendance() {
 
   return <section className="panel qr-attendance">
     <div className="qr-attendance-heading"><h2>QR attendance</h2><QrAttendanceCount refreshVersion={countRefresh} /></div>
-    <PresentWorkers refreshVersion={countRefresh} />
-    <div className="production-mode-tabs" role="group" aria-label="Attendance action">
+    <PresentWorkers refreshVersion={countRefresh} collapsible={desktop} />
+    {!desktop && <div className="production-mode-tabs" role="group" aria-label="Attendance action">
       {[["in", "Time In"], ["out", "Time Out"]].map(([value, title]) => <button key={value} type="button"
         className={value === action ? "is-selected" : ""} aria-pressed={value === action}
         disabled={busy || Boolean(pending)} onClick={() => { setAction(value); setResult(null); setError(""); }}>{title}</button>)}
-    </div>
-    <p className="quiet">Select an action, then scan the individual’s personal QR card. The current Tulsa time is recorded.</p>
+    </div>}
+    {desktop ? <p className="quiet">Scan to time in. The next scan at least 10 minutes later times the person out.</p> : <p className="quiet">Select an action, then scan the individual’s personal QR card. The current Tulsa time is recorded.</p>}
     <form className="qr-attendance-manual" onSubmit={event => { event.preventDefault(); record(code); }}>
       <label className="field">Individual QR card<input ref={input} autoFocus value={code} disabled={busy || Boolean(pending)}
         autoComplete="off" spellCheck={false} onChange={event => setCode(event.target.value)}
         placeholder="Scan the QR card and press Enter" /></label>
-      <button className="primary" disabled={busy || Boolean(pending) || !code.trim()}>Record {action === "in" ? "Time In" : "Time Out"}</button>
+      <button className="primary" disabled={busy || Boolean(pending) || !code.trim()}>{desktop ? "Record scan" : action === "in" ? "Record Time In" : "Record Time Out"}</button>
     </form>
     {pending ? <button type="button" className="primary" disabled={busy} onClick={() => record(pending.code)}>
       {busy ? "Recording…" : "Retry same attendance scan"}</button>
-      : <button type="button" className="primary qr-attendance-camera" disabled={busy} onClick={() => setCamera(true)}>
+      : !desktop && <button type="button" className="primary qr-attendance-camera" disabled={busy} onClick={() => setCamera(true)}>
         Scan QR for {action === "in" ? "Time In" : "Time Out"}</button>}
     {error && <p className="alert" role="alert">{error}</p>}
     {result && <div className="scan-assign-result" role="status">
