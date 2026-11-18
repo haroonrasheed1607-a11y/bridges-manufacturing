@@ -127,9 +127,13 @@
 .optional-tool-list small{display:block;margin-top:3px;color:#63748b}
 .optional-workflow-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 12px;margin-bottom:12px;border:1px solid #dce3ed;border-radius:6px;background:#fff;font-size:12px}
 .optional-workflow-banner button{min-height:36px;padding:6px 10px;font-size:12px}
-.individual-directory table th,.individual-directory table td{padding:8px;line-height:1.3}
-.individual-directory .form-actions{gap:6px}
-.individual-directory .form-actions button{min-height:34px;padding:5px 8px;font-size:12px}
+.individual-directory table th,
+.individual-directory table td { padding: 4px 8px; line-height: 1.2; vertical-align: middle; }
+.individual-directory-id { white-space: nowrap; font-weight: 500; }
+.individual-directory td:last-child { width: 1%; }
+.individual-directory-actions { display: flex; align-items: center; gap: 6px; flex-wrap: nowrap; }
+.individual-directory-actions button { flex: none; min-height: 32px; padding: 4px 8px; font-size: 12px; white-space: nowrap; }
+@media (pointer: coarse) { .individual-directory-actions button { min-height: 44px; } }
 @media(max-width:600px){.optional-workflow-banner{flex-wrap:wrap}.optional-tool-list small{font-size:12px}.optional-tool-list button{min-height:44px}}
 
 .workspace-menu-group a[aria-current="page"]{background:#edf2f8;font-weight:700}
