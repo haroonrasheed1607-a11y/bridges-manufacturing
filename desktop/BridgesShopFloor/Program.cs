@@ -19,6 +19,27 @@ sealed class ShopFloor : Form {
  readonly ToolStripStatusLabel status=new("Connecting…");
  readonly string directory=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"BridgesShopFloor");
  bool printing;
+ readonly AttendanceScanner attendanceScanner=new();
+ bool scannerAvailable;
+
+ protected override void OnHandleCreated(EventArgs e){
+  base.OnHandleCreated(e);
+  scannerAvailable=attendanceScanner.Register(Handle);
+ }
+ protected override void WndProc(ref Message message){
+  attendanceScanner?.Receive(message,
+   ()=>SendAttendanceScannerState(),
+   code=>PostAttendanceMessage(new { type="bridges.attendance-scan", code }));
+  base.WndProc(ref message);
+ }
+ void PostAttendanceMessage(object payload){
+  if(web.CoreWebView2 is not null && Trusted(web.Source?.AbsoluteUri??""))
+   web.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(payload));
+ }
+ void SendAttendanceScannerState()=>PostAttendanceMessage(new {
+  type="bridges.attendance-scanner-state", available=scannerAvailable,
+  paired=attendanceScanner.Paired, pairing=attendanceScanner.Pairing
+ });
  readonly CheckBox preview=new(){Text="Preview before printing",AutoSize=true,Checked=false};
  List<LabelData>? lastLabels;
  record LabelData(string[] Lines,bool[][]? Matrix);
@@ -50,7 +71,7 @@ sealed class ShopFloor : Form {
   await web.EnsureCoreWebView2Async(env);
   web.CoreWebView2.Settings.AreDevToolsEnabled=false;
   web.CoreWebView2.Settings.AreDefaultContextMenusEnabled=false;
-  web.CoreWebView2.NavigationStarting+=(_,e)=>{if(!Trusted(e.Uri)){e.Cancel=true;status.Text="External navigation blocked.";}};
+  web.CoreWebView2.NavigationStarting+=(_,e)=>{attendanceScanner.Enabled=false;attendanceScanner.Pairing=false;attendanceScanner.Reset();if(!Trusted(e.Uri)){e.Cancel=true;status.Text="External navigation blocked.";}};
   web.CoreWebView2.NewWindowRequested+=(_,e)=>e.Handled=true;
   web.CoreWebView2.PermissionRequested+=(_,e)=>{
    // Only the fixed trusted app origin may request video; microphone and all other permissions stay blocked.
@@ -63,7 +84,7 @@ sealed class ShopFloor : Form {
    await web.CoreWebView2.Profile.SetPermissionStateAsync(CoreWebView2PermissionKind.Microphone,Origin,CoreWebView2PermissionState.Deny);
   } catch { status.Text="Camera permission setup unavailable · update WebView2 Runtime"; }
   web.CoreWebView2.WebMessageReceived+=Receive;
-  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.11\",cameraSettings:true})});}");
+  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.11\",cameraSettings:true,attendanceScanner:true})});}");
   web.CoreWebView2.NavigationCompleted+=(_,e)=>status.Text=e.IsSuccess?"Ready · select boxer or scanner to begin":"Connection failed · check internet and Reload";
   web.Source=new Uri(Origin);
  }catch(Exception ex){MessageBox.Show("Install Microsoft Edge WebView2 Runtime, then restart.\n\n"+ex.Message,"Unable to start");}}
@@ -73,6 +94,17 @@ sealed class ShopFloor : Form {
    if(e.WebMessageAsJson.Length>800000)throw new Exception("Label batch too large.");
    using var message=JsonDocument.Parse(e.WebMessageAsJson);var m=message.RootElement;
    string? type=m.GetProperty("type").GetString();
+   if(type=="bridges.attendance-scanner"){
+    attendanceScanner.Enabled=scannerAvailable && m.GetProperty("enabled").GetBoolean();
+    attendanceScanner.Pairing=false;
+    attendanceScanner.Reset();
+    SendAttendanceScannerState();
+    return;
+   }
+   if(type=="bridges.attendance-scanner-pair"){
+    if(attendanceScanner.Enabled){attendanceScanner.Reset();attendanceScanner.Pairing=true;SendAttendanceScannerState();}
+    return;
+   }
    if(type=="bridges.camera-settings"){
     Process.Start(new ProcessStartInfo("ms-settings:privacy-webcam"){UseShellExecute=true});return;
    }

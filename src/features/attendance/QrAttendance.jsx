@@ -27,6 +27,24 @@ export function QrAttendance() {
   const [error, setError] = React.useState("");
   const [result, setResult] = React.useState(null);
   const [countRefresh, setCountRefresh] = React.useState(0);
+  const nativeScanner = desktop && window.bridgesDesktop.attendanceScanner === true;
+  const [scanner, setScanner] = React.useState(null);
+  const recordRef = React.useRef(null);
+  React.useEffect(() => {
+    if (!nativeScanner) return;
+    const bridge = window.chrome.webview;
+    function receive(event) {
+      if (event.data?.type === "bridges.attendance-scanner-state") setScanner(event.data);
+      if (event.data?.type === "bridges.attendance-scan") recordRef.current?.(event.data.code);
+    }
+    bridge.addEventListener("message", receive);
+    bridge.postMessage({ type: "bridges.attendance-scanner", enabled: true });
+    return () => {
+      bridge.removeEventListener("message", receive);
+      bridge.postMessage({ type: "bridges.attendance-scanner", enabled: false });
+    };
+  }, [nativeScanner]);
+
   const lock = React.useRef(false);
   const input = React.useRef(null);
 
@@ -72,6 +90,10 @@ export function QrAttendance() {
     }
   }
 
+  React.useEffect(() => {
+    recordRef.current = value => { if (!pending && typeof value === "string") void record(value); };
+  });
+
   function restoreScannerFocus(event) {
     if (!desktop || busy || pending || event.detail === 0) return;
     if (event.target.closest("input, textarea, select, [contenteditable]")) return;
@@ -87,12 +109,20 @@ export function QrAttendance() {
         disabled={busy || Boolean(pending)} onClick={() => { setAction(value); setResult(null); setError(""); }}>{title}</button>)}
     </div>}
     {desktop ? <p className="quiet">Scan to time in. The next scan at least 10 minutes later times the person out.</p> : <p className="quiet">Select an action, then scan the individual’s personal QR card. The current Tulsa time is recorded.</p>}
-    <form className="qr-attendance-manual" onSubmit={event => { event.preventDefault(); record(code); }}>
+    {scanner?.available && <div className="scanner-connection">
+      <button type="button" disabled={busy || Boolean(pending)} onClick={() => {
+        window.chrome.webview.postMessage({ type: "bridges.attendance-scanner-pair" });
+        document.activeElement?.blur();
+      }}>{scanner.paired ? "Pair another USB scanner" : "Pair USB scanner"}</button>
+      <p role="status">{scanner.pairing ? "Scan a personal QR to pair the device. This scan does not record attendance."
+        : scanner.paired ? "USB scanner ready" : "Pair your USB scanner for scanning without field focus."}</p>
+    </div>}
+    {!scanner?.paired && !scanner?.pairing && <form className="qr-attendance-manual" onSubmit={event => { event.preventDefault(); record(code); }}>
       <label className="field">Individual QR card<input ref={input} autoFocus value={code} disabled={busy || Boolean(pending)}
         autoComplete="off" spellCheck={false} onChange={event => setCode(event.target.value)}
         placeholder="Scan the QR card and press Enter" /></label>
       <button className="primary" disabled={busy || Boolean(pending) || !code.trim()}>{desktop ? "Record scan" : action === "in" ? "Record Time In" : "Record Time Out"}</button>
-    </form>
+    </form>}
     {pending ? <button type="button" className="primary" disabled={busy} onClick={() => record(pending.code)}>
       {busy ? "Recording…" : "Retry same attendance scan"}</button>
       : !desktop && <button type="button" className="primary qr-attendance-camera" disabled={busy} onClick={() => setCamera(true)}>
