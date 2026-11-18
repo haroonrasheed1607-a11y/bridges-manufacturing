@@ -72,7 +72,13 @@ export function QrAttendance() {
     }
   }
 
-  return <section className="panel qr-attendance">
+  function restoreScannerFocus(event) {
+    if (!desktop || busy || pending || event.detail === 0) return;
+    if (event.target.closest("input, textarea, select, [contenteditable]")) return;
+    input.current?.focus({ preventScroll: true });
+  }
+
+  return <section className="panel qr-attendance" onClick={restoreScannerFocus}>
     <div className="qr-attendance-heading"><h2>QR attendance</h2><QrAttendanceCount refreshVersion={countRefresh} /></div>
     <PresentWorkers refreshVersion={countRefresh} collapsible={desktop} />
     {!desktop && <div className="production-mode-tabs" role="group" aria-label="Attendance action">
