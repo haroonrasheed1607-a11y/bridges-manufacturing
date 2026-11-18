@@ -1,3 +1,4 @@
+import { personalCards, usePersonalQrTypes } from './personalQrTypes.js';
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { weeklyAvailability } from "../../domain/workforce.js";
@@ -6,6 +7,8 @@ import { IndividualSticker, stickerStyles } from "./IndividualSticker.jsx";
 import { printIndividualStickers } from "./individualStickerPrint.jsx";
 
 export function IndividualProfile({ person, onBack, onEdit }) {
+  const { types, typeError } = usePersonalQrTypes();
+  const [type, setType] = React.useState('');
   const [card, setCard] = React.useState(null);
   const [expiry, setExpiry] = React.useState("");
   const [busy, setBusy] = React.useState(false);
@@ -16,14 +19,14 @@ export function IndividualProfile({ person, onBack, onEdit }) {
     let active = true;
     setCard(null);
     setError("");
-    manufacturingApi.rpc("app_individual_qr_cards", { p_people: [person.id], p_issue: false })
+    personalCards(type, [person.id], false)
       .then(rows => {
         if (!active) return;
         setCard(rows[0]);
         setExpiry(rows[0].expiresOn ?? "");
       }).catch(problem => { if (active) setError(problem.message); });
     return () => { active = false; };
-  }, [person.id]);
+  }, [person.id, type]);
 
   async function act(action) {
     if (busy) return;
@@ -34,6 +37,12 @@ export function IndividualProfile({ person, onBack, onEdit }) {
     finally { setBusy(false); }
   }
 
+  async function issue() {
+    if (type && !card.code && !window.confirm('Issue this Attendance card now? The Generic card will no longer mark attendance for this individual.')) return null;
+    const rows = await personalCards(type, [person.id], true);
+    setCard(rows[0]);
+    return rows;
+  }
   const expired = card?.expiresOn && card.expiresOn < manufacturingToday();
   const canPrint = Boolean(card?.active && !expired && card.expiresOn === (expiry || null));
   return <section className="individual-profile">
@@ -60,8 +69,13 @@ export function IndividualProfile({ person, onBack, onEdit }) {
       </section>
       <section className="panel"><h3>Personal QR sticker</h3>
         <p className="quiet">2.4 inches wide × 4.8 inches high · One sticker per individual</p>
+        <label className="field">QR type<select value={type} disabled={busy} onChange={event => { setType(event.target.value); setCard(null); }}>
+          <option value="">Generic</option>
+          {types.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+        </select></label>
+        {typeError && <p role="alert">{typeError}</p>}
         {!card ? !error && <p role="status">Loading QR details…</p> : <>
-          <form onSubmit={event => {
+          {!type && <form onSubmit={event => {
             event.preventDefault();
             act(async () => {
               const updated = await manufacturingApi.rpc("app_set_individual_qr_expiry", { p_person: person.id, p_expiry: expiry || null });
@@ -71,19 +85,25 @@ export function IndividualProfile({ person, onBack, onEdit }) {
           }}>
             <label className="field">QR expiry (optional)<input type="date" value={expiry} disabled={busy} onChange={e => setExpiry(e.target.value)} /></label>
             <button type="submit" disabled={busy || card.expiresOn === (expiry || null)}>Save expiry</button>
-          </form>
+          </form>}
           {expired && <p role="alert">This QR has expired. Review the expiry before printing.</p>}
           <div className="form-actions">
             {!card.code && <button type="button" disabled={busy || !canPrint} onClick={() => act(async () => {
-              const rows = await manufacturingApi.rpc("app_individual_qr_cards", { p_people: [person.id], p_issue: true });
-              setCard(rows[0]);
+              const rows = await issue();
             })}>Generate QR</button>}
             <button type="button" className="primary" disabled={busy || !canPrint} onClick={() => act(async () => {
-              const rows = await manufacturingApi.rpc("app_individual_qr_cards", { p_people: [person.id], p_issue: true });
-              setCard(rows[0]);
-              await printIndividualStickers(rows);
+              const rows = await issue();
+              if (rows) await printIndividualStickers(rows);
             })}>{busy ? "Preparing…" : card.code ? "Print sticker" : "Generate & print sticker"}</button>
           </div>
+          {type && <button type="button" disabled={busy} onClick={() => {
+            if (!window.confirm('Replace the Attendance card and invalidate any previous Attendance card?')) return;
+            act(async () => {
+              const rows = await personalCards(type, [person.id], true, true);
+              setCard(rows[0]);
+              setNotice('Replacement card generated. Print the new sticker.');
+            });
+          }}>Replace Attendance card (admin)</button>}
           {card.code ? <div className="individual-sticker-preview"><IndividualSticker card={card} /></div> : <p>Generate the individual’s personal QR to preview their sticker.</p>}
           {card.generatedOn && <p className="quiet">QR generated {formatDate(card.generatedOn)}.</p>}
         </>}

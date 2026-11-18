@@ -1,6 +1,6 @@
 {
   "minimumVersion": "2.0",
   "notes": [
-    "Navigation is grouped into Daily Operations and Supporting Administration. Optional workflows are retained under Configurations, with compact individual records and a simple daily order view."
+    "Personal QR types are available in Configurations and sticker printing. Issuing a dedicated Attendance card makes it required for that individual’s Time In and Time Out."
   ]
 }
