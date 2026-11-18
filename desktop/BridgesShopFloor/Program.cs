@@ -53,7 +53,7 @@ sealed class ShopFloor : Form {
 #if SHOP_FLOOR_STAGING
   Text="Bridges Shop Floor · STAGING";
 #else
-  Text="Bridges Shop Floor v1.11 · QL-800";
+  Text="Bridges Shop Floor v1.12 · QL-800";
 #endif
   var area=Screen.PrimaryScreen?.WorkingArea??new Rectangle(0,0,1280,900);
   Width=Math.Max(480,Math.Min(1280,area.Width-40));Height=Math.Max(600,Math.Min(900,area.Height-60));MinimumSize=new(480,600);StartPosition=FormStartPosition.CenterScreen;
@@ -96,7 +96,7 @@ sealed class ShopFloor : Form {
    await web.CoreWebView2.Profile.SetPermissionStateAsync(CoreWebView2PermissionKind.Microphone,Origin,CoreWebView2PermissionState.Deny);
   } catch { status.Text="Camera permission setup unavailable · update WebView2 Runtime"; }
   web.CoreWebView2.WebMessageReceived+=Receive;
-  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.11\",cameraSettings:true,attendanceScanner:true})});}");
+  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.12\",cameraSettings:true,attendanceScanner:true})});}");
   web.CoreWebView2.NavigationCompleted+=(_,e)=>status.Text=e.IsSuccess?"Ready · select boxer or scanner to begin":"Connection failed · check internet and Reload";
   web.Source=new Uri(Origin);
  }catch(Exception ex){MessageBox.Show("Install Microsoft Edge WebView2 Runtime, then restart.\n\n"+ex.Message,"Unable to start");}}
