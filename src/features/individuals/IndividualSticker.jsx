@@ -19,6 +19,7 @@ export function IndividualSticker({ card }) {
   return <article className="individual-sticker" aria-label={"QR sticker for " + card.name}>
     <div className="individual-sticker-qr"><ManufacturingBoxQr value={card.code} label="Individual Job QR" /></div>
     <div className="individual-sticker-name">{card.name}</div>
+    <p className="individual-sticker-date">{card.type || "Generic"}</p>
     {card.number && <p className="individual-sticker-number">ID {card.number}</p>}
     <p className="individual-sticker-date">Generated {card.generatedOn ? formatDate(card.generatedOn) : "Not recorded"}</p>
     <p className="individual-sticker-date">Expires {card.expiresOn ? formatDate(card.expiresOn) : "No expiry"}</p>

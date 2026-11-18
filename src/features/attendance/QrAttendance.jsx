@@ -9,7 +9,7 @@ import { formatDate } from "../../utils/dates.js";
 function readPending(key) {
   try {
     const value = JSON.parse(sessionStorage.getItem(key) ?? "null");
-    if (value?.request && /^IND-[A-F0-9]{16}$/.test(value.code) && ["in", "out"].includes(value.action)) return value;
+    if (value?.request && /^(?:IND-[A-F0-9]{16}|ATT-[A-F0-9]{32})$/.test(value.code) && ["in", "out"].includes(value.action)) return value;
   } catch {}
   return null;
 }
@@ -31,9 +31,9 @@ export function QrAttendance() {
   async function record(value) {
     if (lock.current) return;
     const normalized = value.trim().toUpperCase();
-    if (!pending && !/^IND-[A-F0-9]{16}$/.test(normalized)) {
+    if (!pending && !/^(?:IND-[A-F0-9]{16}|ATT-[A-F0-9]{32})$/.test(normalized)) {
       setCamera(false);
-      setError("Scan a system-generated Individual Job QR card.");
+      setError("Scan a system-generated personal QR card.");
       return;
     }
     const submission = pending ?? { code: normalized, action, request: crypto.randomUUID() };

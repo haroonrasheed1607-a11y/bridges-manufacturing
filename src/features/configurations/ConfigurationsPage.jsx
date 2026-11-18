@@ -1,3 +1,4 @@
+import { PersonalQrTypes } from './PersonalQrTypes.jsx';
 import { OptionalWorkflows } from "./OptionalWorkflows.jsx";
 import { BarcodeApprovals } from "../admin-approvals/BarcodeApprovals.jsx";
 import { useManufacturing } from "../../state/ManufacturingContext.jsx";
@@ -8,6 +9,7 @@ import { Backups } from "../backups/Backups.jsx";
 import { History } from "./History.jsx";
 
 const sections = [
+  ["personal-qr", "Personal QR Types", PersonalQrTypes],
   ["settings", "Scan settings", ScanSettings],
   ["history", "History", History],
   ["backup", "Backup", Backups],

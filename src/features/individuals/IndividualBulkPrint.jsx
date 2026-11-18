@@ -1,3 +1,4 @@
+import { personalCards, usePersonalQrTypes } from './personalQrTypes.js';
 import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { manufacturingToday } from "../../utils/dates.js";
@@ -5,6 +6,8 @@ import { IndividualSticker, stickerStyles } from "./IndividualSticker.jsx";
 import { printIndividualStickers } from "./individualStickerPrint.jsx";
 
 export function IndividualBulkPrint({ people, onBack }) {
+  const { types, typeError } = usePersonalQrTypes();
+  const [type, setType] = React.useState('');
   const [search, setSearch] = React.useState("");
   const [selected, setSelected] = React.useState([]);
   const [cards, setCards] = React.useState([]);
@@ -21,9 +24,11 @@ export function IndividualBulkPrint({ people, onBack }) {
     setBusy(true);
     setError("");
     try {
-      const rows = await manufacturingApi.rpc("app_individual_qr_cards", { p_people: validSelected, p_issue: true });
+      if (type && print && !window.confirm('Issue missing Attendance cards? Generic cards for those individuals will no longer mark attendance.')) return;
+      const rows = await personalCards(type, validSelected, !type || print);
+      if (type && !print && rows.some(card => !card.code)) setError('Some individuals do not have this card yet. Print to issue their cards.');
       if (rows.some(card => card.expiresOn && card.expiresOn < manufacturingToday())) throw new Error("Review expired QRs before printing.");
-      setCards(rows);
+      setCards(rows.filter(card => card.code));
       if (print) await printIndividualStickers(rows);
     } catch (problem) { setError(problem.message); }
     finally { setBusy(false); }
@@ -35,7 +40,11 @@ export function IndividualBulkPrint({ people, onBack }) {
     <header className="section-heading"><div><h2>Print individual QR stickers</h2><p className="quiet">2.4 × 4.8 inches · {validSelected.length} selected</p></div></header>
     {error && <p className="alert" role="alert">{error}</p>}
     <div className="individual-profile-grid">
-      <section className="panel">
+      <section className="panel"><label className="field">QR type<select value={type} disabled={busy} onChange={event => { setType(event.target.value); setCards([]); setError(""); }}>
+          <option value="">Generic</option>
+          {types.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}
+        </select></label>
+        {typeError && <p role="alert">{typeError}</p>}
         <label className="field">Search name or code<input type="search" value={search} disabled={busy} onChange={e => setSearch(e.target.value)} /></label>
         <label className="individual-bulk-person"><input type="checkbox" checked={allSelected} disabled={busy || !visible.length}
           onChange={() => changeSelection(allSelected ? selected.filter(id => !visible.some(p => p.id === id)) : [...new Set([...selected, ...visible.map(p => p.id)])])} />

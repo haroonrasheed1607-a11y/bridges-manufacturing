@@ -6,13 +6,28 @@ import { manufacturingQrTemplate } from "../assets/qrTemplate.js";
 
 function manufacturingQrMatrix(text) {
   const bytes = Array.from(String(text), char => char.charCodeAt(0));
-  if (bytes.length > 32 || bytes.some(value => value > 127)) throw Error('Box QR identifiers must be ASCII and at most 32 characters.');
-  const bits = [0, 1, 0, 0],
+  const alphabet = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ $%*+-./:';
+  const alphanumeric = bytes.length > 32 && bytes.length <= 47 &&
+    bytes.every(value => alphabet.includes(String.fromCharCode(value)));
+  if ((!alphanumeric && bytes.length > 32) || bytes.some(value => value > 127)) {
+    throw Error('QR identifier exceeds the supported encoding capacity.');
+  }
+  const bits = alphanumeric ? [0, 0, 1, 0] : [0, 1, 0, 0],
     push = (value, count) => {
       for (let i = count - 1; i >= 0; i--) bits.push(value >>> i & 1);
     };
-  push(bytes.length, 8);
-  bytes.forEach(value => push(value, 8));
+  if (alphanumeric) {
+    push(bytes.length, 9);
+    for (let i = 0; i < bytes.length; i += 2) {
+      const first = alphabet.indexOf(String.fromCharCode(bytes[i]));
+      const second = alphabet.indexOf(String.fromCharCode(bytes[i + 1]));
+      if (i + 1 < bytes.length) push(first * 45 + second, 11);
+      else push(first, 6);
+    }
+  } else {
+    push(bytes.length, 8);
+    bytes.forEach(value => push(value, 8));
+  }
   for (let i = 0; i < 4 && bits.length < 272; i++) bits.push(0);
   while (bits.length % 8) bits.push(0);
   const data = [];
