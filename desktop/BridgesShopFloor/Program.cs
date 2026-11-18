@@ -13,11 +13,17 @@ static class Program {
  }
 }
 sealed class ShopFloor : Form {
+#if SHOP_FLOOR_STAGING
+ const string Origin="https://bridges-manufacturing-staging.haroonrasheed1607.workers.dev";
+ const string DataFolder="BridgesShopFloor-Staging";
+#else
+ const string DataFolder="BridgesShopFloor";
  const string Origin="https://bridges-manufacturing.haroonrasheed1607.workers.dev";
+#endif
  readonly WebView2 web=new(){Dock=DockStyle.Fill};
  readonly ComboBox printers=new(){DropDownStyle=ComboBoxStyle.DropDownList,Width=220};
  readonly ToolStripStatusLabel status=new("Connecting…");
- readonly string directory=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"BridgesShopFloor");
+ readonly string directory=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),DataFolder);
  bool printing;
  readonly AttendanceScanner attendanceScanner=new();
  bool scannerAvailable;
@@ -44,7 +50,11 @@ sealed class ShopFloor : Form {
  List<LabelData>? lastLabels;
  record LabelData(string[] Lines,bool[][]? Matrix);
  public ShopFloor(){
+#if SHOP_FLOOR_STAGING
+  Text="Bridges Shop Floor · STAGING";
+#else
   Text="Bridges Shop Floor v1.11 · QL-800";
+#endif
   var area=Screen.PrimaryScreen?.WorkingArea??new Rectangle(0,0,1280,900);
   Width=Math.Max(480,Math.Min(1280,area.Width-40));Height=Math.Max(600,Math.Min(900,area.Height-60));MinimumSize=new(480,600);StartPosition=FormStartPosition.CenterScreen;
   var tools=new FlowLayoutPanel{Dock=DockStyle.Top,Height=85,Padding=new(6)};
@@ -59,8 +69,10 @@ sealed class ShopFloor : Form {
   if(printers.Items.Count>0)printers.SelectedIndex=Math.Max(0,printers.Items.IndexOf(saved));
   printers.SelectedIndexChanged+=(_,_)=>File.WriteAllText(Path.Combine(directory,"printer.txt"),printers.Text);
   Shown+=async(_,_)=>{
+#if !SHOP_FLOOR_STAGING
    try{if(await AutoUpdate.Check(text=>status.Text=text)){Close();return;}}
    catch{status.Text="Update check unavailable · using current version";}
+#endif
    await Start();
   };
  }
