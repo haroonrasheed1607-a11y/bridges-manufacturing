@@ -10,10 +10,24 @@ sealed class AttendanceScanner
     const int RawInputMessage = 0x00FF;
     readonly StringBuilder buffer = new();
     IntPtr device;
+    string? deviceName;
+    string? settingsPath;
+
+    public void LoadPairing(string path)
+    {
+        settingsPath = path;
+        try
+        {
+            if (File.Exists(path)) deviceName = File.ReadAllText(path).Trim();
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
+    }
+
     long lastKey;
     public bool Enabled { get; set; }
     public bool Pairing { get; set; }
-    public bool Paired => device != IntPtr.Zero;
+    public bool Paired => !string.IsNullOrEmpty(deviceName);
 
     [StructLayout(LayoutKind.Sequential)]
     struct Registration
@@ -29,11 +43,29 @@ sealed class AttendanceScanner
     [DllImport("user32.dll")]
     static extern uint GetRawInputData(IntPtr input, uint command, byte[] data, ref uint size, uint headerSize);
 
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, EntryPoint = "GetRawInputDeviceInfoW")]
+    static extern uint GetRawInputDeviceInfo(IntPtr device, uint command, StringBuilder? data, ref uint size);
+
+    static string? ReadDeviceName(IntPtr source)
+    {
+        const uint deviceNameCommand = 0x20000007;
+        uint length = 0;
+        if (GetRawInputDeviceInfo(source, deviceNameCommand, null, ref length) == uint.MaxValue ||
+            length == 0 || length > 4096) return null;
+        var name = new StringBuilder((int)length);
+        return GetRawInputDeviceInfo(source, deviceNameCommand, name, ref length) == uint.MaxValue
+            ? null : name.ToString();
+    }
+
     public bool Register(IntPtr window) =>
         RegisterRawInputDevices([new() { Page = 1, Usage = 6, Window = window }], 1,
             (uint)Marshal.SizeOf<Registration>());
 
-    public void Reset() => buffer.Clear();
+    public void Reset()
+    {
+        buffer.Clear();
+        device = IntPtr.Zero;
+    }
 
     public void Receive(Message message, Action paired, Action<string> scanned)
     {
@@ -44,7 +76,13 @@ sealed class AttendanceScanner
         uint read = GetRawInputData(message.LParam, 0x10000003, data, ref size, header);
         if (read == uint.MaxValue || read < header + 16 || BitConverter.ToUInt32(data, 0) != 1) return;
         var source = IntPtr.Size == 8 ? new IntPtr(BitConverter.ToInt64(data, 8)) : new IntPtr(BitConverter.ToInt32(data, 8));
-        if (source == IntPtr.Zero || (!Pairing && source != device)) return;
+        if (source == IntPtr.Zero) return;
+        if (!Pairing && source != device)
+        {
+            if (!string.Equals(ReadDeviceName(source), deviceName, StringComparison.OrdinalIgnoreCase)) return;
+            buffer.Clear();
+            device = source;
+        }
         int offset = (int)header;
         if ((BitConverter.ToUInt16(data, offset + 2) & 1) != 0) return;
         ushort key = BitConverter.ToUInt16(data, offset + 6);
@@ -60,6 +98,15 @@ sealed class AttendanceScanner
             if (!Regex.IsMatch(code, @"\A(?:IND-[A-F0-9]{16}|ATT-[A-F0-9]{32})\z")) return;
             if (Pairing)
             {
+                var name = ReadDeviceName(source);
+                if (string.IsNullOrEmpty(name)) return;
+                try
+                {
+                    if (settingsPath is not null) File.WriteAllText(settingsPath, name);
+                }
+                catch (IOException) { }
+                catch (UnauthorizedAccessException) { }
+                deviceName = name;
                 device = source;
                 Pairing = false;
                 paired();

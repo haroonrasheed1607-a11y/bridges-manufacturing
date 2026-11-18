@@ -64,6 +64,7 @@ sealed class ShopFloor : Form {
   tools.Controls.AddRange([new Label{Text="Printer",AutoSize=true,Padding=new(0,7,0,0)},printers,test,refresh,preview,last]);
   var strip=new StatusStrip();strip.Items.Add(status);Controls.Add(web);Controls.Add(tools);Controls.Add(strip);
   Directory.CreateDirectory(directory);
+  attendanceScanner.LoadPairing(Path.Combine(directory,"attendance-scanner.txt"));
   foreach(string name in PrinterSettings.InstalledPrinters)if(name.Contains("QL-800",StringComparison.OrdinalIgnoreCase))printers.Items.Add(name);
   string saved=File.Exists(Path.Combine(directory,"printer.txt"))?File.ReadAllText(Path.Combine(directory,"printer.txt")):"";
   if(printers.Items.Count>0)printers.SelectedIndex=Math.Max(0,printers.Items.IndexOf(saved));
