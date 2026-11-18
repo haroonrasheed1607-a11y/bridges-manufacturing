@@ -74,7 +74,7 @@ export function QrAttendance() {
 
   return <section className="panel qr-attendance">
     <div className="qr-attendance-heading"><h2>QR attendance</h2><QrAttendanceCount refreshVersion={countRefresh} /></div>
-    <PresentWorkers refreshVersion={countRefresh} />
+    <PresentWorkers refreshVersion={countRefresh} collapsible={desktop} />
     {!desktop && <div className="production-mode-tabs" role="group" aria-label="Attendance action">
       {[["in", "Time In"], ["out", "Time Out"]].map(([value, title]) => <button key={value} type="button"
         className={value === action ? "is-selected" : ""} aria-pressed={value === action}

@@ -2,7 +2,7 @@ import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { formatDate, manufacturingToday } from "../../utils/dates.js";
 
-export function PresentWorkers({ refreshVersion }) {
+export function PresentWorkers({ refreshVersion, collapsible = false }) {
   const [summary, setSummary] = React.useState(null);
   const [error, setError] = React.useState("");
   React.useEffect(() => {
@@ -19,11 +19,19 @@ export function PresentWorkers({ refreshVersion }) {
     return () => { active = false; clearInterval(timer); };
   }, [refreshVersion]);
   const current = summary?.date === manufacturingToday();
-  return <section className="present-workers" aria-labelledby="present-workers-title">
-    <div className="section-heading"><h3 id="present-workers-title">Currently present {current && "· " + summary.people.length}</h3>
-      <small>{formatDate(manufacturingToday())}</small></div>
+  const title = "Currently present" + (current && !error ? " · " + summary.people.length : "");
+  const contents = <>
     {error && <p className="alert" role="alert">{error}</p>}
     {current && !error ? <PresentWorkersTable people={summary.people} /> : !error && <p role="status">Loading attendance…</p>}
+  </>;
+  if (collapsible) return <details className="present-workers">
+    <summary>{title}</summary>
+    {contents}
+  </details>;
+  return <section className="present-workers" aria-labelledby="present-workers-title">
+    <div className="section-heading"><h3 id="present-workers-title">{title}</h3>
+      <small>{formatDate(manufacturingToday())}</small></div>
+    {contents}
   </section>;
 }
 export function PresentWorkersTable({ people }) {
