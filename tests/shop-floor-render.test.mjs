@@ -30,7 +30,7 @@ test('availability, attendance, reusable setup and restricted Shop Floor screens
  const lockedDetail=await render('/src/features/orders/OrderDetailsPage.js','OrderDetailsPage','admin','detail',null,{...orders[1],workOrderApprovedAt:'2026-11-10'});
  assert.doesNotMatch(lockedDetail,/Edit order request/);
  const clients=await render('/src/features/customers/CustomersPage.js','ManufacturingCustomers');
- assert.doesNotMatch(clients,/Register client/);assert.doesNotMatch(clients,/Total orders|Active orders/);
+ assert.match(clients,/Register client/);assert.doesNotMatch(clients,/Total orders|Active orders/);
  const catalog=await render('/src/features/customers/ClientCatalog.jsx','ClientCatalog','admin',null,{clients:[{id:'C1',name:'Client',items:[{id:'I1',code:'PART-42',name:'Assembly kit',unit:'Box',piecesPerUnit:100,revision:1}]}]});
  assert.match(catalog,/<th>Unit<\/th>/);assert.match(catalog,/<th>Pieces per unit<\/th>/);assert.doesNotMatch(catalog,/aria-label="Item code: Assembly kit"/);assert.match(catalog,/aria-label="Save changes: Assembly kit"/);assert.match(catalog,/value="100"/);assert.match(catalog,/Accounts only/);assert.doesNotMatch(catalog,/aria-label="Rate: Assembly kit" type="number"/);
  const itemForm=await render('/src/features/customers/ClientItemForm.jsx','ClientItemForm','admin',null,{item:{id:'I1',code:'PART-42',name:'Assembly kit',unit:'Box',piecesPerUnit:100,revision:1}});

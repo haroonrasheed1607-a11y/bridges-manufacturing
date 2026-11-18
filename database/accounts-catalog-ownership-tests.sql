@@ -6,7 +6,10 @@ begin
  select id into strict account_id from public.staff_profiles where active and role='accounts' limit 1;
  select id into strict scanner_id from public.staff_profiles where active and role='box_scanner' limit 1;
  perform set_config('request.jwt.claim.sub',admin_id::text,true);
- begin perform public.app_save_customer(prefix);raise exception 'Admin created client';exception when insufficient_privilege then null;end;
+ rows:=public.app_save_customer(prefix||'-ADMIN');
+ if jsonb_typeof(rows->'customerCatalog') is distinct from 'array' then
+  raise exception 'Admin registration did not return the workspace catalog';
+ end if;
  perform set_config('request.jwt.claim.sub',account_id::text,true);
  rows:=public.app_save_customer(prefix);
  select row->>'id' into strict cid from jsonb_array_elements(rows) row where row->>'name'=prefix;
