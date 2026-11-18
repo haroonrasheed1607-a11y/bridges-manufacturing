@@ -2,18 +2,7 @@ import { React } from "../../vendor/react-runtime.js";
 import { manufacturingApi } from "../../api/supabaseClient.js";
 import { formatDate, manufacturingToday } from "../../utils/dates.js";
 
-export function MobilePresentWorkers({ refreshVersion }) {
-  const [mobile, setMobile] = React.useState(false);
-  React.useEffect(() => {
-    const media = window.matchMedia("(max-width: 760px)");
-    const update = () => setMobile(media.matches);
-    update(); media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
-  }, []);
-  return mobile ? <PresentWorkers refreshVersion={refreshVersion} /> : null;
-}
-
-function PresentWorkers({ refreshVersion }) {
+export function PresentWorkers({ refreshVersion }) {
   const [summary, setSummary] = React.useState(null);
   const [error, setError] = React.useState("");
   React.useEffect(() => {
