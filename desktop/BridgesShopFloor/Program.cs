@@ -13,17 +13,48 @@ static class Program {
  }
 }
 sealed class ShopFloor : Form {
+#if SHOP_FLOOR_STAGING
+ const string Origin="https://bridges-manufacturing-staging.haroonrasheed1607.workers.dev";
+ const string DataFolder="BridgesShopFloor-Staging";
+#else
+ const string DataFolder="BridgesShopFloor";
  const string Origin="https://bridges-manufacturing.haroonrasheed1607.workers.dev";
+#endif
  readonly WebView2 web=new(){Dock=DockStyle.Fill};
  readonly ComboBox printers=new(){DropDownStyle=ComboBoxStyle.DropDownList,Width=220};
  readonly ToolStripStatusLabel status=new("Connecting…");
- readonly string directory=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),"BridgesShopFloor");
+ readonly string directory=Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),DataFolder);
  bool printing;
+ readonly AttendanceScanner attendanceScanner=new();
+ bool scannerAvailable;
+
+ protected override void OnHandleCreated(EventArgs e){
+  base.OnHandleCreated(e);
+  scannerAvailable=attendanceScanner.Register(Handle);
+ }
+ protected override void WndProc(ref Message message){
+  attendanceScanner?.Receive(message,
+   ()=>SendAttendanceScannerState(),
+   code=>PostAttendanceMessage(new { type="bridges.attendance-scan", code }));
+  base.WndProc(ref message);
+ }
+ void PostAttendanceMessage(object payload){
+  if(web.CoreWebView2 is not null && Trusted(web.Source?.AbsoluteUri??""))
+   web.CoreWebView2.PostWebMessageAsJson(JsonSerializer.Serialize(payload));
+ }
+ void SendAttendanceScannerState()=>PostAttendanceMessage(new {
+  type="bridges.attendance-scanner-state", available=scannerAvailable,
+  paired=attendanceScanner.Paired, pairing=attendanceScanner.Pairing
+ });
  readonly CheckBox preview=new(){Text="Preview before printing",AutoSize=true,Checked=false};
  List<LabelData>? lastLabels;
  record LabelData(string[] Lines,bool[][]? Matrix);
  public ShopFloor(){
-  Text="Bridges Shop Floor v1.11 · QL-800";
+#if SHOP_FLOOR_STAGING
+  Text="Bridges Shop Floor · STAGING";
+#else
+  Text="Bridges Shop Floor v1.12 · QL-800";
+#endif
   var area=Screen.PrimaryScreen?.WorkingArea??new Rectangle(0,0,1280,900);
   Width=Math.Max(480,Math.Min(1280,area.Width-40));Height=Math.Max(600,Math.Min(900,area.Height-60));MinimumSize=new(480,600);StartPosition=FormStartPosition.CenterScreen;
   var tools=new FlowLayoutPanel{Dock=DockStyle.Top,Height=85,Padding=new(6)};
@@ -38,8 +69,10 @@ sealed class ShopFloor : Form {
   if(printers.Items.Count>0)printers.SelectedIndex=Math.Max(0,printers.Items.IndexOf(saved));
   printers.SelectedIndexChanged+=(_,_)=>File.WriteAllText(Path.Combine(directory,"printer.txt"),printers.Text);
   Shown+=async(_,_)=>{
+#if !SHOP_FLOOR_STAGING
    try{if(await AutoUpdate.Check(text=>status.Text=text)){Close();return;}}
    catch{status.Text="Update check unavailable · using current version";}
+#endif
    await Start();
   };
  }
@@ -50,7 +83,7 @@ sealed class ShopFloor : Form {
   await web.EnsureCoreWebView2Async(env);
   web.CoreWebView2.Settings.AreDevToolsEnabled=false;
   web.CoreWebView2.Settings.AreDefaultContextMenusEnabled=false;
-  web.CoreWebView2.NavigationStarting+=(_,e)=>{if(!Trusted(e.Uri)){e.Cancel=true;status.Text="External navigation blocked.";}};
+  web.CoreWebView2.NavigationStarting+=(_,e)=>{attendanceScanner.Enabled=false;attendanceScanner.Pairing=false;attendanceScanner.Reset();if(!Trusted(e.Uri)){e.Cancel=true;status.Text="External navigation blocked.";}};
   web.CoreWebView2.NewWindowRequested+=(_,e)=>e.Handled=true;
   web.CoreWebView2.PermissionRequested+=(_,e)=>{
    // Only the fixed trusted app origin may request video; microphone and all other permissions stay blocked.
@@ -63,7 +96,7 @@ sealed class ShopFloor : Form {
    await web.CoreWebView2.Profile.SetPermissionStateAsync(CoreWebView2PermissionKind.Microphone,Origin,CoreWebView2PermissionState.Deny);
   } catch { status.Text="Camera permission setup unavailable · update WebView2 Runtime"; }
   web.CoreWebView2.WebMessageReceived+=Receive;
-  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.11\",cameraSettings:true})});}");
+  await web.CoreWebView2.AddScriptToExecuteOnDocumentCreatedAsync("if(location.origin==='"+Origin+"'){Object.defineProperty(window,'bridgesDesktop',{value:Object.freeze({version:1,bulkPrinting:true,appVersion:\"1.12\",cameraSettings:true,attendanceScanner:true})});}");
   web.CoreWebView2.NavigationCompleted+=(_,e)=>status.Text=e.IsSuccess?"Ready · select boxer or scanner to begin":"Connection failed · check internet and Reload";
   web.Source=new Uri(Origin);
  }catch(Exception ex){MessageBox.Show("Install Microsoft Edge WebView2 Runtime, then restart.\n\n"+ex.Message,"Unable to start");}}
@@ -73,6 +106,17 @@ sealed class ShopFloor : Form {
    if(e.WebMessageAsJson.Length>800000)throw new Exception("Label batch too large.");
    using var message=JsonDocument.Parse(e.WebMessageAsJson);var m=message.RootElement;
    string? type=m.GetProperty("type").GetString();
+   if(type=="bridges.attendance-scanner"){
+    attendanceScanner.Enabled=scannerAvailable && m.GetProperty("enabled").GetBoolean();
+    attendanceScanner.Pairing=false;
+    attendanceScanner.Reset();
+    SendAttendanceScannerState();
+    return;
+   }
+   if(type=="bridges.attendance-scanner-pair"){
+    if(attendanceScanner.Enabled){attendanceScanner.Reset();attendanceScanner.Pairing=true;SendAttendanceScannerState();}
+    return;
+   }
    if(type=="bridges.camera-settings"){
     Process.Start(new ProcessStartInfo("ms-settings:privacy-webcam"){UseShellExecute=true});return;
    }
