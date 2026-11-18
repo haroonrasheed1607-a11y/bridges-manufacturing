@@ -1,6 +1,1 @@
-{
-  "minimumVersion": "2.0",
-  "notes": [
-    "Personal QR types are available in Configurations and sticker printing. Issuing a dedicated Attendance card makes it required for that individual’s Time In and Time Out."
-  ]
-}
+{"minimumVersion":"2.0","notes":["Shop Floor can download a daily production PDF for team verification."]}
